@@ -1,0 +1,18 @@
+diff --git a/shared/fpga_xilinx.core b/shared/fpga_xilinx.core
+index 242f1f2..e16db52 100644
+--- a/shared/fpga_xilinx.core
++++ b/shared/fpga_xilinx.core
+@@ -7,10 +7,13 @@ description: "Collection of useful RTL for Xilinx based examples"
+ filesets:
+   files_sv:
+     depend:
++      - lowrisc:prim:ram_1p
+       - lowrisc:prim:ram_2p
+     files:
+       - rtl/fpga/xilinx/clkgen_xil7series.sv
++      - rtl/ram_1p.sv
+       - rtl/ram_2p.sv
++      - rtl/bus.sv
+     file_type: systemVerilogSource
+
+ targets:
