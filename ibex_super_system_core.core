@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:super_system_core"
+description: "Ibex Super System for Arty A7 boards (both, -35 and -100)"
+filesets:
+  files_rtl_super_system:
+    depend:
+      - lowrisc:ibex:ibex_top
+      - pulp:riscv:debug_module
+    files:
+      - rtl/system/ibex_super_system.sv
+      - rtl/system/dm_top.sv
+      - rtl/system/gpio.sv
+      - rtl/system/uart.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl_super_system
