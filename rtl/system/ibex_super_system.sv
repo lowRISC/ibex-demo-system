@@ -24,6 +24,10 @@ module ibex_super_system #(
   parameter logic [31:0] UART_START   = 32'h80001000;
   parameter logic [31:0] UART_MASK    = ~(UART_SIZE-1);
 
+  parameter logic [31:0] TIMER_SIZE    = 4 * 1024; // 4kB
+  parameter logic [31:0] TIMER_START   = 32'h80002000;
+  parameter logic [31:0] TIMER_MASK    = ~(TIMER_SIZE-1);
+
   // debug functionality is optional
   localparam bit DBG = 1;
   localparam int unsigned DbgHwBreakNum = (DBG == 1) ? 2 : 0;
@@ -38,14 +42,15 @@ module ibex_super_system #(
     Ram,
     Gpio,
     Uart,
+    Timer,
     DbgDev
   } bus_device_e;
 
-  localparam int NrDevices = DBG ? 4 : 3;
+  localparam int NrDevices = DBG ? 5 : 4;
   localparam int NrHosts = DBG ? 2 : 1;
 
   // interrupts
-  //logic timer_irq;
+  logic timer_irq;
 
   // host and device signals
   logic           host_req    [NrHosts];
@@ -103,6 +108,8 @@ module ibex_super_system #(
   assign cfg_device_addr_mask[Gpio]   = GPIO_MASK;
   assign cfg_device_addr_base[Uart]   = UART_START;
   assign cfg_device_addr_mask[Uart]   = UART_MASK;
+  assign cfg_device_addr_base[Timer]  = TIMER_START;
+  assign cfg_device_addr_mask[Timer]  = TIMER_MASK;
 
   if (DBG) begin : g_dbg_device_cfg
     assign cfg_device_addr_base[DbgDev] = DEBUG_START;
@@ -205,7 +212,7 @@ module ibex_super_system #(
      .data_err_i            (host_err[CoreD]),
 
      .irq_software_i        (1'b0),
-     .irq_timer_i           (1'b0),
+     .irq_timer_i           (timer_irq),
      .irq_external_i        (1'b0),
      .irq_fast_i            (15'b0),
      .irq_nm_i              (1'b0),
@@ -276,6 +283,24 @@ module ibex_super_system #(
     .device_rdata_o (device_rdata[Uart]),
 
     .uart_tx_o
+  );
+
+  timer #(
+    .DataWidth   (32),
+    .AddressWidth(32)
+  ) u_timer (
+    .clk_i (clk_sys_i),
+    .rst_ni(rst_sys_ni),
+
+    .timer_req_i   (device_req[Timer]),
+    .timer_we_i    (device_we[Timer]),
+    .timer_be_i    (device_be[Timer]),
+    .timer_addr_i  (device_addr[Timer]),
+    .timer_wdata_i (device_wdata[Timer]),
+    .timer_rvalid_o(device_rvalid[Timer]),
+    .timer_rdata_o (device_rdata[Timer]),
+    .timer_err_o   (device_err[Timer]),
+    .timer_intr_o  (timer_irq)
   );
 
   assign dbg_slave_req         = device_req[DbgDev] | dbg_instr_req;

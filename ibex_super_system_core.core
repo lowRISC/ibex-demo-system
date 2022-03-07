@@ -8,6 +8,7 @@ filesets:
   files_rtl_super_system:
     depend:
       - lowrisc:ibex:ibex_top
+      - lowrisc:ibex:rv_timer
       - pulp:riscv:debug_module
     files:
       - rtl/system/ibex_super_system.sv

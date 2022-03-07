@@ -1,0 +1,18 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:rv_timer"
+description: "RISC-V timer"
+filesets:
+  files_rtl_timer:
+    depend:
+      - lowrisc:prim:assert
+    files:
+      - vendor/lowrisc_ibex/shared/rtl/timer.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl_timer
