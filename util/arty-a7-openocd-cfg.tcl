@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-interface ftdi
+adapter driver ftdi
 transport select jtag
 
 ftdi_device_desc "Digilent USB Device"
@@ -14,7 +14,13 @@ reset_config none
 # Configure JTAG chain and the target processor
 set _CHIPNAME riscv
 
-jtag newtap $_CHIPNAME cpu -irlen 6 -expected-id 0x0362D093 -ignore-version
+# Configure JTAG expected ID
+# arty-a7-35t
+set _EXPECTED_ID 0x0362D093 
+# arty-a7-100t
+# set _EXPECTED_ID 0x13631093 
+
+jtag newtap $_CHIPNAME cpu -irlen 6 -expected-id $_EXPECTED_ID -ignore-version
 set _TARGETNAME $_CHIPNAME.cpu
 target create $_TARGETNAME riscv -chain-position $_TARGETNAME
 
@@ -22,7 +28,7 @@ riscv set_ir idcode 0x09
 riscv set_ir dtmcs 0x22
 riscv set_ir dmi 0x23
 
-adapter_khz 10000
+adapter speed 10000
 
 riscv set_prefer_sba on
 gdb_report_data_abort enable
