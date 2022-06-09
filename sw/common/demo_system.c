@@ -15,6 +15,10 @@ int putchar(int c) {
   return c;
 }
 
+int getchar(void) {
+  return uart_in(DEFAULT_UART);
+}
+
 int puts(const char *str) {
   while (*str) {
     putchar(*str++);
