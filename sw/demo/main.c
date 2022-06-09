@@ -2,7 +2,15 @@
 #include "timer.h"
 #include "gpio.h"
 
+// Comment out the line below to disable the RX interrupt and 
+// have the ibex_super_system generate the text written to TX
+#define UART_RX_ENABLED
+
 int main(void) {
+  #ifdef UART_RX_ENABLED
+  uart_init();
+  uart_enable();    
+  #endif
   timer_init();
   timer_enable(50000000);
 
@@ -17,9 +25,11 @@ int main(void) {
 
     if (cur_time != last_elapsed_time) {
       last_elapsed_time = cur_time;
+      #ifndef UART_RX_ENABLED
       puts("Hello World! ");
       puthex(last_elapsed_time);
       putchar('\n');
+      #endif
       set_output_bit(GPIO0, cur_output_bit_index, cur_output_bit);
 
       cur_output_bit_index++;

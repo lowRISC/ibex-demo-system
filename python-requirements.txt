@@ -7,10 +7,10 @@ anytree
 mako
 pyyaml
 wheel
+pyserial
 
 # Development version of edalize until all our changes are upstream
 git+https://github.com/lowRISC/edalize.git@ot
 
 # Development version with OT-specific changes
 git+https://github.com/lowRISC/fusesoc.git@ot
-

@@ -10,6 +10,7 @@ module ibex_demo_system #(
   input logic                 rst_sys_ni,
 
   output logic [GpoWidth-1:0] gp_o,
+  input  logic                uart_rx_i,
   output logic                uart_tx_o
 );
   parameter logic [31:0] MEM_SIZE     = 64 * 1024; // 64 kB
@@ -96,6 +97,8 @@ module ibex_demo_system #(
   logic [31:0] dbg_slave_wdata;
   logic        dbg_slave_rvalid;
   logic [31:0] dbg_slave_rdata;
+
+  logic uart_irq;
 
   logic rst_core_n;
   logic ndmreset_req;
@@ -218,7 +221,7 @@ module ibex_demo_system #(
      .irq_software_i        (1'b0),
      .irq_timer_i           (timer_irq),
      .irq_external_i        (1'b0),
-     .irq_fast_i            (15'b0),
+     .irq_fast_i            ({14'b0, uart_irq}),
      .irq_nm_i              (1'b0),
 
      .debug_req_i           (dm_debug_req),
@@ -286,6 +289,8 @@ module ibex_demo_system #(
     .device_rvalid_o(device_rvalid[Uart]),
     .device_rdata_o (device_rdata[Uart]),
 
+    .uart_rx_i,
+    .uart_irq_o     (uart_irq),
     .uart_tx_o
   );
 
