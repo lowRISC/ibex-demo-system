@@ -23,6 +23,7 @@ module ibex_demo_system #(
   input  logic [GpiWidth-1:0] gp_i,
   output logic [GpoWidth-1:0] gp_o,
   output logic [PwmWidth-1:0] pwm_o,
+  input  logic                uart_rx_i,
   output logic                uart_tx_o,
   input  logic                spi_rx_i,
   output logic                spi_tx_o,
@@ -87,6 +88,7 @@ module ibex_demo_system #(
 
   // interrupts
   logic timer_irq;
+  logic uart_irq;
 
   // host and device signals
   logic           host_req      [NrHosts];
@@ -267,6 +269,7 @@ module ibex_demo_system #(
      .irq_timer_i   (timer_irq),
      .irq_external_i(1'b0),
      .irq_fast_i    (15'b0),
+     .irq_fast_i    ({14'b0, uart_irq}),
      .irq_nm_i      (1'b0),
 
      .scramble_key_valid_i('0),
@@ -361,6 +364,8 @@ module ibex_demo_system #(
     .device_rvalid_o(device_rvalid[Uart]),
     .device_rdata_o (device_rdata[Uart]),
 
+    .uart_rx_i,
+    .uart_irq_o     (uart_irq),
     .uart_tx_o
   );
 
