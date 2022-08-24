@@ -15,6 +15,8 @@ filesets:
       - rtl/system/dm_top.sv
       - rtl/system/gpio.sv
       - rtl/system/uart.sv
+      - rtl/system/spi.sv
+      - rtl/system/spi_top.sv
     file_type: systemVerilogSource
 
 targets:

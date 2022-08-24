@@ -7,7 +7,10 @@ module top_artya7 (
     input               IO_RST_N,
     output [3:0]        LED,
     output [11:0]       RGB_LED,
-    output              UART_TX
+    output [3:0]        DISP_CTRL,
+    output              UART_TX,
+    output              SPI_TX,
+    output              SPI_SCK
 );
   parameter              SRAMInitFile = "";
 
@@ -15,14 +18,16 @@ module top_artya7 (
 
 
   ibex_demo_system #(
-    .GpoWidth(16),
+    .GpoWidth(20),
     .SRAMInitFile(SRAMInitFile)
   ) u_ibex_demo_system (
     .clk_sys_i(clk_sys),
     .rst_sys_ni(rst_sys_n),
 
-    .gp_o({LED, RGB_LED}),
-    .uart_tx_o(UART_TX)
+    .gp_o({LED, RGB_LED, DISP_CTRL}),
+    .uart_tx_o(UART_TX),
+    .spi_tx_o(SPI_TX),
+    .spi_sck_o(SPI_SCK)
   );
 
   clkgen_xil7series
@@ -186,7 +191,7 @@ module top_artya7 (
 //  );
 //
 //  // decode which device is being addressed
-//  
+//
 //  always @(posedge clk_sys, negedge rst_sys_n)
 //  begin
 //    if (~rst_sys_n)
