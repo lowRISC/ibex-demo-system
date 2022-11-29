@@ -2,11 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Individual Python packages
+anytree
+mako
+pyyaml
+wheel
+
 # Development version of edalize until all our changes are upstream
 git+https://github.com/lowRISC/edalize.git@ot
 
 # Development version with OT-specific changes
 git+https://github.com/lowRISC/fusesoc.git@ot
 
-pyyaml
-mako
