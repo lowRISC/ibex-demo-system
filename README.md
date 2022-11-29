@@ -87,12 +87,15 @@ debugger.
 ./util/load_super_system.sh halt ./sw/build/demo/demo
 ```
 
-To view terminal output use screen
+To view terminal output use screen:
 
 ```bash
 # Look in /dev to see available ttyUSB devices
 screen /dev/ttyUSB1 115200
 ```
+
+If you see an immediate `[screen is terminating]`, it may mean that you need super user rights.
+In this case, you may try using `sudo`.
 
 ## Debugging a program
 
