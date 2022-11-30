@@ -76,6 +76,9 @@ Or use the Vivado GUI
 make -C ./build/lowrisc_ibex_super_system_0/synth-vivado/ build-gui
 ```
 
+Inside Vivado you do not have to run the synthesis, the implementation or generate the bitstream.
+Simply click on "Open Hardware Manager", then on "Auto Connect" and finally on "Program Device".
+
 ## Loading a program
 
 The util/load_super_system.sh script can be used to load and run a program. You
