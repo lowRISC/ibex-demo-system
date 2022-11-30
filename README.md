@@ -36,6 +36,9 @@ source ./bin/activate
 pip3 install -r python-requirements.txt
 ```
 
+You may need to run the last command twice if you get the following error:
+`ERROR: Failed building wheel for fusesoc`
+
 ## Building
 
 First the software must be built. This is provide an initial binary for the FPGA
@@ -73,6 +76,9 @@ Or use the Vivado GUI
 make -C ./build/lowrisc_ibex_super_system_0/synth-vivado/ build-gui
 ```
 
+Inside Vivado you do not have to run the synthesis, the implementation or generate the bitstream.
+Simply click on "Open Hardware Manager", then on "Auto Connect" and finally on "Program Device".
+
 ## Loading a program
 
 The util/load_super_system.sh script can be used to load and run a program. You
@@ -87,12 +93,15 @@ debugger.
 ./util/load_super_system.sh halt ./sw/build/demo/demo
 ```
 
-To view terminal output use screen
+To view terminal output use screen:
 
 ```bash
 # Look in /dev to see available ttyUSB devices
 screen /dev/ttyUSB1 115200
 ```
+
+If you see an immediate `[screen is terminating]`, it may mean that you need super user rights.
+In this case, you may try using `sudo`.
 
 ## Debugging a program
 
