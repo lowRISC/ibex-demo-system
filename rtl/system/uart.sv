@@ -1,3 +1,7 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 module uart #(
   parameter int unsigned ClockFrequency = 50_000_000,
   parameter int unsigned BaudRate = 115_200

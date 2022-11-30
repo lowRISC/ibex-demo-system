@@ -14,10 +14,10 @@ module top_artya7 (
   logic clk_sys, rst_sys_n;
 
 
-  ibex_super_system #(
+  ibex_demo_system #(
     .GpoWidth(16),
     .SRAMInitFile(SRAMInitFile)
-  ) u_ibex_super_system (
+  ) u_ibex_demo_system (
     .clk_sys_i(clk_sys),
     .rst_sys_ni(rst_sys_n),
 

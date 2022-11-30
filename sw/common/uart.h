@@ -1,3 +1,7 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 #ifndef UART_H__
 #define UART_H__
 

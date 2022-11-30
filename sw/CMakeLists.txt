@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(super_system_sw)
+project(demo_system_sw)
 
 set(COMMON_DIR "${CMAKE_CURRENT_LIST_DIR}/common")
 set(LINKER_SCRIPT "${COMMON_DIR}/link.ld")

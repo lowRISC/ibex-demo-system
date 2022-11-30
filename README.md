@@ -1,4 +1,4 @@
-# Ibex Super System
+# Ibex Demo System
 
 This an example RISC-V SoC targeting the Arty-A7 FPGA board. It comprises the
 [lowRISC Ibex core](https://www.github.com/lowrisc/ibex) along with the
@@ -54,26 +54,26 @@ make
 
 Note the FPGA build relies on a fixed path to the initial binary (blank.vmem) so
 if you want to create your build directory elsewhere you need to adjust the path
-in `ibex_super_system.core`
+in `ibex_demo_system.core`
 
 FuseSoC handles the FPGA build. Vivado tools must be setup beforehand. From the
 repository root:
 
 ```
 source /path/to/vivado/settings64.sh
-fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:super_system
+fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:demo_system
 ```
 
 To program the FPGA, either use FuseSoC again
 
 ```
-fusesoc --cores-root=. run --target=synth --run lowrisc:ibex:super_system
+fusesoc --cores-root=. run --target=synth --run lowrisc:ibex:demo_system
 ```
 
 Or use the Vivado GUI
 
 ```
-make -C ./build/lowrisc_ibex_super_system_0/synth-vivado/ build-gui
+make -C ./build/lowrisc_ibex_demo_system_0/synth-vivado/ build-gui
 ```
 
 Inside Vivado you do not have to run the synthesis, the implementation or generate the bitstream.
@@ -81,16 +81,16 @@ Simply click on "Open Hardware Manager", then on "Auto Connect" and finally on "
 
 ## Loading a program
 
-The util/load_super_system.sh script can be used to load and run a program. You
+The util/load_demo_system.sh script can be used to load and run a program. You
 can choose to immediately run it or begin halted, allowing you to attach a
 debugger.
 
 ```bash
 # Run demo
-./util/load_super_system.sh run ./sw/build/demo/demo
+./util/load_demo_system.sh run ./sw/build/demo/demo
 
 # Load demo and start halted awaiting a debugger
-./util/load_super_system.sh halt ./sw/build/demo/demo
+./util/load_demo_system.sh halt ./sw/build/demo/demo
 ```
 
 To view terminal output use screen:

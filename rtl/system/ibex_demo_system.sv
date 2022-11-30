@@ -1,4 +1,8 @@
-module ibex_super_system #(
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+module ibex_demo_system #(
   parameter int GpoWidth = 16,
   parameter     SRAMInitFile = ""
 ) (

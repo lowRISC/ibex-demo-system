@@ -2,12 +2,12 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ibex:super_system"
-description: "Ibex Super System for Arty A7 boards (both, -35 and -100)"
+name: "lowrisc:ibex:demo_system"
+description: "Ibex Demo System for Arty A7 boards (both, -35 and -100)"
 filesets:
   files_rtl_artya7:
     depend:
-      - lowrisc:ibex:super_system_core
+      - lowrisc:ibex:demo_system_core
       - lowrisc:ibex:fpga_xilinx_shared
     files:
       - rtl/fpga/top_artya7.sv
