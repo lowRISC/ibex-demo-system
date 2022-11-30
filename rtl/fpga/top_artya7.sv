@@ -5,7 +5,9 @@
 module top_artya7 (
     input               IO_CLK,
     input               IO_RST_N,
-    output [3:0]        LED,
+    input  [3:0]        SW,
+    input  [3:0]        BTN,
+    output logic [3:0]  LED,
     output [11:0]       RGB_LED,
     output              UART_TX
 );
@@ -13,6 +15,7 @@ module top_artya7 (
 
   logic clk_sys, rst_sys_n;
 
+  logic [3:0] dummy_led;
 
   ibex_demo_system #(
     .GpoWidth(16),
@@ -21,9 +24,16 @@ module top_artya7 (
     .clk_sys_i(clk_sys),
     .rst_sys_ni(rst_sys_n),
 
-    .gp_o({LED, RGB_LED}),
+    .gp_o({dummy_led, RGB_LED}),
     .uart_tx_o(UART_TX)
   );
+
+  always_ff @(posedge clk_sys) begin
+    LED[0] <= BTN[0];
+    LED[1] <= BTN[1];
+    LED[2] <= BTN[2];
+    LED[3] <= BTN[3];
+  end
 
   clkgen_xil7series
     clkgen(
