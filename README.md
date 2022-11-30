@@ -36,6 +36,9 @@ source ./bin/activate
 pip3 install -r python-requirements.txt
 ```
 
+You may need to run the last command twice if you get the following error:
+`ERROR: Failed building wheel for fusesoc`
+
 ## Building
 
 First the software must be built. This is provide an initial binary for the FPGA
