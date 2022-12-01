@@ -31,20 +31,21 @@ module top_artya7 (
     .uart_tx_o(UART_TX)
   );
 
-  pwm #(
-    .CtrSize(8),
-    .IOLength(3)
-  ) u_pwm0 (
-    .clk_sys_i(clk_sys),
-    .rst_sys_ni(rst_sys_n),
-    .pulse_width_i({4'b0000, SW}),
-    .unmodulated_i(3'b111),
-    .modulated_o(RGB_LED[2:0])
-  );
+  for (genvar i = 0; i < 11; i = i+3) begin : gen_pwm
+    pwm #(
+      .CtrSize(8),
+      .IOLength(3)
+    ) u_pwm (
+      .clk_sys_i(clk_sys),
+      .rst_sys_ni(rst_sys_n),
+      .pulse_width_i({4'b0000, SW}),
+      .unmodulated_i(ibex_rgb_led[i+2:i+0]),
+      .modulated_o(RGB_LED[i+2:i+0])
+    );
+  end : gen_pwm
 
   always_ff @(posedge clk_sys) begin
-    LED           <= BTN ^ ibex_led;
-    RGB_LED[11:3] <= ibex_rgb_led[11:3];
+    LED <= BTN ^ ibex_led;
   end
 
   clkgen_xil7series
