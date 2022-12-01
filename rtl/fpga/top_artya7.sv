@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module top_artya7 (
-    input               IO_CLK,
-    input               IO_RST_N,
-    input         [3:0] SW,
-    input         [3:0] BTN,
-    output logic  [3:0] LED,
-    output logic [11:0] RGB_LED,
-    output              UART_TX
+  input               IO_CLK,
+  input               IO_RST_N,
+  input         [3:0] SW,
+  input         [3:0] BTN,
+  output logic  [3:0] LED,
+  output logic [11:0] RGB_LED,
+  output              UART_TX
 );
   parameter SRAMInitFile = "";
 
@@ -22,19 +22,29 @@ module top_artya7 (
     .GpoWidth(16),
     .SRAMInitFile(SRAMInitFile)
   ) u_ibex_demo_system (
+    //input
     .clk_sys_i(clk_sys),
     .rst_sys_ni(rst_sys_n),
 
+    //output
     .gp_o({ibex_led, ibex_rgb_led}),
     .uart_tx_o(UART_TX)
   );
 
+  pwm #(
+    .CtrSize(8),
+    .IOLength(3)
+  ) u_pwm0 (
+    .clk_sys_i(clk_sys),
+    .rst_sys_ni(rst_sys_n),
+    .pulse_width_i({4'b0000, SW}),
+    .unmodulated_i(3'b111),
+    .modulated_o(RGB_LED[2:0])
+  );
+
   always_ff @(posedge clk_sys) begin
-    LED[0] <= BTN[0];
-    LED[1] <= BTN[1] ? 1'b0 : ibex_led[1];
-    LED[2] <= BTN[2] ? 1'b0 : ibex_led[2];
-    LED[3] <=  SW[3];
-    RGB_LED <= ibex_rgb_led;
+    LED           <= BTN ^ ibex_led;
+    RGB_LED[11:3] <= ibex_rgb_led[11:3];
   end
 
   clkgen_xil7series
@@ -198,7 +208,7 @@ module top_artya7 (
 //  );
 //
 //  // decode which device is being addressed
-//  
+//
 //  always @(posedge clk_sys, negedge rst_sys_n)
 //  begin
 //    if (~rst_sys_n)
