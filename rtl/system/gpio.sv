@@ -5,16 +5,16 @@
 module gpio #(
   GpoWidth = 16
 ) (
-  input logic clk_i,
-  input logic rst_ni,
+  input logic                 clk_i,
+  input logic                 rst_ni,
 
-  input  logic        device_req_i,
-  input  logic [31:0] device_addr_i,
-  input  logic        device_we_i,
-  input  logic [3:0]  device_be_i,
-  input  logic [31:0] device_wdata_i,
-  output logic        device_rvalid_o,
-  output logic [31:0] device_rdata_o,
+  input  logic                device_req_i,
+  input  logic [31:0]         device_addr_i,
+  input  logic                device_we_i,
+  input  logic [3:0]          device_be_i,
+  input  logic [31:0]         device_wdata_i,
+  output logic                device_rvalid_o,
+  output logic [31:0]         device_rdata_o,
 
   output logic [GpoWidth-1:0] gp_o
 );

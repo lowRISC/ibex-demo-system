@@ -54,7 +54,6 @@ module dm_top #(
   // Debug CSRs
   dm::hartinfo_t [NrHarts-1:0]      hartinfo;
   logic [NrHarts-1:0]               halted;
-  // logic [NrHarts-1:0]               running;
   logic [NrHarts-1:0]               resumeack;
   logic [NrHarts-1:0]               haltreq;
   logic [NrHarts-1:0]               resumereq;
@@ -110,9 +109,9 @@ module dm_top #(
   assign ndmreset_o = ndmreset;
 
   dm_csrs #(
-    .NrHarts(NrHarts),
-    .BusWidth(BusWidth),
-    .SelectableHarts(SelectableHarts)
+    .NrHarts         ( NrHarts         ),
+    .BusWidth        ( BusWidth        ),
+    .SelectableHarts ( SelectableHarts )
   ) i_dm_csrs (
     .clk_i                   ( clk_i                 ),
     .rst_ni                  ( rst_ni                ),
@@ -161,7 +160,7 @@ module dm_top #(
   );
 
   dm_sba #(
-    .BusWidth(BusWidth)
+    .BusWidth ( BusWidth )
   ) i_dm_sba (
     .clk_i                   ( clk_i                 ),
     .rst_ni                  ( rst_ni                ),
@@ -192,15 +191,15 @@ module dm_top #(
   );
 
   dm_mem #(
-    .NrHarts(NrHarts),
-    .BusWidth(BusWidth),
-    .SelectableHarts(SelectableHarts),
+    .NrHarts         ( NrHarts         ),
+    .BusWidth        ( BusWidth        ),
+    .SelectableHarts ( SelectableHarts ),
     // The debug module provides a simplified ROM for systems that map the debug ROM to offset 0x0
     // on the system bus. In that case, only one scratch register has to be implemented in the core.
     // However, we require that the DM can be placed at arbitrary offsets in the system, which
     // requires the generalized debug ROM implementation and two scratch registers. We hence set
     // this parameter to a non-zero value (inside dm_mem, this just feeds into a comparison with 0).
-    .DmBaseAddress(1)
+    .DmBaseAddress   ( 1               )
   ) i_dm_mem (
     .clk_i                   ( clk_i                 ),
     .rst_ni                  ( rst_ni                ),
@@ -233,14 +232,14 @@ module dm_top #(
 `ifndef DMIDirectTAP
   // JTAG TAP
   dmi_jtag #(
-    .IdcodeValue    (IdcodeValue)
+    .IdcodeValue ( IdcodeValue )
   ) dap (
-    .clk_i            (clk_i),
-    .rst_ni           (rst_ni),
-    .testmode_i       (testmode_i),
+    .clk_i            (clk_i        ),
+    .rst_ni           (rst_ni       ),
+    .testmode_i       (testmode_i   ),
 
-    .dmi_rst_no       (dmi_rst_n),
-    .dmi_req_o        (dmi_req),
+    .dmi_rst_no       (dmi_rst_n    ),
+    .dmi_req_o        (dmi_req      ),
     .dmi_req_valid_o  (dmi_req_valid),
     .dmi_req_ready_i  (dmi_req_ready),
 
