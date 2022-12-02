@@ -2,15 +2,30 @@
 #include "timer.h"
 #include "gpio.h"
 
-// Comment out the line below to disable the RX interrupt and 
+// Comment out the line below to disable the RX interrupt and
 // have the ibex_super_system generate the text written to TX
 #define UART_RX_ENABLED
 
+#ifdef UART_RX_ENABLED
+void test_uart_irq_handler(void) __attribute__((interrupt));
+
+void test_uart_irq_handler(void) {
+  int uart_in_char;
+
+  while ((uart_in_char = uart_in(DEFAULT_UART)) != -1) {
+    uart_out(DEFAULT_UART, uart_in_char);
+    uart_out(DEFAULT_UART, '\r');
+    uart_out(DEFAULT_UART, '\n');
+  }
+}
+#endif
+
 int main(void) {
   #ifdef UART_RX_ENABLED
-  uart_init();
-  uart_enable();    
+  uart_enable_rx_int();
+  install_exception_handler(16, &test_uart_irq_handler);
   #endif
+  // enable global interrupt
   timer_init();
   timer_enable(50000000);
 
