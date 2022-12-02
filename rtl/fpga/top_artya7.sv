@@ -33,11 +33,11 @@ module top_artya7 (
     .clk_sys_i(clk_sys),
     .rst_sys_ni(rst_sys_n),
     .gp_i({SW, BTN}),
+    .uart_rx_i(UART_RX),
 
     //output
     .gp_o({LED, DISP_CTRL}),
     .pwm_o(RGB_LED),
-    .uart_rx_i(UART_RX),
     .uart_tx_o(UART_TX),
 
     .spi_rx_i(SPI_RX),

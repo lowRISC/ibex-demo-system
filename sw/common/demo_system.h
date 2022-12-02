@@ -60,6 +60,21 @@ int puts(const char *str);
  */
 void puthex(uint32_t h);
 
+/**
+ * Install an exception handler by writing a `j` instruction to the handler in
+ * at the appropriate address given the `vector_num`.
+ *
+ * @param vector_num Which IRQ the handler is for, must be less than 32. All
+ * non-interrupt exceptions are handled at vector 0.
+ *
+ * @param handle_fn Function pointer to the handler function. The function is
+ * responsible for interrupt prolog and epilog, such as saving and restoring
+ * register to the stack and executing `mret` at the end.
+ *
+ * @return 0 on success, 1 if `vector_num` out of range, 2 if the address of
+ * `handler_fn` is too far from the exception handler base to use with a `j`
+ * instruction.
+ */
 int install_exception_handler(uint32_t vector_num, void(*handler_fn)(void));
 
 unsigned int get_mepc();
