@@ -5,7 +5,7 @@ This an example RISC-V SoC targeting the Arty-A7 FPGA board. It comprises the
 following features:
 
 * RISC-V debug support (using the [PULP RISC-V Debug Module](https://github.com/pulp-platform/riscv-dbg))
-* A UART (transmit only for now)
+* A UART
 * GPIO (output only for now)
 * Timer
 * SPI
@@ -17,7 +17,7 @@ probe is required.
 ## Software Requirements
 
 * Xilinx Vivado - https://www.xilinx.com/support/download.html
-* rv32imc GCC toolchain - lowRISC provides one: 
+* rv32imc GCC toolchain - lowRISC provides one:
   https://github.com/lowRISC/lowrisc-toolchains/releases
   (For example: `lowrisc-toolchain-rv32imcb-20220524-1.tar.xz`)
 * cmake

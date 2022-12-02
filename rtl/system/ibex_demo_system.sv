@@ -268,7 +268,6 @@ module ibex_demo_system #(
      .irq_software_i(1'b0),
      .irq_timer_i   (timer_irq),
      .irq_external_i(1'b0),
-     .irq_fast_i    (15'b0),
      .irq_fast_i    ({14'b0, uart_irq}),
      .irq_nm_i      (1'b0),
 
