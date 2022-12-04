@@ -7,6 +7,7 @@ module top_artya7 (
     input               IO_RST_N,
     output [3:0]        LED,
     output [11:0]       RGB_LED,
+    input               UART_RX,
     output              UART_TX
 );
   parameter              SRAMInitFile = "";
@@ -22,6 +23,7 @@ module top_artya7 (
     .rst_sys_ni(rst_sys_n),
 
     .gp_o({LED, RGB_LED}),
+    .uart_rx_i(UART_RX),
     .uart_tx_o(UART_TX)
   );
 

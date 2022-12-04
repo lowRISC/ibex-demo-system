@@ -15,6 +15,10 @@ int putchar(int c) {
   return c;
 }
 
+int getchar(void) {
+  return uart_in(DEFAULT_UART);
+}
+
 int puts(const char *str) {
   while (*str) {
     putchar(*str++);
@@ -79,6 +83,22 @@ int install_exception_handler(uint32_t vector_num, void(*handler_fn)(void)) {
   __asm__ volatile("fence.i;");
 
   return 0;
+}
+
+void enable_interrupts(uint32_t enable_mask) {
+  asm volatile("csrs mie, %0\n" : : "r"(enable_mask));
+}
+
+void disable_interrupts(uint32_t disable_mask) {
+  asm volatile("csrc mie, %0\n" : : "r"(disable_mask));
+}
+
+void set_global_interrupt_enable(uint32_t enable) {
+  if (enable) {
+    asm volatile("csrs mstatus, %0\n" : : "r"(1<<3));
+  } else {
+    asm volatile("csrc mstatus, %0\n" : : "r"(1<<3));
+  }
 }
 
 void simple_exc_handler(void) {
