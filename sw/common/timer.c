@@ -51,10 +51,8 @@ void timer_enable(uint64_t time_base) {
   time_increment = time_base;
   // Set timer values
   increment_timecmp(time_base);
-  // enable timer interrupt
-  asm volatile("csrs  mie, %0\n" : : "r"(0x80));
-  // enable global interrupt
-  asm volatile("csrs  mstatus, %0\n" : : "r"(0x8));
+  enable_interrupts(TIMER_IRQ);
+  set_global_interrupt_enable(1);
 }
 
 void timer_disable(void) { asm volatile("csrc  mie, %0\n" : : "r"(0x80)); }
