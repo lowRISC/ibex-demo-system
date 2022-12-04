@@ -7,10 +7,8 @@
 #include "demo_system.h"
 
 void uart_enable_rx_int(void) {
-  // enable uart interrupt
-  asm volatile("csrs  mie, %0\n" : : "r"(1<<16));
-  // enable global interrupt
-  asm volatile("csrs  mstatus, %0\n" : : "r"(1<<3));
+  enable_interrupts(UART_IRQ);
+  set_global_interrupt_enable(1);
 }
 
 int uart_in(uart_t uart) {

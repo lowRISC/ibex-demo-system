@@ -11,12 +11,14 @@
 #include "gpio.h"
 
 #define UART0_BASE 0x80001000
+#define UART_IRQ (1 << 16)
 #define DEFAULT_UART UART_FROM_BASE_ADDR(UART0_BASE)
 
 #define GPIO0_BASE 0x80000000
 #define GPIO0 GPIO_FROM_BASE_ADDR(GPIO0_BASE)
 
 #define TIMER_BASE 0x80002000
+#define TIMER_IRQ (1 << 7)
 
 /**
  * Writes character to default UART. Signature matches c stdlib function
@@ -68,8 +70,33 @@ void puthex(uint32_t h);
  */
 int install_exception_handler(uint32_t vector_num, void(*handler_fn)(void));
 
+/**
+ * Set per-interrupt enables (`mie` CSR)
+ *
+ * @param enable_mask Any set bit is set in `mie`, enabling the interrupt. Bits
+ * not set in `enable_mask` aren't changed.
+ */
+void enable_interrupts(uint32_t enable_mask);
+
+/**
+ * Clear per-interrupt enables (`mie` CSR)
+ *
+ * @param enable_mask Any set bit is cleared in `mie`, disabling the interrupt.
+ * Bits not set in `enable_mask` aren't changed.
+ */
+void disable_interrupts(uint32_t disable_mask);
+
+/**
+ * Set the global interrupt enable (the `mie` field of `mstatus`). This enables
+ * or disable all interrupts at once.
+ *
+ * @param enable Enable interrupts if set, otherwise disabled
+ */
+void set_global_interrupt_enable(uint32_t enable);
+
 unsigned int get_mepc();
 unsigned int get_mcause();
 unsigned int get_mtval();
+
 
 #endif
