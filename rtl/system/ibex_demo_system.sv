@@ -2,8 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// The Ibex demo system, which instantiates and connects the following blocks:
+// - Memory bus.
+// - Ibex top module.
+// - RAM memory to contain code and data.
+// - GPIO driving logic.
+// - UART for serial communication.
+// - Timer.
+// - Debug module.
 module ibex_demo_system #(
-  parameter int GpoWidth = 16,
+  parameter int GpoWidth     = 16,
   parameter     SRAMInitFile = ""
 ) (
   input logic                 clk_sys_i,
@@ -28,9 +36,9 @@ module ibex_demo_system #(
   parameter logic [31:0] UART_START   = 32'h80001000;
   parameter logic [31:0] UART_MASK    = ~(UART_SIZE-1);
 
-  parameter logic [31:0] TIMER_SIZE    = 4 * 1024; // 4kB
-  parameter logic [31:0] TIMER_START   = 32'h80002000;
-  parameter logic [31:0] TIMER_MASK    = ~(TIMER_SIZE-1);
+  parameter logic [31:0] TIMER_SIZE   = 4 * 1024; // 4kB
+  parameter logic [31:0] TIMER_START  = 32'h80002000;
+  parameter logic [31:0] TIMER_MASK   = ~(TIMER_SIZE-1);
 
   // debug functionality is optional
   localparam bit DBG = 1;
@@ -57,15 +65,15 @@ module ibex_demo_system #(
   logic timer_irq;
 
   // host and device signals
-  logic           host_req    [NrHosts];
-  logic           host_gnt    [NrHosts];
-  logic [31:0]    host_addr   [NrHosts];
-  logic           host_we     [NrHosts];
-  logic [ 3:0]    host_be     [NrHosts];
-  logic [31:0]    host_wdata  [NrHosts];
-  logic           host_rvalid [NrHosts];
-  logic [31:0]    host_rdata  [NrHosts];
-  logic           host_err    [NrHosts];
+  logic           host_req      [NrHosts];
+  logic           host_gnt      [NrHosts];
+  logic [31:0]    host_addr     [NrHosts];
+  logic           host_we       [NrHosts];
+  logic [ 3:0]    host_be       [NrHosts];
+  logic [31:0]    host_wdata    [NrHosts];
+  logic           host_rvalid   [NrHosts];
+  logic [31:0]    host_rdata    [NrHosts];
+  logic           host_err      [NrHosts];
 
   // devices (slaves)
   logic           device_req    [NrDevices];
@@ -97,9 +105,9 @@ module ibex_demo_system #(
   logic        dbg_slave_rvalid;
   logic [31:0] dbg_slave_rdata;
 
-  logic rst_core_n;
-  logic ndmreset_req;
-  logic dm_debug_req;
+  logic        rst_core_n;
+  logic        ndmreset_req;
+  logic        dm_debug_req;
 
 
   // Device address mapping
@@ -118,7 +126,7 @@ module ibex_demo_system #(
   if (DBG) begin : g_dbg_device_cfg
     assign cfg_device_addr_base[DbgDev] = DEBUG_START;
     assign cfg_device_addr_mask[DbgDev] = DEBUG_MASK;
-    assign device_err[DbgDev] = 1'b0;
+    assign device_err[DbgDev]           = 1'b0;
   end
 
   // Tie-off unused error signals
@@ -181,11 +189,11 @@ module ibex_demo_system #(
   assign rst_core_n = rst_sys_ni & ~ndmreset_req;
 
   ibex_top #(
-     .RegFile(ibex_pkg::RegFileFPGA),
-     .DbgTriggerEn(DbgTriggerEn),
-     .DbgHwBreakNum(DbgHwBreakNum),
-     .DmHaltAddr(DEBUG_START + dm::HaltAddress),
-     .DmExceptionAddr(DEBUG_START + dm::ExceptionAddress)
+     .RegFile         ( ibex_pkg::RegFileFPGA              ),
+     .DbgTriggerEn    ( DbgTriggerEn                       ),
+     .DbgHwBreakNum   ( DbgHwBreakNum                      ),
+     .DmHaltAddr      ( DEBUG_START + dm::HaltAddress      ),
+     .DmExceptionAddr ( DEBUG_START + dm::ExceptionAddress )
   ) u_top (
      .clk_i                 (clk_sys_i),
      .rst_ni                (rst_core_n),
@@ -232,8 +240,8 @@ module ibex_demo_system #(
   );
 
   ram_2p #(
-      .Depth(MEM_SIZE / 4),
-      .MemInitFile(SRAMInitFile)
+      .Depth       ( MEM_SIZE / 4 ),
+      .MemInitFile ( SRAMInitFile )
   ) u_ram (
     .clk_i       (clk_sys_i),
     .rst_ni      (rst_sys_ni),
@@ -256,10 +264,10 @@ module ibex_demo_system #(
   );
 
   gpio #(
-    .GpoWidth(GpoWidth)
+    .GpoWidth ( GpoWidth )
   ) u_gpio (
-    .clk_i (clk_sys_i),
-    .rst_ni(rst_sys_ni),
+    .clk_i          (clk_sys_i),
+    .rst_ni         (rst_sys_ni),
 
     .device_req_i   (device_req[Gpio]),
     .device_addr_i  (device_addr[Gpio]),
@@ -273,10 +281,10 @@ module ibex_demo_system #(
   );
 
   uart #(
-    .ClockFrequency(50_000_000)
+    .ClockFrequency ( 50_000_000 )
   ) u_uart (
-    .clk_i (clk_sys_i),
-    .rst_ni(rst_sys_ni),
+    .clk_i          (clk_sys_i),
+    .rst_ni         (rst_sys_ni),
 
     .device_req_i   (device_req[Uart]),
     .device_addr_i  (device_addr[Uart]),
@@ -290,11 +298,11 @@ module ibex_demo_system #(
   );
 
   timer #(
-    .DataWidth   (32),
-    .AddressWidth(32)
+    .DataWidth    ( 32 ),
+    .AddressWidth ( 32 )
   ) u_timer (
-    .clk_i (clk_sys_i),
-    .rst_ni(rst_sys_ni),
+    .clk_i         (clk_sys_i),
+    .rst_ni        (rst_sys_ni),
 
     .timer_req_i   (device_req[Timer]),
     .timer_we_i    (device_we[Timer]),
@@ -325,15 +333,15 @@ module ibex_demo_system #(
 
   if (DBG) begin : g_dm_top
     dm_top #(
-      .NrHarts       (1)
+      .NrHarts ( 1 )
     ) u_dm_top (
-      .clk_i         (clk_sys_i),
-      .rst_ni        (rst_sys_ni),
-      .testmode_i    (1'b0),
-      .ndmreset_o    (ndmreset_req),
-      .dmactive_o    (),
-      .debug_req_o   (dm_debug_req),
-      .unavailable_i (1'b0),
+      .clk_i             (clk_sys_i),
+      .rst_ni            (rst_sys_ni),
+      .testmode_i        (1'b0),
+      .ndmreset_o        (ndmreset_req),
+      .dmactive_o        (),
+      .debug_req_o       (dm_debug_req),
+      .unavailable_i     (1'b0),
 
       // bus device with debug memory (for execution-based debug)
       .slave_req_i       (dbg_slave_req),
