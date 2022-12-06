@@ -1,1 +1,1 @@
-add_prog(demo main.c)
+add_subdirectory(hello_world)
