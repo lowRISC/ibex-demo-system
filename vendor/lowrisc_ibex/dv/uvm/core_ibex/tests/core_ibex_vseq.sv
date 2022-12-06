@@ -8,8 +8,8 @@
 
 class core_ibex_vseq extends uvm_sequence;
 
-  ibex_mem_intf_response_seq                       instr_intf_seq;
-  ibex_mem_intf_response_seq                       data_intf_seq;
+  ibex_mem_intf_response_seq                    instr_intf_seq;
+  ibex_mem_intf_response_seq                    data_intf_seq;
   mem_model_pkg::mem_model                      mem;
   irq_raise_seq                                 irq_raise_seq_h;
   irq_raise_single_seq                          irq_raise_single_seq_h;
@@ -17,17 +17,40 @@ class core_ibex_vseq extends uvm_sequence;
   irq_drop_seq                                  irq_drop_seq_h;
   debug_seq                                     debug_seq_stress_h;
   debug_seq                                     debug_seq_single_h;
+  fetch_enable_seq                              fetch_enable_seq_h;
   core_ibex_env_cfg                             cfg;
   bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0]  data;
 
   `uvm_object_utils(core_ibex_vseq)
   `uvm_declare_p_sequencer(core_ibex_vseqr)
-  `uvm_object_new
 
-  virtual task body();
+  function new (string name = "");
+    super.new(name);
     instr_intf_seq = ibex_mem_intf_response_seq::type_id::create("instr_intf_seq");
     data_intf_seq  = ibex_mem_intf_response_seq::type_id::create("data_intf_seq");
     data_intf_seq.is_dmem_seq = 1'b1;
+  endfunction
+
+  // Start the memory-model sequences, which run forever() loops to respond to bus events
+  virtual task pre_body();
+    instr_intf_seq.m_mem = mem;
+    data_intf_seq.m_mem  = mem;
+    fork
+      instr_intf_seq.start(p_sequencer.instr_if_seqr);
+      data_intf_seq.start(p_sequencer.data_if_seqr);
+
+      if (!cfg.disable_fetch_enable_seq) begin
+        fetch_enable_seq_h = fetch_enable_seq::type_id::create("fetch_enable_seq_h");
+        fetch_enable_seq_h.iteration_modes = InfiniteRuns;
+        fetch_enable_seq_h.stimulus_delay_cycles_min = 1000;
+        fetch_enable_seq_h.stimulus_delay_cycles_max = 2000;
+
+        fetch_enable_seq_h.start(null);
+      end
+    join_none
+  endtask // pre_body
+
+  virtual task body();
     if (cfg.enable_irq_single_seq) begin
       irq_raise_single_seq_h = irq_raise_single_seq::type_id::create("irq_single_seq_h");
       irq_raise_single_seq_h.num_of_iterations = 1;
@@ -67,12 +90,6 @@ class core_ibex_vseq extends uvm_sequence;
       debug_seq_single_h.interval.rand_mode(0);
       debug_seq_single_h.interval = 0;
     end
-    instr_intf_seq.m_mem = mem;
-    data_intf_seq.m_mem  = mem;
-    fork
-      instr_intf_seq.start(p_sequencer.instr_if_seqr);
-      data_intf_seq.start(p_sequencer.data_if_seqr);
-    join_none
   endtask
 
   virtual task stop();
@@ -88,6 +105,22 @@ class core_ibex_vseq extends uvm_sequence;
     if (cfg.enable_debug_seq) begin
       if (debug_seq_stress_h.is_started) debug_seq_stress_h.stop();
       if (debug_seq_single_h.is_started) debug_seq_single_h.stop();
+    end
+  endtask
+
+  virtual task wait_for_stop();
+    if (cfg.enable_irq_single_seq) begin
+      if (irq_raise_single_seq_h.is_started) irq_raise_single_seq_h.wait_for_stop();
+    end
+    if (cfg.enable_irq_multiple_seq) begin
+      if (irq_raise_seq_h.is_started) irq_raise_seq_h.wait_for_stop();
+    end
+    if (cfg.enable_irq_single_seq || cfg.enable_irq_multiple_seq) begin
+      if (irq_drop_seq_h.is_started)   irq_drop_seq_h.wait_for_stop();
+    end
+    if (cfg.enable_debug_seq) begin
+      if (debug_seq_stress_h.is_started) debug_seq_stress_h.wait_for_stop();
+      if (debug_seq_single_h.is_started) debug_seq_single_h.wait_for_stop();
     end
   endtask
 

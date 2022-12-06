@@ -9,10 +9,10 @@ import collections
 import fnmatch
 import logging as log
 import os
-import shutil
 import subprocess
 import sys
 from collections import OrderedDict
+from pathlib import Path
 
 from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
 from FlowCfg import FlowCfg
@@ -27,31 +27,11 @@ _MAX_UNIQUE_TESTS = 5
 _MAX_TEST_RESEEDS = 2
 
 
-def pick_wave_format(fmts):
-    '''Pick a supported wave format from a list.
-
-    fmts is a list of formats that the chosen tool supports. Return the first
-    that we think is possible (e.g. not fsdb if Verdi is not installed).
-
-    '''
-    assert fmts
-    fmt = fmts[0]
-    # TODO: This will not work if the EDA tools are expected to be launched
-    # in a separate sandboxed environment such as Docker /  LSF. In such case,
-    # Verdi may be installed in that environment, but it may not be visible in
-    # the current repo environment where dvsim is invoked.
-    if fmt == 'fsdb' and not shutil.which('verdi'):
-        log.log(VERBOSE, "Skipping fsdb since verdi is not found in $PATH")
-        return pick_wave_format(fmts[1:])
-
-    return fmt
-
-
 class SimCfg(FlowCfg):
     """Simulation configuration object
 
-    A simulation configuration class holds key information required for building a DV
-    regression framework.
+    A simulation configuration class holds key information required for building
+    a DV regression framework.
     """
 
     flow = 'sim'
@@ -59,7 +39,8 @@ class SimCfg(FlowCfg):
     # TODO: Find a way to set these in sim cfg instead
     ignored_wildcards = [
         "build_mode", "index", "test", "seed", "uvm_test", "uvm_test_seq",
-        "cov_db_dirs", "sw_images", "sw_build_device"
+        "cov_db_dirs", "sw_images", "sw_build_device", "sw_build_cmd",
+        "sw_build_opts"
     ]
 
     def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
@@ -73,6 +54,7 @@ class SimCfg(FlowCfg):
         self.en_run_modes = []
         self.en_run_modes.extend(args.run_modes)
         self.build_unique = args.build_unique
+        self.build_seed = args.build_seed
         self.build_only = args.build_only
         self.run_only = args.run_only
         self.reseed_ovrd = args.reseed
@@ -96,12 +78,16 @@ class SimCfg(FlowCfg):
             self.en_build_modes.append("gui")
         if args.waves is not None:
             self.en_build_modes.append("waves")
+        else:
+            self.en_build_modes.append("waves_off")
         if self.cov is True:
             self.en_build_modes.append("cov")
         if args.profile is not None:
             self.en_build_modes.append("profile")
         if self.xprop_off is not True:
             self.en_build_modes.append("xprop")
+        if self.build_seed:
+            self.en_build_modes.append("build_seed")
 
         # Options built from cfg_file files
         self.project = ""
@@ -113,8 +99,8 @@ class SimCfg(FlowCfg):
         self.pre_run_cmds = []
         self.post_run_cmds = []
         self.run_dir = ""
-        self.sw_build_dir = ""
         self.sw_images = []
+        self.sw_build_opts = []
         self.pass_patterns = []
         self.fail_patterns = []
         self.name = ""
@@ -198,6 +184,14 @@ class SimCfg(FlowCfg):
             if not hasattr(self, "build_mode"):
                 self.build_mode = 'default'
 
+            # Set the primary build mode. The coverage associated to this build
+            # is the main coverage. Some tools need this information. This is
+            # of significance only when there are multiple builds. If there is
+            # only one build, and its not the primary_build_mode, then we
+            # update the primary_build_mode to match what is built.
+            if not hasattr(self, "primary_build_mode"):
+                self.primary_build_mode = self.build_mode
+
             # Create objects from raw dicts - build_modes, sim_modes, run_modes,
             # tests and regressions, only if not a primary cfg obj
             self._create_objects()
@@ -210,26 +204,12 @@ class SimCfg(FlowCfg):
         since it is used as a substitution variable in the parsed HJson dict.
         If waves are not enabled, or if this is a primary cfg, then return
         'none'. 'tool', which must be set at this point, supports a limited
-        list of wave formats (supplied with 'supported_wave_formats' key). If
-        waves is set to 'default', then pick the first item on that list; else
-        pick the desired format.
+        list of wave formats (supplied with 'supported_wave_formats' key).
         '''
         if self.waves == 'none' or self.is_primary_cfg:
             return 'none'
 
         assert self.tool is not None
-
-        # If the user hasn't specified a wave format (No argument supplied
-        # to --waves), we need to decide on a format for them. The supported
-        # list of wave formats is set in the tool's HJson configuration using
-        # the `supported_wave_formats` key. If that list is not set, we use
-        # 'vpd' by default and hope for the best. It that list if set, then we
-        # pick the first available format for which the waveform viewer exists.
-        if self.waves == 'default':
-            if self.supported_wave_formats:
-                return pick_wave_format(self.supported_wave_formats)
-            else:
-                return 'vpd'
 
         # If the user has specified their preferred wave format, use it. As
         # a sanity check, error out if the chosen tool doesn't support the
@@ -265,6 +245,7 @@ class SimCfg(FlowCfg):
                 self.post_run_cmds.extend(build_mode_obj.post_run_cmds)
                 self.run_opts.extend(build_mode_obj.run_opts)
                 self.sw_images.extend(build_mode_obj.sw_images)
+                self.sw_build_opts.extend(build_mode_obj.sw_build_opts)
             else:
                 log.error(
                     "Mode \"%s\" enabled on the the command line is not defined",
@@ -279,6 +260,7 @@ class SimCfg(FlowCfg):
                 self.post_run_cmds.extend(run_mode_obj.post_run_cmds)
                 self.run_opts.extend(run_mode_obj.run_opts)
                 self.sw_images.extend(run_mode_obj.sw_images)
+                self.sw_build_opts.extend(run_mode_obj.sw_build_opts)
             else:
                 log.error(
                     "Mode \"%s\" enabled on the the command line is not defined",
@@ -291,9 +273,10 @@ class SimCfg(FlowCfg):
         # Regressions
         # Parse testplan if provided.
         if self.testplan != "":
-            self.testplan = Testplan(self.testplan, repo_top=self.proj_root)
-            # Extract tests in each milestone and add them as regression target.
-            self.regressions.extend(self.testplan.get_milestone_regressions())
+            self.testplan = Testplan(self.testplan,
+                                     repo_top=Path(self.proj_root))
+            # Extract tests in each stage and add them as regression target.
+            self.regressions.extend(self.testplan.get_stage_regressions())
         else:
             # Create a dummy testplan with no entries.
             self.testplan = Testplan(None, name=self.name)
@@ -319,6 +302,7 @@ class SimCfg(FlowCfg):
         style patterns. This method finds regressions and tests that match
         these patterns.
         '''
+
         def _match_items(items: list, patterns: list):
             hits = []
             matched = set()
@@ -363,12 +347,12 @@ class SimCfg(FlowCfg):
             log.warning(f"Item {item} did not match any regressions or "
                         f"tests in {self.flow_cfg_file}.")
 
-
         # Merge the global build and run opts
         Tests.merge_global_opts(self.run_list, self.pre_build_cmds,
                                 self.post_build_cmds, self.build_opts,
                                 self.pre_run_cmds, self.post_run_cmds,
-                                self.run_opts, self.sw_images)
+                                self.run_opts, self.sw_images,
+                                self.sw_build_opts)
 
         # Process reseed override and create the build_list
         build_list_names = []
@@ -443,6 +427,11 @@ class SimCfg(FlowCfg):
             is_unique = True
             for build in self.builds:
                 if build.is_equivalent_job(new_build):
+                    # Discard `new_build` since it is equivalent to build. If
+                    # `new_build` is the same as `primary_build_mode`, update
+                    # `primary_build_mode` to match `build`.
+                    if new_build.name == self.primary_build_mode:
+                        self.primary_build_mode = build.name
                     new_build = build
                     is_unique = False
                     break
@@ -450,6 +439,18 @@ class SimCfg(FlowCfg):
             if is_unique:
                 self.builds.append(new_build)
             build_map[build_mode_obj] = new_build
+
+        # If there is only one build, set primary_build_mode to it.
+        if len(self.builds) == 1:
+            self.primary_build_mode = self.builds[0].name
+
+        # Check self.primary_build_mode is set correctly.
+        build_mode_names = set(b.name for b in self.builds)
+        if self.primary_build_mode not in build_mode_names:
+            log.error(f"\"primary_build_mode: {self.primary_build_mode}\" "
+                      f"in {self.name} cfg is invalid. Please pick from "
+                      f"{build_mode_names}.")
+            sys.exit(1)
 
         # Update all tests to use the updated (uniquified) build modes.
         for test in self.run_list:
@@ -530,6 +531,7 @@ class SimCfg(FlowCfg):
         is enabled, then the summary coverage report is also generated. The final
         result is in markdown format.
         '''
+
         def indent_by(level):
             return " " * (4 * level)
 
@@ -615,6 +617,11 @@ class SimCfg(FlowCfg):
 
         results_str += f"### Simulator: {self.tool.upper()}\n"
 
+        # Print the build seed used for clarity.
+        if self.build_seed and not self.run_only:
+            results_str += ("### Build randomization enabled with "
+                            f"--build-seed {self.build_seed}\n")
+
         if not results.table:
             results_str += "No results to display.\n"
 
@@ -650,10 +657,6 @@ class SimCfg(FlowCfg):
                 else:
                     self.results_summary["Coverage"] = "--"
 
-            # append link of detail result to block name
-            self.results_summary["Name"] = self._get_results_page_link(
-                self.results_summary["Name"])
-
         if results.buckets:
             self.errors_seen = True
             results_str += "\n".join(create_bucket_report(results.buckets))
@@ -679,14 +682,20 @@ class SimCfg(FlowCfg):
         table = []
         header = []
         for cfg in self.cfgs:
-            row = cfg.results_summary.values()
+            row = cfg.results_summary
             if row:
+                # convert name entry to relative link
+                row = cfg.results_summary
+                row["Name"] = cfg._get_results_page_link(
+                    self.results_dir,
+                    row["Name"])
+
                 # If header is set, ensure its the same for all cfgs.
                 if header:
                     assert header == cfg.results_summary.keys()
                 else:
                     header = cfg.results_summary.keys()
-                table.append(row)
+                table.append(row.values())
 
         if table:
             assert header
@@ -710,7 +719,7 @@ class SimCfg(FlowCfg):
 
         if self.cov_report_deploy is not None:
             results_server_dir_url = self.results_server_dir.replace(
-                self.results_server_prefix, self.results_server_url_prefix)
+                self.results_server_prefix, "https://")
 
             log.info("Publishing coverage results to %s",
                      results_server_dir_url)

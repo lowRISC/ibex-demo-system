@@ -2,22 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-GEN_DIR             := $(realpath ../../../vendor/google_riscv-dv)
-TOOLCHAIN           := ${RISCV_TOOLCHAIN}
-export IBEX_ROOT	  := $(realpath ../../../)
-
-ifeq ($(COSIM),1)
-ifndef IBEX_COSIM_ISS_ROOT
-$(error IBEX_COSIM_ISS_ROOT must be set to the root of a suitable spike build if COSIM=1)
-else
-# Spike builds a libsoftfloat.so shared library that the simulator binary needs.
-# Set LD_LIBRARY_PATH so it can be found.
-export LD_LIBRARY_PATH := $(IBEX_COSIM_ISS_ROOT)/lib/:${LD_LIBRARY_PATH}
-endif
-endif
+.SUFFIXES:
 
 # Explicitly ask for the bash shell
-SHELL                := bash
+SHELL := bash
+
+###############################################################################
+# CONFIGURATION KNOBS
 
 # Seed for instruction generator and RTL simulation
 #
@@ -28,328 +19,186 @@ SHELL                := bash
 # start passing again without fixing the bug).
 SEED                := $(shell echo $$RANDOM)
 
-# This is the top-level output directory. Everything we generate goes in
-# here. Most generated stuff actually goes in $(OUT)/seed-$(SEED), which allows
-# us to run multiple times without deleting existing results.
-OUT                 := out
-OUT-SEED            := $(OUT)/seed-$(SEED)
-
-# Run time options for the instruction generator
-GEN_OPTS            :=
-# Compile time options for ibex RTL simulation
-COMPILE_OPTS        +=
-# Run time options for ibex RTL simulation
-SIM_OPTS            :=
 # Enable waveform dumping
-WAVES               := 1
+WAVES               := 0
 # Enable coverage dump
 COV                 := 0
-# RTL simulator
-SIMULATOR           := vcs
+# RTL simulator (xlm, vcs, questa, dsim, )
+SIMULATOR           := xlm
 # ISS (spike, ovpsim)
 ISS                 := spike
-# ISS runtime options
-ISS_OPTS            :=
-# ISA
-ISA                 := rv32imcb
-ISA_ISS             := rv32imc_Zba_Zbb_Zbc_Zbs_Xbitmanip
 # Test name (default: full regression)
 TEST                := all
 TESTLIST            := riscv_dv_extension/testlist.yaml
 # Verbose logging
-VERBOSE             :=
-# Number of iterations for each test, assign a non-zero value to override the
+VERBOSE             := 0
+# Number of iterations for each test, assign a non-empty value to override the
 # iteration count in the test list
-ITERATIONS          := 0
-# LSF CMD
-LSF_CMD             :=
-# Generator timeout limit in seconds
-TIMEOUT             := 1800
-# Privileged CSR YAML description file
-CSR_FILE            := riscv_dv_extension/csr_description.yaml
-# Pass/fail signature address at the end of test
+ITERATIONS          :=
+# Pass/fail signature address at the end of test (see riscv_dv handshake documentation)
 SIGNATURE_ADDR      := 8ffffffc
 
 ### Ibex top level parameters ###
-### Required by RISCV-DV, some ISS, and RTL ###
-# PMP Regions
-PMP_REGIONS         := 16
-# PMP Granularity
-PMP_GRANULARITY     := 0
-
 IBEX_CONFIG         := opentitan
 
-# TODO(udinator) - might need options for SAIL/Whisper/Spike
-ifeq (${ISS},ovpsim)
-	ISS_OPTS += --override riscvOVPsim/cpu/PMP_registers=${PMP_REGIONS}
-	ISS_OPTS += --override riscvOVPsim/cpu/PMP_grain=${PMP_GRANULARITY}
-endif
+# Path to DUT used for coverage reports
+DUT_COV_RTL_PATH    := "ibex_top"
 
-# A version of $(OUT) with a trailing '/'. The point is that this will
-# never match the name of a phony targets like "sim" (which causes
-# strange rebuilds otherwise). The call to $(dir ) avoids adding
-# another trailing slash if $(OUT) had one already.
-OUT-DIR := $(dir $(OUT)/)
+###############################################################################
 
-# This expands to '@' if VERBOSE is 0 or not set, and to the empty
-# string otherwise. Prefix commands with it in order that they only
-# get printed when VERBOSE.
-verb = $(if $(filter-out 0,$(VERBOSE)),,@)
+all: collect_results $(if $(filter 1,$(COV)),merge_cov,)
 
-SHELL=/bin/bash
+# Build Stages
+.PHONY: core_config
+.PHONY: instr_gen_build
+.PHONY: instr_gen_run
+.PHONY: instr_gen_compile
+.PHONY: rtl_tb_compile
+.PHONY: rtl_sim_run
+.PHONY: check_logs
+.PHONY: riscv_dv_fcov
+.PHONY: merge_cov
+.PHONY: collect_results
 
-export PRJ_DIR:= $(realpath ../../..)
+###############################################################################
 
-all: sim
-
-instr: iss_sim
-
-sim: post_compare $(if $(filter 1,$(COV)),gen_cov,)
-
-.PHONY: clean
-clean:
-	rm -rf $(OUT-DIR)
-
-# Common options for all targets
-COMMON_OPTS := $(if $(call equal,$(VERBOSE),1),--verbose,)
-
-# Options for all targets that depend on the tests we're running.
-TEST_OPTS := $(COMMON_OPTS) \
-             --start_seed=${SEED} \
-             --test="${TEST}" \
-             --testlist=${TESTLIST} \
-             --iterations=${ITERATIONS}
-
-# Options used for privileged CSR test generation
-CSR_OPTS=--csr_yaml=${CSR_FILE} \
-         --isa="${ISA}" \
-         --end_signature_addr=${SIGNATURE_ADDR}
-
-RISCV_DV_OPTS=--custom_target=riscv_dv_extension \
-              --mabi=ilp32 \
-
-# To avoid cluttering the output directory with stamp files, we place them in
-# $(metadata).
-metadata := $(OUT-SEED)/.metadata
+# This is the top-level output directory. Everything we generate goes in
+# here.
+OUT := out
+# Derived directories from $(OUT), used for stuff that's built once or
+# stuff that gets run for each seed, respectively. Using OUT-DIR on
+# the way avoids ugly double slashes if $(OUT) happens to end in a /.
+OUT-DIR   := $(dir $(OUT)/)
+BUILD-DIR := $(OUT-DIR)build
+RUN-DIR   := $(OUT-DIR)run
+TESTS-DIR := $(RUN-DIR)/tests
+METADATA-DIR = $(OUT-DIR)metadata
 
 # This is a list of directories that are automatically generated by some
-# targets. To ensure the directory has been built, add a order-only dependency
+# targets. To ensure the directory has been built, add an order-only dependency
 # (with the pipe symbol before it) on the directory name and add the directory
 # to this list.
-gen-dirs := $(OUT-DIR) $(OUT-SEED) $(metadata) $(OUT-DIR)rtl_sim
-
+gen-dirs := $(BUILD-DIR)
 $(gen-dirs): %:
 	mkdir -p $@
 
-# sim-cfg-mk is a makefile fragment that sets-up anything simulator specific, it
-# is generated by sim_makefrag_gen.py
-sim-cfg-mk = $(OUT-DIR).sim-cfg.mk
+###############################################################################
+# Environment variables
 
-# The include of $(sim-cfg-mk) below tells Make that it should ensure the file
-# exists. This rule tells Make how to build it. We also want to ensure it's
-# built on every run. Declaring the rule to be .PHONY doesn't work because it
-# causes Make to no longer think the rule actually generates the file. If you
-# do that, the file gets re-built, but Make doesn't read the new contents. So
-# instead we depend on FORCE (a phony target). This ensures a rebuild, but also
-# causes an infinite recursion: when we re-read this file to include the new
-# contents of $(sim-cfg-mk), we run the rule again. To avoid that, we check for
-# MAKE_RESTARTS, which is defined on re-runs. Phew!
-ifndef MAKE_RESTARTS
-$(sim-cfg-mk): FORCE | $(OUT-DIR)
-	@./sim_makefrag_gen.py $(SIMULATOR) $(IBEX_CONFIG) $(PRJ_DIR) $@
-endif
+GEN_DIR             := $(realpath ../../../vendor/google_riscv-dv)
+TOOLCHAIN           := ${RISCV_TOOLCHAIN}
+EXT_DIR             := riscv_dv_extension
 
-include $(sim-cfg-mk)
+export IBEX_ROOT      := $(realpath ../../../)
+export PRJ_DIR        := $(realpath ../../..)
+export LOWRISC_IP_DIR := $(realpath ${PRJ_DIR}/vendor/lowrisc_ip)
 
-.PHONY: test-cfg
-test-cfg:
-	@echo "COMPILE_OPTS" $(COMPILE_OPTS)
-	@echo "SIM_OPTS" $(SIM_OPTS)
+# Needed for tcl files that are used with Cadence tools.
+export dv_root := $(realpath ../../../vendor/lowrisc_ip/dv)
+export DUT_TOP := ibex_top
+
+# Setup the necessary paths for all python scripts to find all other relevant modules.
+PYTHONPATH := $(shell python3 -c 'from scripts.setup_imports import get_pythonpath; get_pythonpath()')
+# export PYTHONPATH := $(PYTHONPATH)  ## Why doesn't this work?
 
 ###############################################################################
-# Utility functions.
-#
-# If VS is a list of variable names, P is a path and X is a string, then $(call
-# dump-vars,P,X,VS) will expand to a list of 'file' commands that write each
-# variable to P in Makefile syntax, but with "last-X-" prepended. At the start
-# of the file, we also define last-X-vars-loaded to 1. You can use this to
-# check whether there was a dump file at all.
-#
-# Note that this doesn't work by expanding to a command. Instead, *evaluating*
-# dump-vars causes the variables to be dumped.
-dump-var  = $(file >>$(1),last-$(2)-$(3) := $($(3)))
-dump-vars = $(file >$(1),last-$(2)-vars-loaded := .) \
-            $(foreach name,$(3),$(call dump-var,$(1),$(2),$(name)))
 
-# equal checks whether two strings are equal, evaluating to '.' if they are and
-# '' otherwise.
-both-empty = $(if $(1),,$(if $(2),,.))
-find-find = $(if $(and $(findstring $(1),$(2)),$(findstring $(2),$(1))),.,)
-equal = $(or $(call both-empty,$(1),$(2)),$(call find-find,$(1),$(2)))
-
-# var-differs is used to check whether a variable has changed since it was
-# dumped. If it has changed, the function evaluates to '.' (with some
-# whitespace) and prints a message to the console; if not, it evaluates to ''.
-#
-# Call it as $(call var-differs,X,TGT,V).
-var-differs = \
-  $(if $(call equal,$(strip $($(3))),$(strip $(last-$(1)-$(3)))),,\
-       .$(info Repeating $(2) because variable $(3) has changed value.))
-
-# vars-differ is used to check whether several variables have the same value as
-# they had when they were dumped. If we haven't loaded the dumpfile, it
-# silently evaluates to '!'. Otherwise, if all the variables match, it
-# evaluates to '.'. If not, it evaluates to '.' and prints some messages to the
-# console explaining why a rebuild is happening.
-#
-# Call it as $(call vars-differ,X,TGT,VS).
-vars-differ-lst = $(foreach v,$(3),$(call var-differs,$(1),$(2),$(v)))
-vars-differ-sp = \
-  $(if $(last-$(1)-vars-loaded),\
-       $(if $(strip $(call vars-differ-lst,$(1),$(2),$(3))),.,),\
-       !)
-vars-differ = $(strip $(call vars-differ-sp,$(1),$(2),$(3)))
-
-# A phony target which can be used to force recompilation.
-.PHONY: FORCE
-FORCE:
-
-# vars-prereq is empty if every variable in VS matches the last run (loaded
-# with tag X), otherwise it is set to FORCE (which will force a recompile and
-# might print a message to the console explaining why we're rebuilding TGT).
-#
-# Call it as $(call vars-prereq,X,TGT,VS)
-vars-prereq = $(if $(call vars-differ,$(1),$(2),$(3)),FORCE,)
+.PHONY: clean
+clean:
+	rm -f $(EXT_DIR)/riscv_core_setting.sv
+	rm -rf $(OUT-DIR)
 
 ###############################################################################
-# Get a list of tests and seeds
-#
-# Run list_tests.py to list the things we need to run in the format
-# TESTNAME.SEED and store it in a variable.
-tests-and-seeds := \
-  $(shell ./list_tests.py \
-	--start_seed $(SEED) \
-	--test "$(TEST)" \
-	--iterations $(ITERATIONS) \
-	--ibex-config $(IBEX_CONFIG))
+# Setup the metadata for the regression, which can then be accessed by
+# all python scripts and testcases
+# It needs to run before anything else.
+new-metadata-file := $(shell env PYTHONPATH=$(PYTHONPATH) python3 ./scripts/metadata.py \
+  --op "create_metadata" \
+  --dir-metadata $(METADATA-DIR) \
+  --dir-out $(OUT-DIR) \
+  --args-list "\
+  SEED=$(SEED) WAVES=$(WAVES) COV=$(COV) SIMULATOR=$(SIMULATOR) \
+  ISS=$(ISS) TEST=$(TEST) VERBOSE=$(VERBOSE) ITERATIONS=$(ITERATIONS) \
+  SIGNATURE_ADDR=$(SIGNATURE_ADDR) IBEX_CONFIG=$(IBEX_CONFIG) \
+	DUT_COV_RTL_PATH=$(DUT_COV_RTL_PATH)")
+
+### TODO ##
+# Evaluate input variables to more-cleverly schedule partial-rebuilds
+# This allows us to use Make to handle build scheduling and to calculate rebuilds,
+# while keeping all the structured-data in the land of Python.
+define get-metadata-variable
+    env PYTHONPATH=$(PYTHONPATH) python3 ./scripts/metadata.py \
+    --op "print_field" \
+    --dir-metadata $(METADATA-DIR) \
+    --field $(1)
+endef
+define get-meta
+    $(shell $(call get-metadata-variable, $(1)))
+endef
+# This is how you can get variables from the python metadata easily...
+testvar := $(call get-meta,"ibex_root")
+### TODO ###
 
 ###############################################################################
-# Generate random instructions
-#
-# This depends on the vendored in code in $(GEN_DIR). It also depends on the
-# values of some variables (we want to regenerate things if, for example, the
-# simulator changes). Since we're writing out to $(OUT-SEED), we don't have to
-# depend on the value of SEED. However, we do have to make sure that the
-# variables whose names are listed in $(gen-var-deps) haven't changed.
-#
-# To do this variable tracking, we dump each of the variables to a Makefile
-# fragment and try to load it up the next time around.
-gen-var-deps := GEN_OPTS SIMULATOR RISCV_DV_OPTS ISA CSR_OPTS \
-	            SIGNATURE_ADDR PMP_REGIONS PMP_GRANULARITY TEST_OPTS
+# Here we express the different build artifacts that the Makefile uses to
+# establish the dependency tree, as well as which jobs depend on which
+# top-level configuration knobs when deciding what to rebuild.
+# Use build artifacts as targets where appropriate, otherwise use stamp-files.
 
-# Load up the generation stage's saved variable values. If this fails, that's
-# no problem: we'll assume that the previous run either doesn't exist or
-# something went wrong.
--include $(metadata)/gen-vars.mk
+tests-and-seeds := $(shell env PYTHONPATH=$(PYTHONPATH) python3 ./scripts/metadata.py \
+  --op "tests_and_seeds" \
+  --dir-metadata $(METADATA-DIR) $(new-metadata-file))
+ts-dirs = $(foreach ts,$(tests-and-seeds),$(TESTS-DIR)/$(ts)/)
+test-asms = $(addsuffix test.S,$(ts-dirs))
+test-bins = $(addsuffix test.bin,$(ts-dirs))
+rtl-sim-logs = $(addsuffix $(rtl-sim-logfile),$(ts-dirs))
+comp-results = $(addsuffix trr.yaml,$(ts-dirs))
+rtl-sim-logfile := rtl_sim.log
 
-# gen-vars-prereq is empty if every variable in gen-var-deps matches the last run,
-# otherwise it is set to FORCE (which will force a recompile). Note that we
-# define it with '=', not ':=', so we don't evaluate it if we're not trying to
-# run the gen target.
-gen-vars-prereq = \
-  $(call vars-prereq,gen,building instruction generator,$(gen-var-deps))
+###
+CORE-CONFIG-STAMP = $(METADATA-DIR)/core.config.stamp
+core_config: $(CORE-CONFIG-STAMP)
+core-config-var-deps := IBEX_CONFIG
 
+INSTR-GEN-BUILD-STAMP = $(METADATA-DIR)/instr.gen.build.stamp
+instr_gen_build: $(METADATA-DIR)/instr.gen.build.stamp
+instr-gen-build-var-deps := SIMULATOR SIGNATURE_ADDR  # Rebuild if these change
+
+instr_gen_run: $(test-asms)
+
+instr_gen_compile: $(test-bins)
+
+TB-COMPILE-STAMP = $(METADATA-DIR)/tb.compile.stamp
+rtl_tb_compile: $(METADATA-DIR)/tb.compile.stamp
+rtl-tb-compile-var-deps := SIMULATOR COV WAVES # Rebuild if these change
+
+rtl_sim_run: $(rtl-sim-logs)
+
+check_logs: $(comp-results)
+
+FCOV-STAMP = $(METADATA-DIR)/fcov.stamp
+riscv_dv_fcov: $(METADATA-DIR)/fcov.stamp
+
+MERGE-COV-STAMP = $(METADATA-DIR)/merge.cov.stamp
+merge_cov: $(METADATA-DIR)/merge.cov.stamp
+
+REGR-LOG-STAMP = $(METADATA-DIR)/regr.log.stamp
+collect_results: $(METADATA-DIR)/regr.log.stamp
+
+
+###############################################################################
+# Other groups of files we may depend on are...
+
+riscv-dv-files := $(shell find $(GEN_DIR) -type f)
 # A variable containing a file list for the riscv-dv vendored-in module.
 # Depending on these files gives a safe over-approximation that will ensure we
 # rebuild things if that module changes.
-#
-# Note that this is defined with ":=". As a result, we'll always run the find
-# command exactly once. Wasteful if we're trying to make clean, but much better
-# than running it for every target otherwise.
-risc-dv-files := $(shell find $(GEN_DIR) -type f)
 
-# This actually runs the instruction generator. Note that the rule depends on
-# the (phony) FORCE target if any variables have changed. If the rule actually
-# runs, it starts by deleting any existing contents of $(OUT-SEED)/instr_gen.
-$(metadata)/instr_gen.gen.stamp: \
-  $(gen-vars-prereq) $(risc-dv-files) $(TESTLIST) | $(metadata)
-	$(verb)rm -rf $(OUT-SEED)/instr_gen
-	$(verb)python3 ${GEN_DIR}/run.py \
-     --output=$(OUT-SEED)/instr_gen ${GEN_OPTS} \
-     --steps=gen \
-     --gen_timeout=${TIMEOUT} \
-     --lsf_cmd="${LSF_CMD}" \
-     --simulator="${SIMULATOR}" \
-     ${RISCV_DV_OPTS} \
-     --isa=${ISA} \
-     ${TEST_OPTS} \
-     ${CSR_OPTS} \
-     --sim_opts="+uvm_set_inst_override=riscv_asm_program_gen,ibex_asm_program_gen,"uvm_test_top.asm_gen" \
-                 +signature_addr=${SIGNATURE_ADDR} +pmp_num_regions=${PMP_REGIONS} \
-                 +pmp_granularity=${PMP_GRANULARITY} +tvec_alignment=8"
-	$(call dump-vars,$(metadata)/gen-vars.mk,gen,$(gen-var-deps))
-	@touch $@
-
-.PHONY: gen
-gen: $(metadata)/instr_gen.gen.stamp
-
-###############################################################################
-# Compile the generated assembly programs
-#
-# We don't explicitly track dependencies on the RISCV toolchain, so this
-# doesn't depend on anything more than the instr_gen stage did.
-$(metadata)/instr_gen.compile.stamp: \
-  $(metadata)/instr_gen.gen.stamp $(TESTLIST)
-	$(verb)python3 ${GEN_DIR}/run.py \
-     --o=$(OUT-SEED)/instr_gen ${GEN_OPTS} \
-     --steps=gcc_compile \
-     ${TEST_OPTS} \
-     --gcc_opts=-mno-strict-align \
-     ${RISCV_DV_OPTS} \
-     --isa=${ISA} && \
-	  touch $@
-
-.PHONY: gcc_compile
-gcc_compile: $(metadata)/instr_gen.compile.stamp
-
-###############################################################################
-# Run the instruction set simulator
-#
-# This (obviously) depends on having compiled the generated programs, so we
-# don't have to worry about variables that affect the 'gen' stage. However, the
-# ISS and ISS_OPTS variables do affect the output, so we need to dump them. See
-# the 'gen' stage for more verbose explanations of how this works.
-iss-var-deps := ISS ISS_OPTS
--include $(metadata)/iss-vars.mk
-iss-vars-prereq = $(call vars-prereq,iss,running ISS,$(iss-var-deps))
-
-$(metadata)/instr_gen.iss.stamp: \
-  $(iss-vars-prereq) $(TESTLIST) $(metadata)/instr_gen.compile.stamp
-	$(verb)python3 ${GEN_DIR}/run.py \
-     --o=$(OUT-SEED)/instr_gen ${GEN_OPTS} \
-     --steps=iss_sim \
-     ${TEST_OPTS} \
-     --iss="${ISS}" \
-     --iss_opts="${ISS_OPTS}" \
-     --isa="${ISA_ISS}" \
-     ${RISCV_DV_OPTS}
-	$(call dump-vars,$(metadata)/iss-vars.mk,iss,$(iss-var-deps))
-	@touch $@
-
-.PHONY: iss_sim
-iss_sim: $(metadata)/instr_gen.iss.stamp
-
-
-###############################################################################
-# Compile ibex core TB
-#
-# Note that (unlike everything else) this doesn't depend on the seed: the DUT
-# doesn't depend on which test we're running!
-#
-# It does, however, depend on various variables. These are listed in
-# compile-var-deps. See the 'gen' stage for more verbose explanations of how
-# the variable dumping works.
-#
+all-verilog = \
+  $(shell find ../../../rtl -name '*.v' -o -name '*.sv' -o -name '*.svh') \
+  $(shell find ../.. -name '*.v' -o -name '*.sv' -o -name '*.svh')
+all-cpp = \
+  $(shell find ../.. -name '*.cc' -o -name '*.h')
 # The compiled ibex testbench (obviously!) also depends on the design and the
 # DV code. The clever way of doing this would be to look at a dependency
 # listing generated by the simulator as a side-effect of doing the compile (a
@@ -358,133 +207,201 @@ iss_sim: $(metadata)/instr_gen.iss.stamp
 # .svh file in the dv or rtl directories. Note that this variable is set with
 # '=', rather than ':='. This means that we don't bother running the find
 # commands unless we need the compiled testbench.
-all-verilog = \
-  $(shell find ../../../rtl -name '*.v' -o -name '*.sv' -o -name '*.svh') \
-  $(shell find ../.. -name '*.v' -o -name '*.sv' -o -name '*.svh')
 
-compile-var-deps := COMMON_OPTS SIMULATOR COV WAVES COMPILE_OPTS COSIM
--include $(OUT-DIR)rtl_sim/.compile-vars.mk
-compile-vars-prereq = $(call vars-prereq,comp,compiling TB,$(compile-var-deps))
-
-$(call dump-vars-match,$(compile-var-deps),comp)
-
-cov-arg := $(if $(call equal,$(COV),1),--en_cov,)
-wave-arg := $(if $(call equal,$(WAVES),1),--en_wave,)
-cosim-arg := $(if $(call equal,$(COSIM),1),--en_cosim,)
-lsf-arg := $(if $(LSF_CMD),--lsf_cmd="$(LSF_CMD)",)
-
-$(OUT-DIR)rtl_sim/.compile.stamp: \
-  $(compile-vars-prereq) $(all-verilog) $(risc-dv-files) \
-  sim.py yaml/rtl_simulation.yaml \
-  | $(OUT-DIR)rtl_sim
-	$(verb)./sim.py \
-	 --o=$(OUT-DIR) \
-	 --steps=compile \
-	 ${COMMON_OPTS} \
-	 --simulator="${SIMULATOR}" --simulator_yaml=yaml/rtl_simulation.yaml \
-	 $(cov-arg) $(wave-arg) $(cosim-arg) $(lsf-arg) \
-	 --cmp_opts="${COMPILE_OPTS}"
-	$(call dump-vars,$(OUT-DIR)rtl_sim/.compile-vars.mk,comp,$(compile-var-deps))
-	@touch $@
-
-.PHONY: compile
-compile: $(OUT-DIR)rtl_sim/.compile.stamp
 
 ###############################################################################
-# Run ibex RTL simulation with generated programs
+###############################################################################
+# Build the Random Instruction Generator
 #
-# Because we compile a TB once rather than for each seed, we have to copy in
-# that directory before we start. We make this step (rather than actually
-# running the test) dependent on having the right variables. That way, we'll
-# correctly delete the sim directory and re-copy it if necessary.
+###############################################################################
+include util.mk # VARIABLE DUMPING UTILS
+###############################################################################
+######## EXAMPLE OF VARIABLE DUMPING ############
+# This target depends on the vendored in code in $(GEN_DIR). It also depends on the
+# values of the following Makefile variables (we want to regenerate things if,
+# for example, the simulator changes).
+
+# To achieve this variable tracking, we dump each of the variables to a Makefile
+# fragment and try to load it up the next time around. This done with the
+# utility function "dump-vars" at the end of the recipe.
 #
-# Note that the variables we depend on are gen-vars-prereq. We also depend on
-# COV and WAVES, but these dependencies will come for free from the dependency
-# on the compiled TB.
-$(metadata)/rtl_sim.compile.stamp: \
-  $(gen-vars-prereq) $(risc-dv-files) $(OUT-DIR)rtl_sim/.compile.stamp
-	rm -rf $(OUT-SEED)/rtl_sim
-	cp -r $(OUT-DIR)rtl_sim $(OUT-SEED)
+# To create the dependency, we must do the following two things before each
+# target:
+#
+# First, load up the saved variable values from the last time around. If this
+# fails, it's no problem: we'll assume that the previous run either doesn't
+# exist or something went wrong.
+ig-build-vars-path := $(BUILD-DIR)/.instr_gen.vars.mk
+-include $(ig-build-vars-path)
+
+# Next, compare the current variables to those we just loaded. This uses the
+# utility function "vars-prereq". It creates a variable which evaluates to the
+# (phony) FORCE if the two sets of variables do not match.
+#
+# Note that we define it with '=', not ':=', so we don't evaluate if we're not
+# trying to run the instr_gen_build target.
+instr-gen-build-vars-prereq = \
+  $(call vars-prereq, \
+     gen, \
+     building instruction generator, \
+     $(instr-gen-build-var-deps))
+
+# Finally, $(instr-gen-build-vars-prereq) becomes a dependency of our target.
+################## END EXAMPLE ###################
+
+core-config-vars-path := $(BUILD-DIR)/.cc.vars.mk
+-include $(core-config-vars-path)
+
+core-config-var-prereq = $(call vars-prereq,gen,Generate core configuration file,$(core-config-var-deps))
+$(CORE-CONFIG-STAMP): \
+  $(core-config-var-prereq) ./riscv_dv_extension/riscv_core_setting.tpl.sv \
+  scripts/render_config_template.py \
+  | $(BUILD-DIR)
+	@echo Generating core configuration file
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	  scripts/render_config_template.py \
+	    --dir-metadata $(METADATA-DIR) \
+	    $(EXT_DIR)/riscv_core_setting.tpl.sv > $(EXT_DIR)/riscv_core_setting.sv
+	$(call dump-vars,$(core-config-vars-path),gen,$(core-config-var-deps))
 	@touch $@
 
-rtl-sim-dirs := $(addprefix $(OUT-SEED)/rtl_sim/,$(tests-and-seeds))
-rtl-sim-logs := $(addsuffix /sim.log,$(rtl-sim-dirs))
+$(METADATA-DIR)/instr.gen.build.stamp: \
+  $(instr-gen-build-vars-prereq) $(riscv-dv-files) $(CORE-CONFIG-STAMP) \
+  scripts/build_instr_gen.py \
+  | $(BUILD-DIR)
+	@echo Building randomized test generator
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	  scripts/build_instr_gen.py \
+	    --dir-metadata $(METADATA-DIR)
+	$(call dump-vars,$(ig-build-vars-path),gen,$(instr-gen-build-var-deps))
+	@touch $@
+
+###############################################################################
+# Run the random instruction generator
+#
+# Make use of static-pattern rules
+# https://www.gnu.org/software/make/manual/html_node/Static-Usage.html#Static-Usage
+#
+# targets …: target-pattern: prereq-patterns …
+#         recipe
+#         …
+
+$(test-asms): \
+  $(TESTS-DIR)/%/test.S: \
+  $(INSTR-GEN-BUILD-STAMP) $(TESTLIST) scripts/run_instr_gen.py
+	@echo Running randomized test generator to create assembly file $@
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	scripts/run_instr_gen.py \
+	  --dir-metadata $(METADATA-DIR) \
+	  --test-dot-seed $*
+
+###############################################################################
+# Compile the generated assembly programs
+#
+# We don't explicitly track dependencies on the RISCV toolchain, so this
+# doesn't depend on anything more than the instr_gen stage did.
+#
+# Note that the compilation step generates a .o file and then uses
+# objcopy to create a .bin. The ISS run uses the .o and the RTL run
+# uses the .bin. In the Makefile, we just track the .bin to represent
+# both.
+
+$(test-bins): \
+  $(TESTS-DIR)/%/test.bin: $(TESTS-DIR)/%/test.S \
+  scripts/compile_generated_test.py
+	@echo Compiling generated test assembly to create binary at $@
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	scripts/compile_generated_test.py \
+	  --dir-metadata $(METADATA-DIR) \
+	  --test-dot-seed $*
+
+
+###############################################################################
+# Compile ibex core TB
+#
+# Note that this doesn't depend on the seed: the DUT doesn't depend on which
+# test we're running!
+
+tb-compile-vars-path := $(BUILD-DIR)/.tb.vars.mk
+-include $(tb-compile-vars-path)
+tb-compile-vars-prereq = $(call vars-prereq,comp,compiling TB,$(rtl-tb-compile-var-deps))
+
+$(METADATA-DIR)/tb.compile.stamp: \
+  $(tb-compile-vars-prereq) $(all-verilog) $(all-cpp) $(risc-dv-files) \
+  scripts/compile_tb.py yaml/rtl_simulation.yaml \
+  | $(BUILD-DIR)
+	@echo Building RTL testbench
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	scripts/compile_tb.py \
+	  --dir-metadata $(METADATA-DIR)
+	$(call dump-vars,$(tb-compile-vars-path),comp,$(rtl-tb-compile-var-deps))
+	@touch $@
+
+###############################################################################
+# Run ibex RTL simulation with randomly-generated program and uvm stimulus
 
 $(rtl-sim-logs): \
-  %/sim.log: \
-  $(metadata)/rtl_sim.compile.stamp \
-  $(metadata)/instr_gen.compile.stamp \
-  run_rtl.py
-	@echo Running RTL simulation at $@
-	$(verb)mkdir -p $(@D)
-	$(verb)./run_rtl.py \
-	  --simulator $(SIMULATOR) \
-	  --simulator_yaml yaml/rtl_simulation.yaml \
-	  $(cov-arg) $(wave-arg) $(lsf-arg) \
-	  --start-seed $(SEED) \
-      --sim-opts="+signature_addr=${SIGNATURE_ADDR} ${SIM_OPTS}" \
-	  --test-dot-seed $(notdir $*) \
-	  --bin-dir $(OUT-SEED)/instr_gen/asm_test \
-	  --rtl-sim-dir $(OUT-SEED)/rtl_sim
-
-.PHONY: rtl_sim
-rtl_sim: $(rtl-sim-logs)
+  $(TESTS-DIR)/%/$(rtl-sim-logfile): \
+  $(TB-COMPILE-STAMP) $(TESTS-DIR)/%/test.bin scripts/run_rtl.py
+	@echo Running RTL simulation at $(@D)
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	scripts/run_rtl.py \
+	  --dir-metadata $(METADATA-DIR) \
+	  --test-dot-seed $*
 
 ###############################################################################
-# Compare ISS and RTL sim results
-#
-# For a given TEST/SEED pair, the ISS and RTL logs appear at:
-#
-#   $(OUT-SEED)/instr_gen/$(ISS)_sim/$(TEST).$(SEED).log
-#   $(OUT-SEED)/rtl_sim/$(TEST).$(SEED)/trace_core_00000000.log
-#
-# The comparison script compares these and writes to a result file at
-#
-#   $(OUT-SEED)/rtl_sim/$(TEST).$(SEED)/test-result.yml
-#
-# with PASSED or FAILED, depending.
-
-comp-results := $(addsuffix /test-result.yml,$(rtl-sim-dirs))
+# Gather RTL sim results, and parse logs for errors
 
 $(comp-results): \
-  %/test-result.yml: \
-  compare.py $(metadata)/instr_gen.iss.stamp $(rtl-sim-logs)
-	@echo Comparing traces for $*
-	$(verb)./compare.py \
-      --instr-gen-bin-dir $(OUT-SEED)/instr_gen/asm_test \
-      --iss $(ISS) \
-      --iss-log-dir $(OUT-SEED)/instr_gen/$(ISS)_sim \
-      --start-seed $(SEED) \
-      --test-dot-seed "$(notdir $*)" \
-      --output $@ \
-      --rtl-log-dir $(OUT-SEED)/rtl_sim/$(notdir $*)
-
-$(OUT-SEED)/regr.log: collect_results.py $(comp-results)
-	@echo "Collecting up results (report at $@)"
-	$(verb)./collect_results.py -o $(@D) $(comp-results)
-
-.PHONY: post_compare
-post_compare: $(OUT-SEED)/regr.log
+  $(TESTS-DIR)/%/trr.yaml: \
+  $(TESTS-DIR)/%/$(rtl-sim-logfile) scripts/check_logs.py
+	@echo Collecting simulation results and checking logs of testcase at $@
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	scripts/check_logs.py \
+	  --dir-metadata $(METADATA-DIR) \
+	  --test-dot-seed $*
 
 ###############################################################################
 # Generate RISCV-DV functional coverage
 # TODO(udi) - add B extension
-.PHONY: riscv_dv_cov
-riscv_dv_fcov: $(rtl-sim-logs)
-	$(verb)python3 ${GEN_DIR}/cov.py \
-          --core ibex \
-          --dir ${OUT-SEED}/rtl_sim \
-          -o ${OUT-SEED}/fcov \
-          --isa rv32imcb \
-          --custom_target riscv_dv_extension
 
-# Merge all output coverage directories into the <out>/rtl_sim directory
-#
-# Any coverage databases generated from the riscv_dv_fcov target will be merged as well.
-.PHONY: gen_cov
-gen_cov: riscv_dv_fcov
-	$(verb)rm -rf $(OUT-DIR)rtl_sim/test.vdb
-	$(verb)./sim.py --steps=cov --simulator="${SIMULATOR}" $(lsf-arg) --o="$(OUT-DIR)"
-	@if [ -d "test.vdb" ]; then \
-		mv -f test.vdb $(OUT-DIR)rtl_sim/; \
-	fi
+$(METADATA-DIR)/fcov.stamp: $(comp-results) \
+  scripts/get_fcov.py
+	@echo Generating RISCV_DV functional coverage
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	scripts/get_fcov.py \
+	  --dir-metadata $(METADATA-DIR)
+	@touch $@
+
+###############################################################################
+# Merge all output coverage directories
+# Any coverage databases generated from the riscv_dv_fcov target will be merged
+# as well.
+
+$(METADATA-DIR)/merge.cov.stamp: $(FCOV-STAMP) \
+  scripts/merge_cov.py
+	@echo Merging all recorded coverage data into a single report
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	scripts/merge_cov.py \
+	  --dir-metadata $(METADATA-DIR)
+	@touch $@
+
+###############################################################################
+# Generate the summarized regression log
+
+$(METADATA-DIR)/regr.log.stamp: scripts/collect_results.py $(comp-results)
+	@echo Collecting up results of tests into report regr.log
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	./scripts/collect_results.py \
+	  --dir-metadata $(METADATA-DIR)
+	@touch $@
+
+###############################################################################
+# Extras (for convenience)
+.PHONY: prettify
+prettify:
+	@./scripts/prettify.sh
+
+.PHONY: dump
+dump:
+	@./scripts/objdump.sh

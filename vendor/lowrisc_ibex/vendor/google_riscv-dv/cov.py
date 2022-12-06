@@ -61,7 +61,7 @@ def build_cov(out, cfg, cwd, opts_vec, opts_cov):
         run_cmd(build_cmd, debug_cmd=argv.debug)
 
 
-def sim_cov(out, cfg, cwd, opts_vec, opts_cov, csv_list):
+def sim_cov(out, cfg, cwd, opts_vec, opts_cov, trace_log):
     """Simulation the coverage collection
 
     Args:
@@ -70,10 +70,12 @@ def sim_cov(out, cfg, cwd, opts_vec, opts_cov, csv_list):
       cwd                 : Filesystem path to RISCV-DV repo
       opts_vec            : Vector options
       opts_cov            : Coverage options
-      csv_list            : The list of trace csv
+      trace_log           : A file containing the list of trace csv files, one file per line
     """
     # Convert key dictionary to argv variable
     argv = SimpleNamespace(**cfg)
+    with open(trace_log, "r") as f:
+        csv_list = f.readlines()
     logging.info(
         "Collecting functional coverage from {} trace CSV".format(len(csv_list)))
     test_name = "riscv_instr_cov_test"
@@ -115,9 +117,10 @@ def sim_cov(out, cfg, cwd, opts_vec, opts_cov, csv_list):
                 trace_csv_opts += (",{}".format(csv_list[i]))
         else:
             trace_csv_opts += (" +trace_csv_{}={}".format(trace_idx, csv_list[i]))
+        # Last iter of loop
         if (i == len(csv_list) - 1) or (
                 (argv.batch_size > 0) and (trace_idx == argv.batch_size - 1)):
-            sim_cmd = base_sim_cmd.replace("<trace_csv_opts>", trace_csv_opts)
+            sim_cmd = base_sim_cmd.replace("<trace_csv_opts>", f"+trace_csv_file={trace_log}")
             sim_cmd += ("  --log_suffix _{}".format(file_idx))
             if argv.lsf_cmd == "":
                 logging.info(
@@ -155,9 +158,9 @@ def collect_cov(out, cfg, cwd):
             logging.error("Cannot find {} directory, or it is empty".format(argv.dir))
             sys.exit(RET_FAIL)
     if argv.core:
-        """If functional coverage is being collected from an RTL core 
-        implementation, the flow assumes that the core's trace logs have 
-        already been converted to CSV files by the post_compare step of the 
+        """If functional coverage is being collected from an RTL core
+        implementation, the flow assumes that the core's trace logs have
+        already been converted to CSV files by the post_compare step of the
         flow. """
         trace_log = ("{}/{}_trace_log".format(out, argv.core))
         run_cmd("find {} -name \"*.csv\" | sort > {}".format(argv.dir, trace_log))
@@ -204,7 +207,7 @@ def collect_cov(out, cfg, cwd):
         if argv.simulator != "pyflow":
             build_cov(out, cfg, cwd, opts_vec, opts_cov)
         # Simulation the coverage collection
-        sim_cov(out, cfg, cwd, opts_vec, opts_cov, csv_list)
+        sim_cov(out, cfg, cwd, opts_vec, opts_cov, trace_log)
 
 
 def setup_parser():

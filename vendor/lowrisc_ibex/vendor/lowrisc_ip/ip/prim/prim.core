@@ -19,6 +19,7 @@ filesets:
       - lowrisc:prim:flop
       - lowrisc:prim:flop_en
       - lowrisc:prim:flop_2sync
+      - lowrisc:prim:rst_sync
       - lowrisc:prim:arbiter
       - lowrisc:prim:fifo
       - lowrisc:prim:alert
@@ -26,6 +27,9 @@ filesets:
       - lowrisc:prim:subreg
       - lowrisc:prim:cipher
       - lowrisc:prim:xor2
+      - lowrisc:prim:xnor2
+      - lowrisc:prim:and2
+      - lowrisc:prim:reg_we_check
     files:
       - rtl/prim_clock_gating_sync.sv
       - rtl/prim_sram_arbiter.sv

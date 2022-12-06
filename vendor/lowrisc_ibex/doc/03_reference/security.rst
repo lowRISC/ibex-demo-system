@@ -71,7 +71,9 @@ Bus integrity checking
 ----------------------
 
 Extra signals are available alongside the instruction and data side memory channels to support bus integrity checking.
-When the SecureIbex parameter is set, incoming data will be checked against the supplied checkbits, and a bus major alert signalled if there is a mismatch.
+When the SecureIbex parameter is set, incoming data will be checked against the supplied checkbits.
+An :ref:`internal interrupt<internal-interrupts>` will be generated and a bus major alert signalled if there is a mismatch.
+Where load data has bad checkbits the write to the load's destination register will be suppressed.
 Write data can be checked against the supplied checkbits at its destination to confirm integrity.
 
 Register file ECC
@@ -80,6 +82,20 @@ Register file ECC
 When Ibex is configured with the SecureIbex parameter, ECC checking is added to all reads of the register file.
 This can be useful to detect fault injection attacks since the register file covers a reasonably large area.
 No attempt is made to correct detected errors, but an internal major alert is signaled for the system to take action.
+
+Register file write enable glitch detection
+-------------------------------------------
+
+When Ibex is configured with the SecureIbex parameter, the write enable signal into the register file is checked to be one-hot.
+This can be useful to detect fault injection attacks.
+No attempt is made to correct detected errors, but an internal major alert is signaled for the system to take action.
+
+ICache ECC
+----------
+
+The ICache can be configured with ECC protection.
+When an ECC error is detected a minor alert is signaled.
+See :ref:`icache-ecc` for more information.
 
 Hardened PC
 -----------

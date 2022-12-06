@@ -16,6 +16,7 @@ package ibex_pkg;
     logic [31:0] current_pc;
     logic [31:0] next_pc;
     logic [31:0] last_data_addr;
+    logic [31:0] exception_pc;
     logic [31:0] exception_addr;
   } crash_dump_t;
 
@@ -271,6 +272,20 @@ package ibex_pkg;
     RF_WD_CSR
   } rf_wd_sel_e;
 
+  // Controller FSM state encoding
+  typedef enum logic [3:0] {
+    RESET,
+    BOOT_SET,
+    WAIT_SLEEP,
+    SLEEP,
+    FIRST_FETCH,
+    DECODE,
+    FLUSH,
+    IRQ_TAKEN,
+    DBG_TAKEN_IF,
+    DBG_TAKEN_ID
+  } ctrl_fsm_e;
+
   //////////////
   // IF stage //
   //////////////
@@ -302,23 +317,42 @@ package ibex_pkg;
                           // one interrupt is reserved for NMI (not visible through mip/mie)
   } irqs_t;
 
-  // Exception cause
-  typedef enum logic [5:0] {
-    EXC_CAUSE_IRQ_SOFTWARE_M     = {1'b1, 5'd03},
-    EXC_CAUSE_IRQ_TIMER_M        = {1'b1, 5'd07},
-    EXC_CAUSE_IRQ_EXTERNAL_M     = {1'b1, 5'd11},
-    // EXC_CAUSE_IRQ_FAST_0      = {1'b1, 5'd16},
-    // EXC_CAUSE_IRQ_FAST_14     = {1'b1, 5'd30},
-    EXC_CAUSE_IRQ_NM             = {1'b1, 5'd31}, // == EXC_CAUSE_IRQ_FAST_15
-    EXC_CAUSE_INSN_ADDR_MISA     = {1'b0, 5'd00},
-    EXC_CAUSE_INSTR_ACCESS_FAULT = {1'b0, 5'd01},
-    EXC_CAUSE_ILLEGAL_INSN       = {1'b0, 5'd02},
-    EXC_CAUSE_BREAKPOINT         = {1'b0, 5'd03},
-    EXC_CAUSE_LOAD_ACCESS_FAULT  = {1'b0, 5'd05},
-    EXC_CAUSE_STORE_ACCESS_FAULT = {1'b0, 5'd07},
-    EXC_CAUSE_ECALL_UMODE        = {1'b0, 5'd08},
-    EXC_CAUSE_ECALL_MMODE        = {1'b0, 5'd11}
-  } exc_cause_e;
+  typedef struct packed {
+    logic       irq_int;
+    logic       irq_ext;
+    logic [4:0] lower_cause;
+  } exc_cause_t;
+
+  localparam exc_cause_t ExcCauseIrqSoftwareM =
+    '{irq_ext: 1'b1, irq_int: 1'b0, lower_cause: 5'd03};
+  localparam exc_cause_t ExcCauseIrqTimerM =
+    '{irq_ext: 1'b1, irq_int: 1'b0, lower_cause: 5'd07};
+  localparam exc_cause_t ExcCauseIrqExternalM =
+    '{irq_ext: 1'b1, irq_int: 1'b0, lower_cause: 5'd11};
+  localparam exc_cause_t ExcCauseIrqNm =
+    '{irq_ext: 1'b1, irq_int: 1'b0, lower_cause: 5'd31};
+
+  localparam exc_cause_t ExcCauseInsnAddrMisa =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd00};
+  localparam exc_cause_t ExcCauseInstrAccessFault =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd01};
+  localparam exc_cause_t ExcCauseIllegalInsn =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd02};
+  localparam exc_cause_t ExcCauseBreakpoint =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd03};
+  localparam exc_cause_t ExcCauseLoadAccessFault  =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd05};
+  localparam exc_cause_t ExcCauseStoreAccessFault =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd07};
+  localparam exc_cause_t ExcCauseEcallUMode =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd08};
+  localparam exc_cause_t ExcCauseEcallMMode =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd11};
+
+  // Internal NMI cause
+  typedef enum logic [4:0] {
+    NMI_INT_CAUSE_ECC = 5'b0
+  } nmi_int_cause_e;
 
   // Debug cause
   typedef enum logic [2:0] {
@@ -391,10 +425,11 @@ package ibex_pkg;
   // CSRs
   typedef enum logic[11:0] {
     // Machine information
-    CSR_MVENDORID = 12'hF11,
-    CSR_MARCHID   = 12'hF12,
-    CSR_MIMPID    = 12'hF13,
-    CSR_MHARTID   = 12'hF14,
+    CSR_MVENDORID  = 12'hF11,
+    CSR_MARCHID    = 12'hF12,
+    CSR_MIMPID     = 12'hF13,
+    CSR_MHARTID    = 12'hF14,
+    CSR_MCONFIGPTR = 12'hF15,
 
     // Machine trap setup
     CSR_MSTATUS   = 12'h300,
@@ -402,6 +437,10 @@ package ibex_pkg;
     CSR_MIE       = 12'h304,
     CSR_MTVEC     = 12'h305,
     CSR_MCOUNTEREN= 12'h306,
+    CSR_MSTATUSH  = 12'h310,
+
+    CSR_MENVCFG   = 12'h30A,
+    CSR_MENVCFGH  = 12'h31A,
 
     // Machine trap handling
     CSR_MSCRATCH  = 12'h340,
@@ -432,6 +471,8 @@ package ibex_pkg;
     CSR_PMPADDR14 = 12'h3BE,
     CSR_PMPADDR15 = 12'h3BF,
 
+    CSR_SCONTEXT  = 12'h5A8,
+
     // ePMP control
     CSR_MSECCFG   = 12'h747,
     CSR_MSECCFGH  = 12'h757,
@@ -442,7 +483,7 @@ package ibex_pkg;
     CSR_TDATA2    = 12'h7A2,
     CSR_TDATA3    = 12'h7A3,
     CSR_MCONTEXT  = 12'h7A8,
-    CSR_SCONTEXT  = 12'h7AA,
+    CSR_MSCONTEXT = 12'h7AA,
 
     // Debug/trace
     CSR_DCSR      = 12'h7b0,
@@ -545,7 +586,7 @@ package ibex_pkg;
     CSR_MHPMCOUNTER29H = 12'hB9D,
     CSR_MHPMCOUNTER30H = 12'hB9E,
     CSR_MHPMCOUNTER31H = 12'hB9F,
-    CSR_CPUCTRL        = 12'h7C0,
+    CSR_CPUCTRLSTS     = 12'h7C0,
     CSR_SECURESEED     = 12'h7C1
   } csr_num_e;
 
@@ -593,6 +634,11 @@ package ibex_pkg;
   // commit).
   localparam logic [31:0] CSR_MIMPID_VALUE = 32'b0;
 
+  // Machine Configuration Pointer
+  // 0 indicates the configuration data structure does not eixst. Ibex implementors may wish to
+  // alter this to point to their system specific configuration data structure.
+  localparam logic [31:0] CSR_MCONFIGPTR_VALUE = 32'b0;
+
   // These LFSR parameters have been generated with
   // $ opentitan/util/design/gen-lfsr-seed.py --width 32 --seed 2480124384 --prefix ""
   parameter int LfsrWidth = 32;
@@ -607,14 +653,14 @@ package ibex_pkg;
   parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
       64'hf79780bc735f3843;
 
-  // Fetch enable. Mult-bit signal used for security hardening. For non-secure implementation all
-  // bits other than the bottom bit are ignored.
-  typedef logic [3:0] fetch_enable_t;
+  // Mult-bit signal used for security hardening. For non-secure implementation all bits other than
+  // the bottom bit are ignored.
+  typedef logic [3:0] ibex_mubi_t;
 
   // Note that if adjusting these parameters it is assumed the bottom bit is set for On and unset
-  // for Off. This allows the use of FetchEnableOn/FetchEnableOff to work for both secure and
-  // non-secure Ibex. If this assumption is broken the RTL that uses the fetch_enable signal within
-  // `ibex_core` may need adjusting.
-  parameter fetch_enable_t FetchEnableOn  = 4'b1001;
-  parameter fetch_enable_t FetchEnableOff = 4'b0110;
+  // for Off. This allows the use of IbexMuBiOn/IbexMuBiOff to work for both secure and non-secure
+  // Ibex. If this assumption is broken the RTL that uses ibex_mubi_t types such as the fetch_enable
+  // and core_busy signals within `ibex_core` may need adjusting.
+  parameter ibex_mubi_t IbexMuBiOn  = 4'b0101;
+  parameter ibex_mubi_t IbexMuBiOff = 4'b1010;
 endpackage

@@ -39,6 +39,10 @@ package csr_utils_pkg;
     outstanding_accesses = 0;
   endfunction
 
+  function automatic bit has_outstanding_access();
+    return outstanding_accesses > 0;
+  endfunction
+
   // timeout may happen if we issue too many non-blocking accesses at once
   // limit the nonblocking items to be up to max outstanding
   task automatic wait_if_max_outstanding_accesses_reached(int max = max_outstanding_accesses);
@@ -202,9 +206,9 @@ package csr_utils_pkg;
             decrement_outstanding_access();
           end
           begin
-            wait_timeout(timeout_ns, msg_id,
-                         $sformatf("Timeout waiting to csr_wr %0s (addr=0x%0h)",
-                                   csr.get_full_name(), csr.get_address()));
+            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,
+                             $sformatf("Timeout waiting to csr_wr %0s (addr=0x%0h)",
+                                       csr.get_full_name(), csr.get_address()))
           end
         join_any
         disable fork;
@@ -350,9 +354,9 @@ package csr_utils_pkg;
             decrement_outstanding_access();
           end
           begin
-            wait_timeout(timeout_ns, msg_id,
-                         $sformatf("Timeout waiting to csr_rd %0s (addr=0x%0h)",
-                                   ptr.get_full_name(), csr_or_fld.csr.get_address()));
+            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,
+                             $sformatf("Timeout waiting to csr_rd %0s (addr=0x%0h)",
+                                       ptr.get_full_name(), csr_or_fld.csr.get_address()))
           end
         join_any
         disable fork;
@@ -535,8 +539,8 @@ package csr_utils_pkg;
             endcase
           end
           begin
-            wait_timeout(timeout_ns, msg_id, $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",
-                ptr.get_full_name(), csr_or_fld.csr.get_address(), exp_data));
+            `DV_WAIT_TIMEOUT(timeout_ns, msg_id, $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",
+                ptr.get_full_name(), csr_or_fld.csr.get_address(), exp_data))
           end
         join_any
         disable fork;
@@ -584,9 +588,9 @@ package csr_utils_pkg;
             decrement_outstanding_access();
           end
           begin : mem_rd_timeout
-            wait_timeout(timeout_ns, msg_id,
-                         $sformatf("Timeout waiting to csr_rd %0s (addr=0x%0h)",
-                                   ptr.get_full_name(), offset));
+            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,
+                             $sformatf("Timeout waiting to mem_rd %0s (addr=0x%0h)",
+                                       ptr.get_full_name(), offset))
           end
         join_any
         disable fork;
@@ -635,9 +639,9 @@ package csr_utils_pkg;
             decrement_outstanding_access();
           end
           begin
-            wait_timeout(timeout_ns, msg_id,
-                         $sformatf("Timeout waiting to csr_wr %0s (addr=0x%0h)",
-                                   ptr.get_full_name(), offset));
+            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,
+                             $sformatf("Timeout waiting to mem_wr %0s (addr=0x%0h)",
+                                       ptr.get_full_name(), offset))
           end
         join_any
         disable fork;
@@ -736,13 +740,14 @@ package csr_utils_pkg;
 
     // Clone the submaps by calling this function recursively
     map.get_submaps(submaps);
-    if (submaps.size()) `dv_warning("clone_reg_map: submaps are not yet tested", "DV_UTILS_PKG")
     while (submaps.size()) begin
       uvm_reg_map submap, submap_clone;
       submap = submaps.pop_front();
       submap_clone = clone_reg_map(.name(name), .map(submap), .base_addr(submap.get_base_addr()),
-        .n_bytes(submap.get_n_bytes()), .endian(endian));
-      clone.add_submap(.child_map(submap_clone), .offset(clone.get_submap_offset(submap)));
+        // Use `UVM_NO_HIER` argument to get the n_bytes from the submap instead of the system
+        // level value.
+        .n_bytes(submap.get_n_bytes(UVM_NO_HIER)), .endian(endian));
+      clone.add_submap(.child_map(submap_clone), .offset(map.get_submap_offset(submap)));
     end
 
     // Clone the registers

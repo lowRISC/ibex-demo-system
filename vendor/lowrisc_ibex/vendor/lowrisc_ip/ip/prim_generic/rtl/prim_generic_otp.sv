@@ -13,8 +13,6 @@ module prim_generic_otp
   parameter  int SizeWidth     = 2,
   // Width of the power sequencing signal.
   parameter  int PwrSeqWidth   = 2,
-  // Number of Test TL-UL words
-  parameter  int TlDepth       = 16,
   // Width of vendor-specific test control signal
   parameter  int TestCtrlWidth   = 32,
   parameter  int TestStatusWidth = 32,
@@ -30,6 +28,9 @@ module prim_generic_otp
 ) (
   input                          clk_i,
   input                          rst_ni,
+  // Observability
+  input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
+  output logic [7:0] otp_obs_o,
   // Macro-specific power sequencing signals to/from AST
   output logic [PwrSeqWidth-1:0] pwr_seq_o,
   input        [PwrSeqWidth-1:0] pwr_seq_h_i,
@@ -45,8 +46,9 @@ module prim_generic_otp
   input prim_mubi_pkg::mubi4_t   scanmode_i,  // Scan Mode input
   input                          scan_en_i,   // Scan Shift
   input                          scan_rst_ni, // Scan Reset
-  // Alert indication
-  output ast_pkg::ast_dif_t      otp_alert_src_o,
+  // Alert indication (to be connected to alert sender in the instantiating IP)
+  output logic                   fatal_alert_o,
+  output logic                   recov_alert_o,
   // Ready valid handshake for read/write command
   output logic                   ready_o,
   input                          valid_i,
@@ -72,6 +74,10 @@ module prim_generic_otp
   assign unused_pwr_seq_h = pwr_seq_h_i;
   assign pwr_seq_o = '0;
 
+  logic unused_obs;
+  assign unused_obs = |obs_ctrl_i;
+  assign otp_obs_o = '0;
+
   wire unused_ext_voltage;
   assign unused_ext_voltage = ext_voltage_io;
   logic unused_test_ctrl_i;
@@ -80,7 +86,9 @@ module prim_generic_otp
   logic unused_scan;
   assign unused_scan = ^{scanmode_i, scan_en_i, scan_rst_ni};
 
-  assign otp_alert_src_o = '{p: '0, n: '1};
+  logic intg_err, fsm_err;
+  assign fatal_alert_o = intg_err || fsm_err;
+  assign recov_alert_o = 1'b0;
 
   assign test_vect_o = '0;
   assign test_status_o = '0;
@@ -89,87 +97,61 @@ module prim_generic_otp
   // TL-UL Test Interface Emulation //
   ////////////////////////////////////
 
-  // Put down a register that can be used to test the TL interface.
-  // TODO: this emulation may need to be adjusted, once closed source wrapper is
-  // implemented.
-  localparam int TlAddrWidth = prim_util_pkg::vbits(TlDepth);
-  logic tlul_req, tlul_rvalid_q, tlul_wren;
-  logic [TlDepth-1:0][31:0] tlul_regfile_q;
-  logic [31:0] tlul_wdata, tlul_rdata_q;
-  logic [TlAddrWidth-1:0]  tlul_addr;
-
-  tlul_adapter_sram #(
-    .SramAw      ( TlAddrWidth   ),
-    .SramDw      ( 32            ),
-    .Outstanding ( 1             ),
-    .ByteAccess  ( 0             ),
-    .ErrOnWrite  ( 0             )
-  ) u_tlul_adapter_sram (
+  otp_ctrl_reg_pkg::otp_ctrl_prim_reg2hw_t reg2hw;
+  otp_ctrl_reg_pkg::otp_ctrl_prim_hw2reg_t hw2reg;
+  otp_ctrl_prim_reg_top u_reg_top (
     .clk_i,
     .rst_ni,
-    .tl_i        ( test_tl_i          ),
-    .tl_o        ( test_tl_o          ),
-    .en_ifetch_i ( MuBi4False         ),
-    .req_o       ( tlul_req           ),
-    .gnt_i       ( tlul_req           ),
-    .we_o        ( tlul_wren          ),
-    .addr_o      ( tlul_addr          ),
-    .wdata_o     ( tlul_wdata         ),
-    .wmask_o     (                    ),
-    .intg_error_o(                    ),
-    .rdata_i     ( tlul_rdata_q       ),
-    .rvalid_i    ( tlul_rvalid_q      ),
-    .rerror_i    ( '0                 ),
-    .req_type_o  (                    )
+    .tl_i      (test_tl_i ),
+    .tl_o      (test_tl_o ),
+    .reg2hw    (reg2hw    ),
+    .hw2reg    (hw2reg    ),
+    .intg_err_o(intg_err  ),
+    .devmode_i (1'b1      )
   );
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlul_testreg
-    if (!rst_ni) begin
-      tlul_rvalid_q  <= 1'b0;
-      tlul_rdata_q   <= '0;
-      tlul_regfile_q <= '0;
-    end else begin
-      tlul_rvalid_q <= tlul_req & ~tlul_wren;
-      if (tlul_req && tlul_wren) begin
-        tlul_regfile_q[tlul_addr] <= tlul_wdata;
-      end else if (tlul_req && !tlul_wren) begin
-        tlul_rdata_q <= tlul_regfile_q[tlul_addr];
-      end
-    end
-  end
+  logic unused_reg_sig;
+  assign unused_reg_sig = ^reg2hw;
+  assign hw2reg = '0;
 
   ///////////////////
   // Control logic //
   ///////////////////
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 8 -n 10
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 9 -n 10 \
+  //      -s 2599950981 --language=sv
+  //
   // Hamming distance histogram:
   //
-  // 0: --
-  // 1: --
-  // 2: --
-  // 3: --
-  // 4: --
-  // 5: |||||||||||||||||||| (53.57%)
-  // 6: ||||||||||||| (35.71%)
-  // 7: | (3.57%)
-  // 8: || (7.14%)
-  // 9: --
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (52.78%)
+  //  6: ||||||||||||||| (41.67%)
+  //  7: | (2.78%)
+  //  8: | (2.78%)
+  //  9: --
   // 10: --
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 8
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 8
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    ResetSt      = 10'b1100000011,
-    InitSt       = 10'b1100110100,
-    IdleSt       = 10'b1010111010,
-    ReadSt       = 10'b0011100000,
-    ReadWaitSt   = 10'b1001011111,
-    WriteCheckSt = 10'b0111010101,
-    WriteWaitSt  = 10'b0000001100,
-    WriteSt      = 10'b0110101111
+    ResetSt      = 10'b1100000110,
+    InitSt       = 10'b1000110011,
+    IdleSt       = 10'b0101110000,
+    ReadSt       = 10'b0010011111,
+    ReadWaitSt   = 10'b1001001101,
+    WriteCheckSt = 10'b1111101011,
+    WriteWaitSt  = 10'b0011000010,
+    WriteSt      = 10'b0110100101,
+    ErrorSt      = 10'b1110011000
   } state_e;
 
   state_e state_d, state_q;
@@ -202,6 +184,7 @@ module prim_generic_otp
     cnt_clr = 1'b0;
     cnt_en  = 1'b0;
     read_ecc_on = 1'b1;
+    fsm_err = 1'b0;
 
     unique case (state_q)
       // Wait here until we receive an initialization command.
@@ -300,8 +283,13 @@ module prim_generic_otp
           state_d = IdleSt;
         end
       end
+      // If the FSM is glitched into an invalid state.
+      ErrorSt: begin
+        fsm_err = 1'b1;
+      end
       default: begin
-        state_d = ResetSt;
+        state_d = ErrorSt;
+        fsm_err = 1'b1;
       end
     endcase // state_q
   end
@@ -375,19 +363,7 @@ module prim_generic_otp
   // Regs //
   //////////
 
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] state_raw_q;
-  assign state_q = state_e'(state_raw_q);
-  prim_flop #(
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(ResetSt))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .d_i ( state_d     ),
-    .q_o ( state_raw_q )
-  );
+ `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, ResetSt)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
