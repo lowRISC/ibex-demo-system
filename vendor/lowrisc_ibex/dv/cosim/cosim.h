@@ -72,7 +72,7 @@ class Cosim {
   //
   // Returns false if there are any errors; use `get_errors` to obtain details
   virtual bool step(uint32_t write_reg, uint32_t write_reg_data, uint32_t pc,
-                    bool sync_trap) = 0;
+                    bool sync_trap, bool suppress_reg_write) = 0;
 
   // When more than one of `set_mip`, `set_nmi` or `set_debug_req` is called
   // before `step` which one takes effect is chosen by the co-simulator. Which
@@ -95,6 +95,12 @@ class Cosim {
   // When an NMI is due to be taken that will occur at the next call of `step`.
   virtual void set_nmi(bool nmi) = 0;
 
+  // Set the state of the internal NMI (non-maskable interrupt) line.
+  // Behaviour wise this is almost as same as external NMI case explained at
+  // set_nmi method. Difference is that this one is a response from Ibex rather
+  // than an input.
+  virtual void set_nmi_int(bool nmi_int) = 0;
+
   // Set the debug request.
   //
   // When set to true the core will enter debug mode at the next step
@@ -109,6 +115,13 @@ class Cosim {
   //
   // A full 64-bit value is provided setting both the mcycle and mcycleh CSRs.
   virtual void set_mcycle(uint64_t mcycle) = 0;
+
+  // Set the value of a CSR. This is used when it is needed to have direct
+  // communication between DUT and Spike (e.g. Performance counters).
+  virtual void set_csr(const int csr_num, const uint32_t new_val) = 0;
+
+  // Set the ICache scramble key valid bit that is visible in CPUCTRLSTS.
+  virtual void set_ic_scr_key_valid(bool valid) = 0;
 
   // Tell the co-simulation model about observed transactions on the dside
   // memory interface of the DUT. Accesses are notified once the response to a
@@ -135,7 +148,7 @@ class Cosim {
 
   // Returns a count of instructions executed by co-simulator and DUT without
   // failures.
-  virtual int get_insn_cnt() = 0;
+  virtual unsigned int get_insn_cnt() = 0;
 };
 
 #endif  // COSIM_H_

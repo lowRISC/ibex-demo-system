@@ -83,7 +83,7 @@ module ibex_top_tracing import ibex_pkg::*; #(
   output logic                         double_fault_seen_o,
 
   // CPU Control Signals
-  input  fetch_enable_t                fetch_enable_i,
+  input  ibex_mubi_t                   fetch_enable_i,
   output logic                         alert_minor_o,
   output logic                         alert_major_internal_o,
   output logic                         alert_major_bus_o,
@@ -121,20 +121,41 @@ module ibex_top_tracing import ibex_pkg::*; #(
   logic [31:0] rvfi_mem_wdata;
   logic [31:0] rvfi_ext_mip;
   logic        rvfi_ext_nmi;
+  logic        rvfi_ext_nmi_int;
   logic        rvfi_ext_debug_req;
+  logic        rvfi_ext_debug_mode;
+  logic        rvfi_ext_rf_wr_suppress;
   logic [63:0] rvfi_ext_mcycle;
+
+  logic [31:0] rvfi_ext_mhpmcounters [10];
+  logic [31:0] rvfi_ext_mhpmcountersh [10];
+  logic        rvfi_ext_ic_scr_key_valid;
+
+  logic [31:0] unused_perf_regs [10];
+  logic [31:0] unused_perf_regsh [10];
+
 
   logic [31:0] unused_rvfi_ext_mip;
   logic        unused_rvfi_ext_nmi;
+  logic        unused_rvfi_ext_nmi_int;
   logic        unused_rvfi_ext_debug_req;
+  logic        unused_rvfi_ext_debug_mode;
+  logic        unused_rvfi_ext_rf_wr_suppress;
   logic [63:0] unused_rvfi_ext_mcycle;
+  logic        unused_rvfi_ext_ic_scr_key_valid;
 
   // Tracer doesn't use these signals, though other modules may probe down into tracer to observe
   // them.
   assign unused_rvfi_ext_mip = rvfi_ext_mip;
   assign unused_rvfi_ext_nmi = rvfi_ext_nmi;
+  assign unused_rvfi_ext_nmi_int = rvfi_ext_nmi_int;
   assign unused_rvfi_ext_debug_req = rvfi_ext_debug_req;
+  assign unused_rvfi_ext_debug_mode = rvfi_ext_debug_mode;
+  assign unused_rvfi_ext_rf_wr_suppress = rvfi_ext_rf_wr_suppress;
   assign unused_rvfi_ext_mcycle = rvfi_ext_mcycle;
+  assign unused_perf_regs = rvfi_ext_mhpmcounters;
+  assign unused_perf_regsh = rvfi_ext_mhpmcountersh;
+  assign unused_rvfi_ext_ic_scr_key_valid = rvfi_ext_ic_scr_key_valid;
 
   ibex_top #(
     .PMPEnable        ( PMPEnable        ),
@@ -230,8 +251,14 @@ module ibex_top_tracing import ibex_pkg::*; #(
     .rvfi_mem_wdata,
     .rvfi_ext_mip,
     .rvfi_ext_nmi,
+    .rvfi_ext_nmi_int,
     .rvfi_ext_debug_req,
+    .rvfi_ext_debug_mode,
+    .rvfi_ext_rf_wr_suppress,
     .rvfi_ext_mcycle,
+    .rvfi_ext_mhpmcounters,
+    .rvfi_ext_mhpmcountersh,
+    .rvfi_ext_ic_scr_key_valid,
 
     .fetch_enable_i,
     .alert_minor_o,

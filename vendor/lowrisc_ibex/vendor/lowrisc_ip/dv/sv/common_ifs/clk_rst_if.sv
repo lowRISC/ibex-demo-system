@@ -97,7 +97,7 @@ interface clk_rst_if #(
   bit sole_clock = 1'b0;
 
   // use IfName as a part of msgs to indicate which clk_rst_vif instance
-  string msg_id = {"clk_rst_if::", IfName};
+  string msg_id = $sformatf("[%m(clk_rst_if):%s]", IfName);
 
   clocking cb @(posedge clk);
   endclocking
@@ -113,6 +113,14 @@ interface clk_rst_if #(
   // Wait for 'n' clocks based of negative clock edge
   task automatic wait_n_clks(int num_clks);
     repeat (num_clks) @cbn;
+  endtask
+
+  // Wait for 'num_clks' clocks based on the positive clock edge or reset, whichever comes first.
+  task automatic wait_clks_or_rst(int num_clks);
+    fork
+      wait_clks(num_clks);
+      wait_for_reset(.wait_negedge(1'b1), .wait_posedge(1'b0));
+    join_any
   endtask
 
   // wait for rst_n to assert and then deassert
@@ -149,16 +157,10 @@ interface clk_rst_if #(
     clk_freq_scale_up = freq_scale_up;
   endfunction
 
-  // call this function at t=0 (from tb top) to enable clk and rst_n to be driven
+  // Enables the clock and reset to be driven.
   function automatic void set_active(bit drive_clk_val = 1'b1, bit drive_rst_n_val = 1'b1);
-    time t = $time;
-    if (t == 0) begin
-      drive_clk = drive_clk_val;
-      drive_rst_n = drive_rst_n_val;
-    end
-    else begin
-      `dv_fatal("This function can only be called at t=0", msg_id)
-    end
+    drive_clk = drive_clk_val;
+    drive_rst_n = drive_rst_n_val;
   endfunction
 
   // set the clk period in ps
@@ -211,7 +213,7 @@ interface clk_rst_if #(
   // Scales the clock frequency up and down on every edge.
   function automatic void apply_freq_scaling();
     real scaling;
-    real mult = $urandom_range(0, clk_freq_scale_up) ? 1.0 : -1.0;
+    real mult = $urandom_range(0, int'(clk_freq_scale_up)) ? 1.0 : -1.0;
 
     if ($urandom_range(1, 100) <= clk_freq_scaling_chance_pc) begin
       scaling = 1.0 + mult * real'($urandom_range(0, clk_freq_scaling_pc)) / 100;
@@ -249,9 +251,9 @@ interface clk_rst_if #(
   // apply reset with specified scheme
   // TODO make this enum?
   // rst_n_scheme
-  // 0 - fullly synchronous reset - it is asserted and deasserted on clock edges
-  // 1 - async assert, sync dessert (default)
-  // 2 - async assert, async dessert
+  // 0 - fully synchronous reset - it is asserted and deasserted on clock edges
+  // 1 - async assert, sync deassert (default)
+  // 2 - async assert, async deassert
   // 3 - clk gated when reset asserted
   // Note: for power on reset, please ensure pre_reset_dly_clks is set to 0
   // TODO #2338 issue workaround - $urandom call moved from default argument value to function body

@@ -15,6 +15,7 @@ module ibex_register_file_latch #(
   parameter bit                   RV32E             = 0,
   parameter int unsigned          DataWidth         = 32,
   parameter bit                   DummyInstructions = 0,
+  parameter bit                   WrenCheck         = 0,
   parameter logic [DataWidth-1:0] WordZeroVal       = '0
 ) (
   // Clock and Reset
@@ -23,6 +24,7 @@ module ibex_register_file_latch #(
 
   input  logic                 test_en_i,
   input  logic                 dummy_instr_id_i,
+  input  logic                 dummy_instr_wb_i,
 
   //Read port R1
   input  logic [4:0]           raddr_a_i,
@@ -35,8 +37,10 @@ module ibex_register_file_latch #(
   // Write port W1
   input  logic [4:0]           waddr_a_i,
   input  logic [DataWidth-1:0] wdata_a_i,
-  input  logic                 we_a_i
+  input  logic                 we_a_i,
 
+  // This indicates whether spurious WE are detected.
+  output logic                 err_o
 );
 
   localparam int unsigned ADDR_WIDTH = RV32E ? 4 : 5;
@@ -44,7 +48,7 @@ module ibex_register_file_latch #(
 
   logic [DataWidth-1:0] mem[NUM_WORDS];
 
-  logic [NUM_WORDS-1:1] waddr_onehot_a;
+  logic [NUM_WORDS-1:0] waddr_onehot_a;
 
   logic [NUM_WORDS-1:1] mem_clocks;
   logic [DataWidth-1:0] wdata_a_q;
@@ -89,13 +93,44 @@ module ibex_register_file_latch #(
 
   // Write address decoding
   always_comb begin : wad
-    for (int i = 1; i < NUM_WORDS; i++) begin : wad_word_iter
+    for (int i = 0; i < NUM_WORDS; i++) begin : wad_word_iter
       if (we_a_i && (waddr_a_int == 5'(i))) begin
         waddr_onehot_a[i] = 1'b1;
       end else begin
         waddr_onehot_a[i] = 1'b0;
       end
     end
+  end
+
+  // SEC_CM: DATA_REG_SW.GLITCH_DETECT
+  // This checks for spurious WE strobes on the regfile.
+  if (WrenCheck) begin : gen_wren_check
+    // Buffer the decoded write enable bits so that the checker
+    // is not optimized into the address decoding logic.
+    logic [NUM_WORDS-1:0] waddr_onehot_a_buf;
+    prim_buf #(
+      .Width(NUM_WORDS)
+    ) u_prim_buf (
+      .in_i(waddr_onehot_a),
+      .out_o(waddr_onehot_a_buf)
+    );
+
+    prim_onehot_check #(
+      .AddrWidth(ADDR_WIDTH),
+      .AddrCheck(1),
+      .EnableCheck(1)
+    ) u_prim_onehot_check (
+      .clk_i,
+      .rst_ni,
+      .oh_i(waddr_onehot_a_buf),
+      .addr_i(waddr_a_i),
+      .en_i(we_a_i),
+      .err_o
+    );
+  end else begin : gen_no_wren_check
+    logic unused_strobe;
+    assign unused_strobe = waddr_onehot_a[0]; // this is never read from in this case
+    assign err_o = 1'b0;
   end
 
   // Individual clock gating (if integrated clock-gating cells are available)
@@ -122,12 +157,13 @@ module ibex_register_file_latch #(
   // With dummy instructions enabled, R0 behaves as a real register but will always return 0 for
   // real instructions.
   if (DummyInstructions) begin : g_dummy_r0
+    // SEC_CM: CTRL_FLOW.UNPREDICTABLE
     logic                 we_r0_dummy;
     logic                 r0_clock;
     logic [DataWidth-1:0] mem_r0;
 
     // Write enable for dummy R0 register (waddr_a_i will always be 0 for dummy instructions)
-    assign we_r0_dummy = we_a_i & dummy_instr_id_i;
+    assign we_r0_dummy = we_a_i & dummy_instr_wb_i;
 
     // R0 clock gate
     prim_clock_gating cg_i (
@@ -147,8 +183,8 @@ module ibex_register_file_latch #(
     assign mem[0] = dummy_instr_id_i ? mem_r0 : WordZeroVal;
 
   end else begin : g_normal_r0
-    logic unused_dummy_instr_id;
-    assign unused_dummy_instr_id = dummy_instr_id_i;
+    logic unused_dummy_instr;
+    assign unused_dummy_instr = dummy_instr_id_i ^ dummy_instr_wb_i;
 
     assign mem[0] = WordZeroVal;
   end

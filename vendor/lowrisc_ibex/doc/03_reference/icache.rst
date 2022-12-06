@@ -93,11 +93,31 @@ Indicative RAM sizes for common configurations are given in the table below:
 | 4kB, 4 way, 64bit line       | 4 x 128 x 22bit | 4 x 128 x 64bit  |
 +------------------------------+-----------------+------------------+
 
+ICache Scrambling
+^^^^^^^^^^^^^^^^^
 If ICacheScramble parameter is enabled, all RAM primitives are replaced with scrambling RAM primitive.
 For more information about how scrambling works internally (see :file:`vendor/lowrisc_ip/ip/prim/doc/prim_ram_1p_scr.md`).
 Interface for receiving scrambling key follows req / ack protocol.
-Ibex first requests a new ephemeral key by asserting the request (``scramble_req_o``) and when a fresh valid key is indicated by ``scramble_key_valid_i``, it deasserts the request. 
+Ibex first requests a new ephemeral key by asserting the request (``scramble_req_o``) and when a fresh valid key is indicated by ``scramble_key_valid_i``, it deasserts the request.
 Note that in current implementation, it is assumed req/ack protocol is synchronized before arriving to Ibex top level.
+
+.. _icache-scramble-key:
+
+Scramble Key Renewal
+^^^^^^^^^^^^^^^^^^^^
+
+To get a new scrambling key execute a FENCE.I instruction.
+With a new scrambling key the existing cache contents are effectively corrupt and will be invalidated by the FENCE.I.
+Following a FENCE.I cache lookups will always miss until the invalidation is complete.
+This allows CPU fetch and execution to continue using direct memory accesses whilst the scramble key request and cache invalidation proceeds in the background.
+Should a second FENCE.I be executed before the first invalidation completes there are two possibilities
+
+1. The request for a new scramble key is still in progress.
+   As a new request cannot begin whilst one is in progress the FENCE.I is ignored.
+2. The request for a new scramble key has completed and the invalidation is in progress.
+   The invalidation stops and a new scramble key requested and the process starts over.
+
+To guarantee a new scramble key ensure the ``ic_scr_key_valid`` bit in the ``cpuctrlsts`` CSR is set before executing the FENCE.I instruction.
 
 Sub Unit Description
 --------------------
@@ -164,6 +184,8 @@ The remaining data from hits is buffered in the fill buffer data storage and sup
 
 To deal with misalignment caused by compressed instructions, there is a 16bit skid buffer to store the upper halfword.
 
+.. _icache-ecc:
+
 Cache ECC protection
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -193,6 +215,7 @@ Any error (single or double bit) in any RAM will effectively cancel a cache hit 
 The request which observed an error will fetch it's data from the main instruction memory as normal for a cache miss.
 The cache index and way (or ways) with errors are stored in IC1, and a cache write is forced the next cycle to invalidate that line.
 Lookup requests will be blocked in IC0 while the invalidation write is performed.
+If an ECC error is seen a minor alert will be signaled.
 
 Cache invalidation
 ^^^^^^^^^^^^^^^^^^

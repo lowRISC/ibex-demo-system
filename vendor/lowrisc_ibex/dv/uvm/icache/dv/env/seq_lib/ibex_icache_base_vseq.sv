@@ -11,9 +11,6 @@ class ibex_icache_base_vseq
   `uvm_object_utils(ibex_icache_base_vseq)
   `uvm_object_new
 
-  // Should we generate ECC errors in the underlying SRAM objects?
-  bit enable_ecc_errors = 0;
-
   // The mem_err_shift parameter to use for the memory model with this sequence. Gets written to the
   // sequencer's config when the sequence runs.
   int unsigned mem_err_shift = 3;
@@ -28,10 +25,6 @@ class ibex_icache_base_vseq
   // any control knobs they need.
   ibex_icache_core_base_seq core_seq;
   ibex_icache_mem_resp_seq  mem_seq;
-
-  // ECC sequences. The arrays are created in pre_start and are nonempty if ECC errors are enabled.
-  ibex_icache_ecc_base_seq  ecc_tag_seqs[];
-  ibex_icache_ecc_base_seq  ecc_data_seqs[];
 
   // The number of transactions to run (passed to the core sequence). This gets randomised to
   // something sensible by default, but can be overridden by setting it before starting the
@@ -62,17 +55,6 @@ class ibex_icache_base_vseq
     // both see)
     cfg.mem_agent_cfg.mem_err_shift = mem_err_shift;
 
-    // If enable_ecc_errors then create any ECC sequences we need (one for each sequencer in
-    // p_sequencer.ecc_tag_sequencers and p_sequencer.ecc_data_sequencers).
-    ecc_tag_seqs = new[enable_ecc_errors ? p_sequencer.ecc_tag_sequencers.size() : 0];
-    foreach (ecc_tag_seqs[i]) begin
-      `uvm_create_on(ecc_tag_seqs[i], p_sequencer.ecc_tag_sequencers[i])
-    end
-    ecc_data_seqs = new[enable_ecc_errors ? p_sequencer.ecc_data_sequencers.size() : 0];
-    foreach (ecc_data_seqs[i]) begin
-      `uvm_create_on(ecc_data_seqs[i], p_sequencer.ecc_data_sequencers[i])
-    end
-
     super.pre_start();
   endtask : pre_start
 
@@ -84,39 +66,17 @@ class ibex_icache_base_vseq
         core_seq.start(p_sequencer.core_sequencer_h);
       end
 
-      // These sequences will never end. We wrap them all up together in a fork/join so that we can
-      // fork/join_none any ECC sequences (which yield immediately so that we can start them in a
-      // loop), but still have a process that never yields, to use as a child for the surrounding
-      // fork/join_any.
-      fork
-        begin
-          `DV_CHECK_RANDOMIZE_FATAL(mem_seq)
-          mem_seq.start(p_sequencer.mem_sequencer_h);
-        end
-        foreach (ecc_tag_seqs[i]) begin
-          start_ecc_body(ecc_tag_seqs[i], p_sequencer.ecc_tag_sequencers[i]);
-        end
-        foreach (ecc_data_seqs[i]) begin
-          start_ecc_body(ecc_data_seqs[i], p_sequencer.ecc_data_sequencers[i]);
-        end
-      join
+      begin
+        // This sequence will never end.
+        `DV_CHECK_RANDOMIZE_FATAL(mem_seq)
+        mem_seq.start(p_sequencer.mem_sequencer_h);
+      end
     join_any
 
     // The core sequence has finished. Kill all the other sequences
     mem_seq.kill();
-    foreach (ecc_tag_seqs[i]) ecc_tag_seqs[i].kill();
-    foreach (ecc_data_seqs[i]) ecc_data_seqs[i].kill();
 
   endtask : body
-
-  // Randomize and then run a given (never ending) ECC sequence on the given sequencer. Returns
-  // immediately (so you can start sequences in a loop).
-  protected task start_ecc_body(ibex_icache_ecc_base_seq seq, ibex_icache_ecc_sequencer sqr);
-    `DV_CHECK_RANDOMIZE_FATAL(seq);
-    fork begin
-      seq.start(sqr);
-    end join_none
-  endtask
 
   // Clear any interface signals that must be cleared before resetting the DUT.
   virtual task reset_ifs();

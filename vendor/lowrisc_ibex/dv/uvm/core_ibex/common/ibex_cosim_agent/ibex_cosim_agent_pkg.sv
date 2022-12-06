@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package ibex_cosim_agent_pkg;
-`ifdef INC_IBEX_COSIM
   import uvm_pkg::*;
-  import ibex_mem_intf_agent_pkg::*;
+  import ibex_mem_intf_pkg::*;
 
   `include "uvm_macros.svh"
 
@@ -18,5 +17,4 @@ package ibex_cosim_agent_pkg;
   `include "ibex_ifetch_pmp_monitor.sv"
   `include "ibex_cosim_scoreboard.sv"
   `include "ibex_cosim_agent.sv"
-`endif
 endpackage

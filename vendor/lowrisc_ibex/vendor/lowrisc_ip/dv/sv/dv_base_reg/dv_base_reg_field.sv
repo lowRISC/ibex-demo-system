@@ -9,8 +9,48 @@ class dv_base_reg_field extends uvm_reg_field;
   local bit is_intr_test_fld;
   local uvm_reg_data_t staged_val, committed_val, shadowed_val;
 
+  // if this is lockable field, here is its corresponding regwen object
+  // if not, below 2 object will be null
+  local dv_base_reg_field regwen_fld;
+  local dv_base_lockable_field_cov lockable_field_cov;
+
+  // This is used for get_field_by_name
+  string alias_name = "";
+
+  // Default mubi_width = 0 indicates this register field is not a mubi type.
+  protected int mubi_width;
+
+  // variable for mubi coverage, which is only created when this is a mubi reg
+  dv_base_mubi_cov mubi_cov;
+
+  // variable for shadowed coverage, which is only created when this is a shadowed reg
+  local dv_base_shadowed_field_cov shadowed_cov;
+
   `uvm_object_utils(dv_base_reg_field)
   `uvm_object_new
+
+  // this is similar to get_name, but it gets the
+  // simple name of the aliased field instead.
+  function string get_alias_name ();
+     return this.alias_name;
+  endfunction: get_alias_name
+
+  // this is similar to set_name, but it sets the
+  // simple name of the aliased field instead.
+  function void set_alias_name (string alias_name);
+    dv_base_reg register;
+    dv_base_reg_block reg_block;
+    `downcast(register, this.get_parent())
+    register.field_alias_lookup[alias_name] = this.get_name();
+    // We also add the name to the lookup table inside the reg_block to enable get_field_by_name at
+    // that level. Note: in order for the get_field_by_name function of dv_base_reg_block to
+    // produce meaningful results, all field names within the reg block have to be unique - which
+    // cannot always guaranteed. If the fields are not unique at that level, the get_field_by_name
+    // of dv_base_reg should be used instead.
+    `downcast(reg_block, register.get_parent())
+    reg_block.field_alias_lookup[alias_name] = this.get_name();
+    this.alias_name = alias_name;
+  endfunction: set_alias_name
 
   // Issue #5105: UVM forces the value member to be non-randomizable for certain access policies.
   // We restore it in this extended class.
@@ -49,10 +89,18 @@ class dv_base_reg_field extends uvm_reg_field;
     uvm_reg_data_t field_val = rw.value[0] & ((1 << get_n_bits())-1);
 
     // update intr_state mirrored value if this is an intr_test reg
-    if (is_intr_test_fld) begin
+    // if kind is UVM_PREDICT_DIRECT or UVM_PREDICT_READ, super.do_predict can handle
+    if (kind == UVM_PREDICT_WRITE && is_intr_test_fld) begin
       uvm_reg_field intr_state_fld = get_intr_state_field();
+      bit predict_val;
+      if (intr_state_fld.get_access == "RO") begin // status interrupt
+        predict_val = field_val;
+      end else begin // regular W1C interrupt
+        `DV_CHECK_STREQ(intr_state_fld.get_access, "W1C")
+        predict_val = field_val | `gmv(intr_state_fld);
+      end
       // use UVM_PREDICT_READ to avoid uvm_warning due to UVM_PREDICT_DIRECT
-      void'(intr_state_fld.predict(field_val | `gmv(intr_state_fld), .kind(UVM_PREDICT_READ)));
+      void'(intr_state_fld.predict(predict_val, .kind(UVM_PREDICT_READ)));
     end
 
     super.do_predict(rw, kind, be);
@@ -99,7 +147,30 @@ class dv_base_reg_field extends uvm_reg_field;
     uvm_reg_block     ral = this.get_parent().get_parent();
     `DV_CHECK_EQ_FATAL(ral.is_locked(), 0, "RAL is locked, cannot add lockable reg or fld!")
     get_flds_from_uvm_object(lockable_obj, `gfn, flds);
-    foreach (flds[i]) lockable_flds.push_back(flds[i]);
+    foreach (flds[i]) begin
+      lockable_flds.push_back(flds[i]);
+      flds[i].regwen_fld = this;
+    end
+  endfunction
+
+  function void create_lockable_fld_cov();
+    lockable_field_cov = dv_base_lockable_field_cov::type_id::create(`gfn);
+  endfunction
+
+  function void create_mubi_cov(int width);
+    mubi_cov = dv_base_mubi_cov::type_id::create(`gfn);
+    mubi_cov.create_cov(width);
+  endfunction
+
+  function void create_shadowed_fld_cov();
+    shadowed_cov = dv_base_shadowed_field_cov::type_id::create(`gfn);
+  endfunction
+
+  function void create_cov();
+    string csr_name = this.get_parent().get_name();
+    if (mubi_width > 0)     create_mubi_cov(mubi_width);
+    if (regwen_fld != null) create_lockable_fld_cov();
+    if (!uvm_re_match("*_shadowed", csr_name)) create_shadowed_fld_cov();
   endfunction
 
   // Returns true if this field can lock the specified register/field, else return false.
@@ -128,11 +199,39 @@ class dv_base_reg_field extends uvm_reg_field;
     lockable_flds_q = lockable_flds;
   endfunction
 
+  // Return if the RAL block is locked or not.
+  function bit is_locked();
+    uvm_reg_block blk = this.get_parent().get_parent();
+    return blk.is_locked();
+  endfunction
+
+  // If the register field is a mubi type, set the mubi width before the RAL is locked.
+  function void set_mubi_width(int width);
+    if (is_locked()) `uvm_fatal(`gfn, "Cannot set mubi width when the block is locked")
+    mubi_width = width;
+  endfunction
+
+  function int get_mubi_width();
+    return mubi_width;
+  endfunction
+
   // shadow register field read will clear its phase tracker
   virtual task post_read(uvm_reg_item rw);
     if (rw.status == UVM_IS_OK) begin
       dv_base_reg parent_csr = get_dv_base_reg_parent();
       parent_csr.clear_shadow_wr_staged();
+
+      if (lockable_field_cov != null) lockable_field_cov.post_read();
+    end
+  endtask
+
+  virtual task post_write(uvm_reg_item rw);
+    if (rw.status == UVM_IS_OK) begin
+      uvm_reg_data_t field_val = rw.value[0] & ((1 << get_n_bits()) - 1);
+
+      if (lockable_field_cov != null) lockable_field_cov.post_write(field_val, `gmv(regwen_fld));
+
+      if (mubi_cov != null) mubi_cov.sample(field_val);
     end
   endtask
 
@@ -142,7 +241,12 @@ class dv_base_reg_field extends uvm_reg_field;
     uvm_reg_data_t committed_val_temp = committed_val & mask;
     `uvm_info(`gfn, $sformatf("shadow_val %0h, commmit_val %0h", shadowed_val_temp,
                               committed_val_temp), UVM_HIGH)
+    sample_shadow_field_cov(.storage_err(1));
     return shadowed_val_temp != committed_val_temp;
+  endfunction
+
+  function void sample_shadow_field_cov(bit update_err = 0, bit storage_err = 0);
+    if (shadowed_cov != null) shadowed_cov.shadow_field_errs_cg.sample(update_err, storage_err);
   endfunction
 
   function void update_staged_val(uvm_reg_data_t val);
@@ -172,6 +276,7 @@ class dv_base_reg_field extends uvm_reg_field;
     set_fld_access(0);
     committed_val = get_mirrored_value();
     shadowed_val  = ~committed_val;
+    if (lockable_field_cov != null) lockable_field_cov.reset(get_reset());
   endfunction
 
   // this function can only be called when this reg is intr_test reg

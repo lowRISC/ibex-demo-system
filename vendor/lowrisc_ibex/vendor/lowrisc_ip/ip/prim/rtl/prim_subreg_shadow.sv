@@ -31,7 +31,11 @@ module prim_subreg_shadow
   // Output to HW and Reg Read
   output logic          qe,
   output logic [DW-1:0] q,
+  output logic [DW-1:0] ds,
   output logic [DW-1:0] qs,
+
+  // Phase output to HW
+  output logic phase,
 
   // Error conditions
   output logic err_update,
@@ -120,6 +124,7 @@ module prim_subreg_shadow
     .d        ( ~d        ),
     .qe       (           ),
     .q        ( staged_q  ),
+    .ds       (           ),
     .qs       (           )
   );
 
@@ -144,6 +149,7 @@ module prim_subreg_shadow
     .d        ( staged_q        ),
     .qe       (                 ),
     .q        ( shadow_q        ),
+    .ds       (                 ),
     .qs       (                 )
   );
 
@@ -165,8 +171,12 @@ module prim_subreg_shadow
     .d        ( d            ),
     .qe       ( committed_qe ),
     .q        ( committed_q  ),
+    .ds       ( ds           ),
     .qs       ( committed_qs )
   );
+
+  // Output phase for hwext.
+  assign phase = phase_q;
 
   // Error detection - all bits must match.
   assign err_update  = (~staged_q != wr_data) ? phase_q & wr_en : 1'b0;

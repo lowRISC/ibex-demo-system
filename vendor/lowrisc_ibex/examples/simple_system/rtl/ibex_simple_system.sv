@@ -40,6 +40,8 @@ module ibex_simple_system (
   parameter bit                 PMPEnable                = 1'b0;
   parameter int unsigned        PMPGranularity           = 0;
   parameter int unsigned        PMPNumRegions            = 4;
+  parameter int unsigned        MHPMCounterNum           = 0;
+  parameter int unsigned        MHPMCounterWidth         = 40;
   parameter bit                 RV32E                    = 1'b0;
   parameter ibex_pkg::rv32m_e   RV32M                    = `RV32M;
   parameter ibex_pkg::rv32b_e   RV32B                    = `RV32B;
@@ -47,6 +49,7 @@ module ibex_simple_system (
   parameter bit                 BranchTargetALU          = 1'b0;
   parameter bit                 WritebackStage           = 1'b0;
   parameter bit                 ICache                   = 1'b0;
+  parameter bit                 DbgTriggerEn             = 1'b0;
   parameter bit                 ICacheECC                = 1'b0;
   parameter bit                 BranchPredictor          = 1'b0;
   parameter                     SRAMInitFile             = "";
@@ -79,6 +82,9 @@ module ibex_simple_system (
   logic           host_rvalid [NrHosts];
   logic [31:0]    host_rdata  [NrHosts];
   logic           host_err    [NrHosts];
+
+  logic [6:0]     data_rdata_intg;
+  logic [6:0]     instr_rdata_intg;
 
   // devices (slaves)
   logic           device_req    [NrDevices];
@@ -162,24 +168,44 @@ module ibex_simple_system (
     .cfg_device_addr_mask
   );
 
+  if (SecureIbex) begin : g_mem_rdata_ecc
+    logic [31:0] unused_data_rdata;
+    logic [31:0] unused_instr_rdata;
+
+    prim_secded_inv_39_32_enc u_data_rdata_intg_gen (
+      .data_i (host_rdata[CoreD]),
+      .data_o ({data_rdata_intg, unused_data_rdata})
+    );
+
+    prim_secded_inv_39_32_enc u_instr_rdata_intg_gen (
+      .data_i (instr_rdata),
+      .data_o ({instr_rdata_intg, unused_instr_rdata})
+    );
+  end else begin : g_no_mem_rdata_ecc
+    assign data_rdata_intg = '0;
+    assign instr_rdata_intg = '0;
+  end
+
   ibex_top_tracing #(
-      .SecureIbex      ( SecureIbex      ),
-      .ICacheScramble  ( ICacheScramble  ),
-      .PMPEnable       ( PMPEnable       ),
-      .PMPGranularity  ( PMPGranularity  ),
-      .PMPNumRegions   ( PMPNumRegions   ),
-      .MHPMCounterNum  ( 29              ),
-      .RV32E           ( RV32E           ),
-      .RV32M           ( RV32M           ),
-      .RV32B           ( RV32B           ),
-      .RegFile         ( RegFile         ),
-      .BranchTargetALU ( BranchTargetALU ),
-      .ICache          ( ICache          ),
-      .ICacheECC       ( ICacheECC       ),
-      .WritebackStage  ( WritebackStage  ),
-      .BranchPredictor ( BranchPredictor ),
-      .DmHaltAddr      ( 32'h00100000    ),
-      .DmExceptionAddr ( 32'h00100000    )
+      .SecureIbex      ( SecureIbex       ),
+      .ICacheScramble  ( ICacheScramble   ),
+      .PMPEnable       ( PMPEnable        ),
+      .PMPGranularity  ( PMPGranularity   ),
+      .PMPNumRegions   ( PMPNumRegions    ),
+      .MHPMCounterNum  ( MHPMCounterNum   ),
+      .MHPMCounterWidth( MHPMCounterWidth ),
+      .RV32E           ( RV32E            ),
+      .RV32M           ( RV32M            ),
+      .RV32B           ( RV32B            ),
+      .RegFile         ( RegFile          ),
+      .BranchTargetALU ( BranchTargetALU  ),
+      .ICache          ( ICache           ),
+      .ICacheECC       ( ICacheECC        ),
+      .WritebackStage  ( WritebackStage   ),
+      .BranchPredictor ( BranchPredictor  ),
+      .DbgTriggerEn    ( DbgTriggerEn     ),
+      .DmHaltAddr      ( 32'h00100000     ),
+      .DmExceptionAddr ( 32'h00100000     )
     ) u_top (
       .clk_i                  (clk_sys),
       .rst_ni                 (rst_sys_n),
@@ -197,7 +223,7 @@ module ibex_simple_system (
       .instr_rvalid_i         (instr_rvalid),
       .instr_addr_o           (instr_addr),
       .instr_rdata_i          (instr_rdata),
-      .instr_rdata_intg_i     ('0),
+      .instr_rdata_intg_i     (instr_rdata_intg),
       .instr_err_i            (instr_err),
 
       .data_req_o             (host_req[CoreD]),
@@ -209,7 +235,7 @@ module ibex_simple_system (
       .data_wdata_o           (host_wdata[CoreD]),
       .data_wdata_intg_o      (),
       .data_rdata_i           (host_rdata[CoreD]),
-      .data_rdata_intg_i      ('0),
+      .data_rdata_intg_i      (data_rdata_intg),
       .data_err_i             (host_err[CoreD]),
 
       .irq_software_i         (1'b0),
@@ -227,7 +253,7 @@ module ibex_simple_system (
       .crash_dump_o           (),
       .double_fault_seen_o    (),
 
-      .fetch_enable_i         (ibex_pkg::FetchEnableOn),
+      .fetch_enable_i         (ibex_pkg::IbexMuBiOn),
       .alert_minor_o          (),
       .alert_major_internal_o (),
       .alert_major_bus_o      (),
