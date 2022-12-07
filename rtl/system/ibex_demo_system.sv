@@ -20,25 +20,25 @@ module ibex_demo_system #(
   output logic [GpoWidth-1:0] gp_o,
   output logic                uart_tx_o
 );
-  parameter logic [31:0] MEM_SIZE     = 64 * 1024; // 64 kB
-  parameter logic [31:0] MEM_START    = 32'h00100000;
-  parameter logic [31:0] MEM_MASK     = ~(MEM_SIZE-1);
+  localparam logic [31:0] MEM_SIZE     = 64 * 1024; // 64 kB
+  localparam logic [31:0] MEM_START    = 32'h00100000;
+  localparam logic [31:0] MEM_MASK     = ~(MEM_SIZE-1);
 
-  parameter logic [31:0] GPIO_SIZE    = 4 * 1024; // 1kB
-  parameter logic [31:0] GPIO_START   = 32'h80000000;
-  parameter logic [31:0] GPIO_MASK    = ~(GPIO_SIZE-1);
+  localparam logic [31:0] GPIO_SIZE    = 4 * 1024; // 1kB
+  localparam logic [31:0] GPIO_START   = 32'h80000000;
+  localparam logic [31:0] GPIO_MASK    = ~(GPIO_SIZE-1);
 
-  parameter logic [31:0] DEBUG_START  = 32'h1a110000;
-  parameter logic [31:0] DEBUG_SIZE   = 64 * 1024; // 64 kB
-  parameter logic [31:0] DEBUG_MASK   = ~(DEBUG_SIZE-1);
+  localparam logic [31:0] DEBUG_START  = 32'h1a110000;
+  localparam logic [31:0] DEBUG_SIZE   = 64 * 1024; // 64 kB
+  localparam logic [31:0] DEBUG_MASK   = ~(DEBUG_SIZE-1);
 
-  parameter logic [31:0] UART_SIZE    = 4 * 1024; // 4kB
-  parameter logic [31:0] UART_START   = 32'h80001000;
-  parameter logic [31:0] UART_MASK    = ~(UART_SIZE-1);
+  localparam logic [31:0] UART_SIZE    = 4 * 1024; // 4kB
+  localparam logic [31:0] UART_START   = 32'h80001000;
+  localparam logic [31:0] UART_MASK    = ~(UART_SIZE-1);
 
-  parameter logic [31:0] TIMER_SIZE   = 4 * 1024; // 4kB
-  parameter logic [31:0] TIMER_START  = 32'h80002000;
-  parameter logic [31:0] TIMER_MASK   = ~(TIMER_SIZE-1);
+  localparam logic [31:0] TIMER_SIZE   = 4 * 1024; // 4kB
+  localparam logic [31:0] TIMER_START  = 32'h80002000;
+  localparam logic [31:0] TIMER_MASK   = ~(TIMER_SIZE-1);
 
   // debug functionality is optional
   localparam bit DBG = 1;
@@ -198,9 +198,9 @@ module ibex_demo_system #(
      .clk_i                 (clk_sys_i),
      .rst_ni                (rst_core_n),
 
-     .test_en_i             ('b0),
+     .test_en_i             (1'b0),
      .scan_rst_ni           (1'b1),
-     .ram_cfg_i             ('b0),
+     .ram_cfg_i             (10'b0),
 
      .hart_id_i             (32'b0),
      // First instruction executed is at 0x0 + 0x80
@@ -211,7 +211,7 @@ module ibex_demo_system #(
      .instr_rvalid_i        (core_instr_rvalid),
      .instr_addr_o          (core_instr_addr),
      .instr_rdata_i         (core_instr_rdata),
-     .instr_err_i           ('b0),
+     .instr_err_i           (1'b0),
 
      .data_req_o            (host_req[CoreD]),
      .data_gnt_i            (host_gnt[CoreD]),
