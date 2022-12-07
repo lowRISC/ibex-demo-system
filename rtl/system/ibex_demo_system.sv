@@ -10,6 +10,7 @@
 // - UART for serial communication.
 // - Timer.
 // - Debug module.
+// - SPI for driving LCD screen
 module ibex_demo_system #(
   parameter int GpiWidth     = 8,
   parameter int GpoWidth     = 16,
@@ -22,33 +23,39 @@ module ibex_demo_system #(
   input  logic [GpiWidth-1:0] gp_i,
   output logic [GpoWidth-1:0] gp_o,
   output logic [PwmWidth-1:0] pwm_o,
-  output logic                uart_tx_o
+  output logic                uart_tx_o,
+  input  logic                spi_rx_i,
+  output logic                spi_tx_o,
+  output logic                spi_sck_o
 );
-  localparam logic [31:0] MEM_SIZE     = 64 * 1024; // 64 KiB
-  localparam logic [31:0] MEM_START    = 32'h00100000;
-  localparam logic [31:0] MEM_MASK     = ~(MEM_SIZE-1);
+  localparam logic [31:0] MEM_SIZE      = 64 * 1024; // 64 KiB
+  localparam logic [31:0] MEM_START     = 32'h00100000;
+  localparam logic [31:0] MEM_MASK      = ~(MEM_SIZE-1);
 
-  localparam logic [31:0] GPIO_SIZE    =  4 * 1024; //  4 KiB
-  localparam logic [31:0] GPIO_START   = 32'h80000000;
-  localparam logic [31:0] GPIO_MASK    = ~(GPIO_SIZE-1);
+  localparam logic [31:0] GPIO_SIZE     =  4 * 1024; //  4 KiB
+  localparam logic [31:0] GPIO_START    = 32'h80000000;
+  localparam logic [31:0] GPIO_MASK     = ~(GPIO_SIZE-1);
 
-  localparam logic [31:0] DEBUG_START  = 32'h1a110000;
-  localparam logic [31:0] DEBUG_SIZE   = 64 * 1024; // 64 KiB
-  localparam logic [31:0] DEBUG_MASK   = ~(DEBUG_SIZE-1);
+  localparam logic [31:0] DEBUG_START   = 32'h1a110000;
+  localparam logic [31:0] DEBUG_SIZE    = 64 * 1024; // 64 KiB
+  localparam logic [31:0] DEBUG_MASK    = ~(DEBUG_SIZE-1);
 
-  localparam logic [31:0] UART_SIZE    =  4 * 1024; //  4 KiB
-  localparam logic [31:0] UART_START   = 32'h80001000;
-  localparam logic [31:0] UART_MASK    = ~(UART_SIZE-1);
+  localparam logic [31:0] UART_SIZE     =  4 * 1024; //  4 KiB
+  localparam logic [31:0] UART_START    = 32'h80001000;
+  localparam logic [31:0] UART_MASK     = ~(UART_SIZE-1);
 
-  localparam logic [31:0] TIMER_SIZE   =  4 * 1024; //  4 KiB
-  localparam logic [31:0] TIMER_START  = 32'h80002000;
-  localparam logic [31:0] TIMER_MASK   = ~(TIMER_SIZE-1);
+  localparam logic [31:0] TIMER_SIZE    =  4 * 1024; //  4 KiB
+  localparam logic [31:0] TIMER_START   = 32'h80002000;
+  localparam logic [31:0] TIMER_MASK    = ~(TIMER_SIZE-1);
 
-  // Pulse width modulator parameters
-  localparam logic [31:0] PWM_SIZE     =  4 * 1024; //  4 KiB
-  localparam logic [31:0] PWM_START    = 32'h80003000;
-  localparam logic [31:0] PWM_MASK     = ~(PWM_SIZE-1);
+  localparam logic [31:0] PWM_SIZE      =  4 * 1024; //  4 KiB
+  localparam logic [31:0] PWM_START     = 32'h80003000;
+  localparam logic [31:0] PWM_MASK      = ~(PWM_SIZE-1);
   localparam int PwmCtrSize = 8;
+
+  parameter logic [31:0] SPI_SIZE       = 1 * 1024; // 1kB
+  parameter logic [31:0] SPI_START      = 32'h80004000;
+  parameter logic [31:0] SPI_MASK       = ~(SPI_SIZE-1);
 
   // debug functionality is optional
   localparam bit DBG = 1;
@@ -66,10 +73,11 @@ module ibex_demo_system #(
     Pwm,
     Uart,
     Timer,
+    Spi,
     DbgDev
   } bus_device_e;
 
-  localparam int NrDevices = DBG ? 6 : 5;
+  localparam int NrDevices = DBG ? 7 : 6;
   localparam int NrHosts = DBG ? 2 : 1;
 
   // interrupts
@@ -136,11 +144,13 @@ module ibex_demo_system #(
   assign cfg_device_addr_mask[Uart]   = UART_MASK;
   assign cfg_device_addr_base[Timer]  = TIMER_START;
   assign cfg_device_addr_mask[Timer]  = TIMER_MASK;
+  assign cfg_device_addr_base[Spi]    = SPI_START;
+  assign cfg_device_addr_mask[Spi]    = SPI_MASK;
 
   if (DBG) begin : g_dbg_device_cfg
     assign cfg_device_addr_base[DbgDev] = DEBUG_START;
     assign cfg_device_addr_mask[DbgDev] = DEBUG_MASK;
-    assign device_err[DbgDev]           = 1'b0;
+    assign device_err[DbgDev] = 1'b0;
   end
 
   // Tie-off unused error signals
@@ -148,6 +158,7 @@ module ibex_demo_system #(
   assign device_err[Gpio] = 1'b0;
   assign device_err[Pwm]  = 1'b0;
   assign device_err[Uart] = 1'b0;
+  assign device_err[Spi] = 1'b0;
 
   bus #(
     .NrDevices    ( NrDevices ),
@@ -340,6 +351,29 @@ module ibex_demo_system #(
     .device_rdata_o (device_rdata[Uart]),
 
     .uart_tx_o
+  );
+
+  spi_top #(
+    .ClockFrequency(50_000_000),
+    .CPOL(0),
+    .CPHA(1)
+  ) u_spi (
+    .clk_i (clk_sys_i),
+    .rst_ni(rst_sys_ni),
+
+    .device_req_i   (device_req[Spi]),
+    .device_addr_i  (device_addr[Spi]),
+    .device_we_i    (device_we[Spi]),
+    .device_be_i    (device_be[Spi]),
+    .device_wdata_i (device_wdata[Spi]),
+    .device_rvalid_o(device_rvalid[Spi]),
+    .device_rdata_o (device_rdata[Spi]),
+
+    .spi_rx_i(spi_rx_i), // Data received from SPI device
+    .spi_tx_o(spi_tx_o), // Data transmitted to SPI device
+    .sck_o(spi_sck_o), // Serial clock pin
+
+    .byte_data_o() // unused
   );
 
   timer #(

@@ -17,6 +17,8 @@ filesets:
       - rtl/system/pwm.sv
       - rtl/system/pwm_wrapper.sv
       - rtl/system/uart.sv
+      - rtl/system/spi_host.sv
+      - rtl/system/spi_top.sv
     file_type: systemVerilogSource
 
 targets:
