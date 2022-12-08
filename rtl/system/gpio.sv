@@ -5,13 +5,13 @@
 module gpio #(
   GpoWidth = 16
 ) (
-  input logic                 clk_i,
-  input logic                 rst_ni,
+  input  logic                clk_i,
+  input  logic                rst_ni,
 
   input  logic                device_req_i,
   input  logic [31:0]         device_addr_i,
   input  logic                device_we_i,
-  input  logic [3:0]          device_be_i,
+  input  logic [ 3:0]         device_be_i,
   input  logic [31:0]         device_wdata_i,
   output logic                device_rvalid_o,
   output logic [31:0]         device_rdata_o,
@@ -36,7 +36,7 @@ module gpio #(
 
   assign gp_en = device_req_i & device_we_i & (device_addr_i[9:0] == 0);
 
-  for (genvar i_byte = 0;i_byte < 4; ++i_byte) begin : g_gp_d;
+  for (genvar i_byte = 0; i_byte < 4; ++i_byte) begin : g_gp_d;
     if (i_byte * 8 < GpoWidth) begin : g_gp_d_inner
       localparam int gpo_byte_end = (i_byte + 1) * 8 <= GpoWidth ? (i_byte + 1) * 8 : GpoWidth;
       assign gp_d[gpo_byte_end - 1 : i_byte * 8] =
