@@ -60,25 +60,21 @@ targets:
   synth:
     <<: *default_target
     default_tool: vivado
-    filesets:
-      - files_rtl
+    filesets_append:
       - files_xilinx
       - files_constraints
     toplevel: top_artya7
-    parameters:
-      - SRAMInitFile
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
     tools:
       vivado:
         part: "xc7a35tcsg324-1"  # Default to Arty A7-35
+    parameters:
+      - SRAMInitFile
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
   sim:
     <<: *default_target
     default_tool: verilator
-    filesets:
-      - files_rtl
+    filesets_append:
       - files_verilator
-    parameters:
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
     toplevel: ibex_demo_system
     tools:
       verilator:
@@ -98,4 +94,5 @@ targets:
           # RAM primitives wider than 64bit (required for ECC) fail to build in
           # Verilator without increasing the unroll count (see Verilator#1266)
           - "--unroll-count 72"
-
+    parameters:
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric

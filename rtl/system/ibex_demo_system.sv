@@ -57,6 +57,10 @@ module ibex_demo_system #(
   parameter logic [31:0] SPI_START      = 32'h80004000;
   parameter logic [31:0] SPI_MASK       = ~(SPI_SIZE-1);
 
+  parameter logic [31:0] SIM_CTRL_SIZE  = 1 * 1024; // 1kB
+  parameter logic [31:0] SIM_CTRL_START = 32'h20000;
+  parameter logic [31:0] SIM_CTRL_MASK  = ~(SIM_CTRL_SIZE-1);
+
   // debug functionality is optional
   localparam bit DBG = 1;
   localparam int unsigned DbgHwBreakNum = (DBG == 1) ?    2 :    0;
@@ -74,10 +78,11 @@ module ibex_demo_system #(
     Uart,
     Timer,
     Spi,
+    SimCtrl,
     DbgDev
   } bus_device_e;
 
-  localparam int NrDevices = DBG ? 7 : 6;
+  localparam int NrDevices = DBG ? 8 : 7;
   localparam int NrHosts = DBG ? 2 : 1;
 
   // interrupts
@@ -146,6 +151,8 @@ module ibex_demo_system #(
   assign cfg_device_addr_mask[Timer]  = TIMER_MASK;
   assign cfg_device_addr_base[Spi]    = SPI_START;
   assign cfg_device_addr_mask[Spi]    = SPI_MASK;
+  assign cfg_device_addr_base[SimCtrl] = SIM_CTRL_START;
+  assign cfg_device_addr_mask[SimCtrl] = SIM_CTRL_MASK;
 
   if (DBG) begin : g_dbg_device_cfg
     assign cfg_device_addr_base[DbgDev] = DEBUG_START;
@@ -159,6 +166,7 @@ module ibex_demo_system #(
   assign device_err[Pwm]  = 1'b0;
   assign device_err[Uart] = 1'b0;
   assign device_err[Spi] = 1'b0;
+  assign device_err[SimCtrl] = 1'b0;
 
   bus #(
     .NrDevices    ( NrDevices ),
@@ -215,63 +223,66 @@ module ibex_demo_system #(
   assign rst_core_n = rst_sys_ni & ~ndmreset_req;
 
   ibex_top #(
-     .RegFile         ( ibex_pkg::RegFileFPGA              ),
-     .DbgTriggerEn    ( DbgTriggerEn                       ),
-     .DbgHwBreakNum   ( DbgHwBreakNum                      ),
-     .DmHaltAddr      ( DEBUG_START + dm::HaltAddress[31:0]),
+     .RegFile         ( ibex_pkg::RegFileFPGA                   ),
+     .MHPMCounterNum  ( 10                                      ),
+     .RV32M           ( ibex_pkg::RV32MFast                     ),
+     .RV32B           ( ibex_pkg::RV32BNone                     ),
+     .DbgTriggerEn    ( DbgTriggerEn                            ),
+     .DbgHwBreakNum   ( DbgHwBreakNum                           ),
+     .DmHaltAddr      ( DEBUG_START + dm::HaltAddress[31:0]     ),
      .DmExceptionAddr ( DEBUG_START + dm::ExceptionAddress[31:0])
   ) u_top (
-     .clk_i                   (clk_sys_i),
-     .rst_ni                  (rst_core_n),
+     .clk_i (clk_sys_i),
+     .rst_ni(rst_core_n),
 
-     .test_en_i               ('b0),
-     .scan_rst_ni             (1'b1),
-     .ram_cfg_i               ('b0),
+     .test_en_i  ('b0),
+     .scan_rst_ni(1'b1),
+     .ram_cfg_i  ('b0),
 
-     .hart_id_i               (32'b0),
+     .hart_id_i(32'b0),
      // First instruction executed is at 0x0 + 0x80
-     .boot_addr_i             (32'h00100000),
+     .boot_addr_i(32'h00100000),
 
-      .instr_req_o            (core_instr_req),
-      .instr_gnt_i            (core_instr_gnt),
-      .instr_rvalid_i         (core_instr_rvalid),
-      .instr_addr_o           (core_instr_addr),
-      .instr_rdata_i          (core_instr_rdata),
-      .instr_rdata_intg_i     ('0),
-      .instr_err_i            ('0),
+      .instr_req_o       (core_instr_req),
+      .instr_gnt_i       (core_instr_gnt),
+      .instr_rvalid_i    (core_instr_rvalid),
+      .instr_addr_o      (core_instr_addr),
+      .instr_rdata_i     (core_instr_rdata),
+      .instr_rdata_intg_i('0),
+      .instr_err_i       ('0),
 
-      .data_req_o             (host_req[CoreD]),
-      .data_gnt_i             (host_gnt[CoreD]),
-      .data_rvalid_i          (host_rvalid[CoreD]),
-      .data_we_o              (host_we[CoreD]),
-      .data_be_o              (host_be[CoreD]),
-      .data_addr_o            (host_addr[CoreD]),
-      .data_wdata_o           (host_wdata[CoreD]),
-      .data_wdata_intg_o      (),
-      .data_rdata_i           (host_rdata[CoreD]),
-      .data_rdata_intg_i      ('0),
-      .data_err_i             (host_err[CoreD]),
+      .data_req_o       (host_req[CoreD]),
+      .data_gnt_i       (host_gnt[CoreD]),
+      .data_rvalid_i    (host_rvalid[CoreD]),
+      .data_we_o        (host_we[CoreD]),
+      .data_be_o        (host_be[CoreD]),
+      .data_addr_o      (host_addr[CoreD]),
+      .data_wdata_o     (host_wdata[CoreD]),
+      .data_wdata_intg_o(),
+      .data_rdata_i     (host_rdata[CoreD]),
+      .data_rdata_intg_i('0),
+      .data_err_i       (host_err[CoreD]),
 
-     .irq_software_i          (1'b0),
-     .irq_timer_i             (timer_irq),
-     .irq_external_i          (1'b0),
-     .irq_fast_i              (15'b0),
-     .irq_nm_i                (1'b0),
+     .irq_software_i(1'b0),
+     .irq_timer_i   (timer_irq),
+     .irq_external_i(1'b0),
+     .irq_fast_i    (15'b0),
+     .irq_nm_i      (1'b0),
 
-     .scramble_key_valid_i    ('0),
-     .scramble_key_i          ('0),
-     .scramble_nonce_i        ('0),
-     .scramble_req_o          (),
+     .scramble_key_valid_i('0),
+     .scramble_key_i      ('0),
+     .scramble_nonce_i    ('0),
+     .scramble_req_o      (),
 
-     .debug_req_i             (dm_debug_req),
-     .crash_dump_o            (),
-    .double_fault_seen_o      (),
+     .debug_req_i        (dm_debug_req),
+     .crash_dump_o       (),
+     .double_fault_seen_o(),
 
-     .fetch_enable_i          ('1),
-     .alert_minor_o           (),
-     .alert_major_internal_o  (),
-     .alert_major_bus_o       (),
-     .core_sleep_o            ()
+     .fetch_enable_i        ('1),
+     .alert_minor_o         (),
+     .alert_major_internal_o(),
+     .alert_major_bus_o     (),
+     .core_sleep_o          ()
   );
 
   ram_2p #(
@@ -375,6 +386,23 @@ module ibex_demo_system #(
 
     .byte_data_o() // unused
   );
+
+  `ifdef VERILATOR
+    simulator_ctrl #(
+      .LogName("ibex_demo_system.log")
+    ) u_simulator_ctrl (
+      .clk_i     (clk_sys_i),
+      .rst_ni    (rst_sys_ni),
+
+      .req_i     (device_req[SimCtrl]),
+      .we_i      (device_we[SimCtrl]),
+      .be_i      (device_be[SimCtrl]),
+      .addr_i    (device_addr[SimCtrl]),
+      .wdata_i   (device_wdata[SimCtrl]),
+      .rvalid_o  (device_rvalid[SimCtrl]),
+      .rdata_o   (device_rdata[SimCtrl])
+    );
+  `endif
 
   timer #(
     .DataWidth    ( 32 ),
