@@ -12,38 +12,46 @@
 // - Debug module.
 module ibex_demo_system #(
   parameter int GpoWidth     = 16,
+  parameter int PwmWidth     = 12,
   parameter     SRAMInitFile = ""
 ) (
   input logic                 clk_sys_i,
   input logic                 rst_sys_ni,
 
   output logic [GpoWidth-1:0] gp_o,
+  output logic [PwmWidth-1:0] pwm_o,
   output logic                uart_tx_o
 );
-  parameter logic [31:0] MEM_SIZE     = 64 * 1024; // 64 kB
-  parameter logic [31:0] MEM_START    = 32'h00100000;
-  parameter logic [31:0] MEM_MASK     = ~(MEM_SIZE-1);
+  localparam logic [31:0] MEM_SIZE     = 64 * 1024; // 64 KiB
+  localparam logic [31:0] MEM_START    = 32'h00100000;
+  localparam logic [31:0] MEM_MASK     = ~(MEM_SIZE-1);
 
-  parameter logic [31:0] GPIO_SIZE    = 4 * 1024; // 1kB
-  parameter logic [31:0] GPIO_START   = 32'h80000000;
-  parameter logic [31:0] GPIO_MASK    = ~(GPIO_SIZE-1);
+  localparam logic [31:0] GPIO_SIZE    =  4 * 1024; //  4 KiB
+  localparam logic [31:0] GPIO_START   = 32'h80000000;
+  localparam logic [31:0] GPIO_MASK    = ~(GPIO_SIZE-1);
 
-  parameter logic [31:0] DEBUG_START  = 32'h1a110000;
-  parameter logic [31:0] DEBUG_SIZE   = 64 * 1024; // 64 kB
-  parameter logic [31:0] DEBUG_MASK   = ~(DEBUG_SIZE-1);
+  localparam logic [31:0] DEBUG_START  = 32'h1a110000;
+  localparam logic [31:0] DEBUG_SIZE   = 64 * 1024; // 64 KiB
+  localparam logic [31:0] DEBUG_MASK   = ~(DEBUG_SIZE-1);
 
-  parameter logic [31:0] UART_SIZE    = 4 * 1024; // 4kB
-  parameter logic [31:0] UART_START   = 32'h80001000;
-  parameter logic [31:0] UART_MASK    = ~(UART_SIZE-1);
+  localparam logic [31:0] UART_SIZE    =  4 * 1024; //  4 KiB
+  localparam logic [31:0] UART_START   = 32'h80001000;
+  localparam logic [31:0] UART_MASK    = ~(UART_SIZE-1);
 
-  parameter logic [31:0] TIMER_SIZE   = 4 * 1024; // 4kB
-  parameter logic [31:0] TIMER_START  = 32'h80002000;
-  parameter logic [31:0] TIMER_MASK   = ~(TIMER_SIZE-1);
+  localparam logic [31:0] TIMER_SIZE   =  4 * 1024; //  4 KiB
+  localparam logic [31:0] TIMER_START  = 32'h80002000;
+  localparam logic [31:0] TIMER_MASK   = ~(TIMER_SIZE-1);
+
+  // Pulse width modulator parameters
+  localparam logic [31:0] PWM_SIZE     =  4 * 1024; //  4 KiB
+  localparam logic [31:0] PWM_START    = 32'h80003000;
+  localparam logic [31:0] PWM_MASK     = ~(PWM_SIZE-1);
+  localparam int PwmCtrSize = 8;
 
   // debug functionality is optional
   localparam bit DBG = 1;
-  localparam int unsigned DbgHwBreakNum = (DBG == 1) ? 2 : 0;
-  localparam bit DbgTriggerEn = (DBG == 1) ? 1'b1 : 1'b0;
+  localparam int unsigned DbgHwBreakNum = (DBG == 1) ?    2 :    0;
+  localparam bit          DbgTriggerEn  = (DBG == 1) ? 1'b1 : 1'b0;
 
   typedef enum int {
     CoreD,
@@ -53,12 +61,13 @@ module ibex_demo_system #(
   typedef enum int {
     Ram,
     Gpio,
+    Pwm,
     Uart,
     Timer,
     DbgDev
   } bus_device_e;
 
-  localparam int NrDevices = DBG ? 5 : 4;
+  localparam int NrDevices = DBG ? 6 : 5;
   localparam int NrHosts = DBG ? 2 : 1;
 
   // interrupts
@@ -109,7 +118,6 @@ module ibex_demo_system #(
   logic        ndmreset_req;
   logic        dm_debug_req;
 
-
   // Device address mapping
   logic [31:0] cfg_device_addr_base [NrDevices];
   logic [31:0] cfg_device_addr_mask [NrDevices];
@@ -118,6 +126,8 @@ module ibex_demo_system #(
   assign cfg_device_addr_mask[Ram]    = MEM_MASK;
   assign cfg_device_addr_base[Gpio]   = GPIO_START;
   assign cfg_device_addr_mask[Gpio]   = GPIO_MASK;
+  assign cfg_device_addr_base[Pwm]    = PWM_START;
+  assign cfg_device_addr_mask[Pwm]    = PWM_MASK;
   assign cfg_device_addr_base[Uart]   = UART_START;
   assign cfg_device_addr_mask[Uart]   = UART_MASK;
   assign cfg_device_addr_base[Timer]  = TIMER_START;
@@ -130,8 +140,9 @@ module ibex_demo_system #(
   end
 
   // Tie-off unused error signals
-  assign device_err[Ram] = 1'b0;
+  assign device_err[Ram]  = 1'b0;
   assign device_err[Gpio] = 1'b0;
+  assign device_err[Pwm]  = 1'b0;
   assign device_err[Uart] = 1'b0;
 
   bus #(
@@ -198,9 +209,9 @@ module ibex_demo_system #(
      .clk_i                 (clk_sys_i),
      .rst_ni                (rst_core_n),
 
-     .test_en_i             ('b0),
+     .test_en_i             (1'b0),
      .scan_rst_ni           (1'b1),
-     .ram_cfg_i             ('b0),
+     .ram_cfg_i             (10'b0),
 
      .hart_id_i             (32'b0),
      // First instruction executed is at 0x0 + 0x80
@@ -211,7 +222,7 @@ module ibex_demo_system #(
      .instr_rvalid_i        (core_instr_rvalid),
      .instr_addr_o          (core_instr_addr),
      .instr_rdata_i         (core_instr_rdata),
-     .instr_err_i           ('b0),
+     .instr_err_i           (1'b0),
 
      .data_req_o            (host_req[CoreD]),
      .data_gnt_i            (host_gnt[CoreD]),
@@ -278,6 +289,25 @@ module ibex_demo_system #(
     .device_rdata_o (device_rdata[Gpio]),
 
     .gp_o
+  );
+
+  pwm_wrapper #(
+    .PwmWidth   ( PwmWidth   ),
+    .PwmCtrSize ( PwmCtrSize ),
+    .BusWidth   ( 32         )
+  ) u_pwm (
+    .clk_i          (clk_sys_i),
+    .rst_ni         (rst_sys_ni),
+
+    .device_req_i   (device_req[Pwm]),
+    .device_addr_i  (device_addr[Pwm]),
+    .device_we_i    (device_we[Pwm]),
+    .device_be_i    (device_be[Pwm]),
+    .device_wdata_i (device_wdata[Pwm]),
+    .device_rvalid_o(device_rvalid[Pwm]),
+    .device_rdata_o (device_rdata[Pwm]),
+
+    .pwm_o
   );
 
   uart #(

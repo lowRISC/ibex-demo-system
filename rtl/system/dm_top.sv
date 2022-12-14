@@ -13,8 +13,9 @@
 `include "prim_assert.sv"
 
 module dm_top #(
-  parameter int              NrHarts = 1,
-  parameter logic [31:0]     IdcodeValue = 32'h 0000_0001
+  parameter int          NrHarts = 1,
+  parameter logic [31:0] IdcodeValue = 32'h 0000_0001,
+  parameter int          BusWidth = 32
 ) (
   input  logic               clk_i,       // clock
   input  logic               rst_ni,      // asynchronous reset active low, connect PoR
@@ -47,7 +48,6 @@ module dm_top #(
 
   `ASSERT_INIT(paramCheckNrHarts, NrHarts > 0)
 
-  localparam int BusWidth = 32;
   // all harts have contiguous IDs
   localparam logic [NrHarts-1:0] SelectableHarts = {NrHarts{1'b1}};
 
