@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #define GPIO_OUT_REG 0x0
+#define GPIO_IN_REG 0x4
 
 typedef void* gpio_t;
 
@@ -15,6 +16,7 @@ typedef void* gpio_t;
 
 void set_outputs(gpio_t gpio, uint32_t outputs);
 uint32_t get_outputs(gpio_t gpio);
+uint32_t get_inputs(gpio_t gpio);
 
 void set_output_bit(gpio_t gpio, uint32_t output_bit_index,
     uint32_t output_bit);

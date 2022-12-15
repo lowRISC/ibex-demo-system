@@ -11,6 +11,7 @@
 // - Timer.
 // - Debug module.
 module ibex_demo_system #(
+  parameter int GpiWidth     = 8,
   parameter int GpoWidth     = 16,
   parameter int PwmWidth     = 12,
   parameter     SRAMInitFile = ""
@@ -18,6 +19,7 @@ module ibex_demo_system #(
   input logic                 clk_sys_i,
   input logic                 rst_sys_ni,
 
+  input  logic [GpiWidth-1:0] gp_i,
   output logic [GpoWidth-1:0] gp_o,
   output logic [PwmWidth-1:0] pwm_o,
   output logic                uart_tx_o
@@ -275,6 +277,7 @@ module ibex_demo_system #(
   );
 
   gpio #(
+    .GpiWidth ( GpiWidth ),
     .GpoWidth ( GpoWidth )
   ) u_gpio (
     .clk_i          (clk_sys_i),
@@ -288,6 +291,7 @@ module ibex_demo_system #(
     .device_rvalid_o(device_rvalid[Gpio]),
     .device_rdata_o (device_rdata[Gpio]),
 
+    .gp_i,
     .gp_o
   );
 

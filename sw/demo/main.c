@@ -33,6 +33,10 @@ int main(void) {
       puts("Hello World! ");
       puthex(last_elapsed_time);
       putchar('\n');
+      puts("Input Value: ");
+      puthex(get_inputs(GPIO0 + GPIO_IN_REG));
+      putchar('\n');
+      set_output_bit(GPIO0, cur_output_bit_index, cur_output_bit);
 
       // Cycling through green LEDs
       set_output_bit(GPIO0, cur_output_bit_index, cur_output_bit);
