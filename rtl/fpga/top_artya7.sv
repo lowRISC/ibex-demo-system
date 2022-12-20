@@ -7,9 +7,9 @@ module top_artya7 (
   // These inputs are defined in data/pins_artya7.xdc
   input               IO_CLK,
   input               IO_RST_N,
-  input  [3:0]        SW,
-  input  [3:0]        BTN,
-  output [3:0]        LED,
+  input  [ 3:0]       SW,
+  input  [ 3:0]       BTN,
+  output [ 3:0]       LED,
   output [11:0]       RGB_LED,
   output              UART_TX
 );

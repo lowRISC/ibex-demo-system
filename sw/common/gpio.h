@@ -9,14 +9,14 @@
 
 #define GPIO_OUT_REG 0x0
 #define GPIO_IN_REG 0x4
+#define GPIO_IN_DBNC_REG 0x8
 
 typedef void* gpio_t;
 
 #define GPIO_FROM_BASE_ADDR(addr)((gpio_t)addr)
 
 void set_outputs(gpio_t gpio, uint32_t outputs);
-uint32_t get_outputs(gpio_t gpio);
-uint32_t get_inputs(gpio_t gpio);
+uint32_t read_gpio(gpio_t gpio);
 
 void set_output_bit(gpio_t gpio, uint32_t output_bit_index,
     uint32_t output_bit);
