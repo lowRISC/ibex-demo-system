@@ -4,14 +4,14 @@
 #include "pwm.h"
 #include <stdbool.h>
 
+#define USE_GPIO_SHIFT_REG 0
+
 int main(void) {
   // This indicates how often the timer gets updated.
   timer_init();
   timer_enable(5000000);
 
   uint64_t last_elapsed_time = get_elapsed_time();
-  uint32_t cur_output_bit = 1;
-  uint32_t cur_output_bit_index = 0;
 
   // Reset green LEDs to off
   set_outputs(GPIO_OUT, 0x0);
@@ -33,15 +33,17 @@ int main(void) {
       puts("Hello World! ");
       puthex(last_elapsed_time);
       puts("   Input Value: ");
-      puthex(read_gpio(GPIO_IN_DBNC));
+      uint32_t in_val = read_gpio(GPIO_IN_DBNC);
+      puthex(in_val);
       putchar('\n');
 
-      // Cycling through green LEDs
-      set_output_bit(GPIO_OUT, cur_output_bit_index, cur_output_bit);
-      cur_output_bit_index++;
-      if (cur_output_bit_index >= 4) {
-        cur_output_bit_index = 0;
-        cur_output_bit = !cur_output_bit;
+      // Cycling through green LEDs when BTN0 is pressed
+      if (USE_GPIO_SHIFT_REG) {
+        set_outputs(GPIO_OUT_SHIFT, in_val);
+      } else {
+        uint32_t out_val = read_gpio(GPIO_OUT);
+        out_val = ((out_val << 1) & GPIO_OUT_MASK) | (in_val & 0x1);
+        set_outputs(GPIO_OUT, out_val);
       }
 
       // Going from bright to dim on PWM
