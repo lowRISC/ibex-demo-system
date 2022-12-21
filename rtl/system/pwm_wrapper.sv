@@ -28,7 +28,6 @@ module pwm_wrapper #(
     logic [PwmCtrSize-1:0] data_d;
     logic [PwmCtrSize-1:0] counter_q;
     logic [PwmCtrSize-1:0] pulse_width_q;
-    logic pwm_en;
     logic counter_en;
     logic pulse_width_en;
 
