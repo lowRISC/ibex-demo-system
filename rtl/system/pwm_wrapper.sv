@@ -73,4 +73,7 @@ module pwm_wrapper #(
       device_rvalid_o <= device_req_i;
     end
   end
+
+  logic _unused;
+  assign _unused = ^device_be_i ^ ^device_wdata_i;
 endmodule
