@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module gpio #(
+  GpiWidth = 8,
   GpoWidth = 16
 ) (
   input  logic                clk_i,
@@ -16,36 +17,70 @@ module gpio #(
   output logic                device_rvalid_o,
   output logic [31:0]         device_rdata_o,
 
+  input  logic [GpiWidth-1:0] gp_i,
   output logic [GpoWidth-1:0] gp_o
 );
-  logic [GpoWidth-1:0] gp_d;
-  logic                gp_en;
+
+  logic [GpiWidth-1:0] gp_i_q, gp_i_dbnc;
+  logic [GpoWidth-1:0] gp_o_d;
+
+  logic                gp_o_wr_en;
+  logic                gp_i_rd_en_d, gp_i_rd_en_q;
+  logic                gp_i_dbnc_rd_en_d, gp_i_dbnc_rd_en_q;
+
+  // instantiate debouncers for all GP inputs
+  for (genvar i = 0; i < GpiWidth; i++) begin
+    debounce #(
+      .ClkCount(500)
+    ) dbnc (
+      .clk_i,
+      .rst_ni,  
+      .btn_i(gp_i[i]),
+      .btn_o(gp_i_dbnc[i])
+    );
+  end
 
   always @(posedge clk_i or negedge rst_ni) begin
+    gp_i_q <= gp_i;
     if (!rst_ni) begin
-      gp_o            <= '0;
-      device_rvalid_o <= '0;
+      gp_o              <= '0;
+      device_rvalid_o   <= '0;
+      gp_i_rd_en_q      <= '0;
+      gp_i_dbnc_rd_en_q <= '0;
     end else begin
-      if (gp_en) begin
-        gp_o <= gp_d;
+      if (gp_o_wr_en) begin
+        gp_o <= gp_o_d;
       end
-
-      device_rvalid_o <= device_req_i;
+      device_rvalid_o   <= device_req_i;
+      gp_i_rd_en_q      <= gp_i_rd_en_d;
+      gp_i_dbnc_rd_en_q <= gp_i_dbnc_rd_en_d;
     end
   end
 
-  assign gp_en = device_req_i & device_we_i & (device_addr_i[9:0] == 0);
-
-  for (genvar i_byte = 0; i_byte < 4; ++i_byte) begin : g_gp_d;
-    if (i_byte * 8 < GpoWidth) begin : g_gp_d_inner
+  // assign gp_o_d regarding to device_be_i and GpoWidth
+  for (genvar i_byte = 0; i_byte < 4; ++i_byte) begin : g_gp_o_d;
+    if (i_byte * 8 < GpoWidth) begin : g_gp_o_d_inner
       localparam int gpo_byte_end = (i_byte + 1) * 8 <= GpoWidth ? (i_byte + 1) * 8 : GpoWidth;
-      assign gp_d[gpo_byte_end - 1 : i_byte * 8] =
+      assign gp_o_d[gpo_byte_end - 1 : i_byte * 8] =
         device_be_i[i_byte] ? device_wdata_i[gpo_byte_end - 1 : i_byte * 8] :
                               gp_o[gpo_byte_end - 1 : i_byte * 8];
     end
   end
 
-  assign device_rdata_o = {{(32 - GpoWidth){1'b0}}, gp_o};
+  // decode write and read requests
+  assign gp_o_wr_en = device_req_i & device_we_i & (device_addr_i[9:0] == 0);
+  assign gp_i_rd_en_d = device_req_i & ~device_we_i & (device_addr_i[9:0] == 4);
+  assign gp_i_dbnc_rd_en_d = device_req_i & ~device_we_i & (device_addr_i[9:0] == 8);
+
+  // assign device_rdata_o according to request type
+  always_comb begin
+    if (gp_i_dbnc_rd_en_q)
+      device_rdata_o = {{(32 - GpiWidth){1'b0}}, gp_i_dbnc};
+    else if (gp_i_rd_en_q)
+      device_rdata_o = {{(32 - GpiWidth){1'b0}}, gp_i_q};
+    else
+      device_rdata_o = {{(32 - GpoWidth){1'b0}}, gp_o};
+  end
 
   logic unused_device_addr, unused_device_be, unused_device_wdata;
 

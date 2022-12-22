@@ -13,6 +13,7 @@ filesets:
     files:
       - rtl/system/ibex_demo_system.sv
       - rtl/system/dm_top.sv
+      - rtl/system/debounce.sv
       - rtl/system/gpio.sv
       - rtl/system/pwm.sv
       - rtl/system/pwm_wrapper.sv

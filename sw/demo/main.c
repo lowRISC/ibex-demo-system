@@ -14,7 +14,7 @@ int main(void) {
   uint32_t cur_output_bit_index = 0;
 
   // Reset green LEDs to off
-  set_outputs(GPIO0, 0x0);
+  set_outputs(GPIO_OUT, 0x0);
 
   // PWM variables
   uint32_t counter = UINT8_MAX;
@@ -32,10 +32,12 @@ int main(void) {
       // Print this to UART (use the screen command to see it).
       puts("Hello World! ");
       puthex(last_elapsed_time);
+      puts("   Input Value: ");
+      puthex(read_gpio(GPIO_IN_DBNC));
       putchar('\n');
 
       // Cycling through green LEDs
-      set_output_bit(GPIO0, cur_output_bit_index, cur_output_bit);
+      set_output_bit(GPIO_OUT, cur_output_bit_index, cur_output_bit);
       cur_output_bit_index++;
       if (cur_output_bit_index >= 4) {
         cur_output_bit_index = 0;
