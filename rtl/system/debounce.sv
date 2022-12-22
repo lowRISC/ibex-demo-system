@@ -2,14 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// Maintain a counter that increments whilst the input is in the opposite state
+// from the debounced output. If the input remains in that state for a certain
+// number of cycles (ClkCount) it is deemed stable and becomes the debounced
+// output. If the input changes (i.e. it is bouncing) we reset the counter.
 module debounce #(
-  parameter int unsigned ClkCount = 500
+    parameter int unsigned ClkCount = 500
 ) (
-  input  logic clk_i,
-  input  logic rst_ni,
+    input logic clk_i,
+    input logic rst_ni,
 
-  input  logic btn_i,
-  output logic btn_o
+    input  logic btn_i,
+    output logic btn_o
 );
 
   logic [$clog2(ClkCount+1)-1:0] cnt_d, cnt_q;
@@ -29,9 +33,9 @@ module debounce #(
 
   /* verilator lint_off WIDTH */
   assign btn_d = (cnt_q >= ClkCount) ? btn_i : btn_q;
+  // Clear counter if button input equals stored value or if maximum counter value is reached,
+  // otherwise increment counter.
   /* verilator lint_off WIDTH */
-  assign cnt_d = (btn_i == btn_q) ? '0 : // clear counter if input equals stored value
-                 (cnt_q >= ClkCount) ? '0 : // clear counter if maximum value reached
-                 cnt_q + 1; // otherwise increment counter
+  assign cnt_d = (btn_i == btn_q || cnt_q >= ClkCount) ? '0 : cnt_q + 1;
 
 endmodule

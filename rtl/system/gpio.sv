@@ -21,7 +21,14 @@ module gpio #(
   output logic [GpoWidth-1:0] gp_o
 );
 
-  logic [GpiWidth-1:0] gp_i_q, gp_i_dbnc;
+  localparam int unsigned GPIO_OUT_REG = 12'h0;
+  localparam int unsigned GPIO_IN_REG = 12'h4;
+  localparam int unsigned GPIO_IN_DBNC_REG = 12'h8;
+
+  logic [11:0] reg_addr;
+
+  logic [2:0][GpiWidth-1:0] gp_i_q;
+  logic [GpiWidth-1:0] gp_i_dbnc;
   logic [GpoWidth-1:0] gp_o_d;
 
   logic                gp_o_wr_en;
@@ -35,19 +42,20 @@ module gpio #(
     ) dbnc (
       .clk_i,
       .rst_ni,  
-      .btn_i(gp_i[i]),
+      .btn_i(gp_i_q[2][i]),
       .btn_o(gp_i_dbnc[i])
     );
   end
 
   always @(posedge clk_i or negedge rst_ni) begin
-    gp_i_q <= gp_i;
     if (!rst_ni) begin
+      gp_i_q            <= '0;
       gp_o              <= '0;
       device_rvalid_o   <= '0;
       gp_i_rd_en_q      <= '0;
       gp_i_dbnc_rd_en_q <= '0;
     end else begin
+      gp_i_q <= {gp_i_q[1:0], gp_i};
       if (gp_o_wr_en) begin
         gp_o <= gp_o_d;
       end
@@ -68,16 +76,17 @@ module gpio #(
   end
 
   // decode write and read requests
-  assign gp_o_wr_en = device_req_i & device_we_i & (device_addr_i[9:0] == 0);
-  assign gp_i_rd_en_d = device_req_i & ~device_we_i & (device_addr_i[9:0] == 4);
-  assign gp_i_dbnc_rd_en_d = device_req_i & ~device_we_i & (device_addr_i[9:0] == 8);
+  assign reg_addr = device_addr_i[11:0];
+  assign gp_o_wr_en = device_req_i & device_we_i & (reg_addr == GPIO_OUT_REG);
+  assign gp_i_rd_en_d = device_req_i & ~device_we_i & (reg_addr == GPIO_IN_REG);
+  assign gp_i_dbnc_rd_en_d = device_req_i & ~device_we_i & (reg_addr == GPIO_IN_DBNC_REG);
 
   // assign device_rdata_o according to request type
   always_comb begin
     if (gp_i_dbnc_rd_en_q)
       device_rdata_o = {{(32 - GpiWidth){1'b0}}, gp_i_dbnc};
     else if (gp_i_rd_en_q)
-      device_rdata_o = {{(32 - GpiWidth){1'b0}}, gp_i_q};
+      device_rdata_o = {{(32 - GpiWidth){1'b0}}, gp_i_q[2]};
     else
       device_rdata_o = {{(32 - GpoWidth){1'b0}}, gp_o};
   end
