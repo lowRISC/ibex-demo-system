@@ -22,6 +22,7 @@ probe is required.
 * python3 - Additional python dependencies in python-requirements.txt installed
   with pip
 * openocd (version 0.11.0 or above)
+* srecord
 
 To install python dependencies use pip, you may wish to do this inside a virtual
 environment to avoid disturbing you current python setup (note it uses a lowRISC
