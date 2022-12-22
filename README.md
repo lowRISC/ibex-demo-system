@@ -15,8 +15,9 @@ probe is required.
 ## Software Requirements
 
 * Xilinx Vivado - https://www.xilinx.com/support/download.html
-* rv32imc GCC toolchain - lowRISC provide one: 
+* rv32imc GCC toolchain - lowRISC provides one: 
   https://github.com/lowRISC/lowrisc-toolchains/releases
+  (For example: `lowrisc-toolchain-rv32imcb-20220524-1.tar.xz`)
 * cmake
 * python3 - Additional python dependencies in python-requirements.txt installed
   with pip
