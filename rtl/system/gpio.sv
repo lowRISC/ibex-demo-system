@@ -25,6 +25,7 @@ module gpio #(
   logic [GpoWidth-1:0] gp_o_d;
 
   logic                gp_o_wr_en;
+  logic                gp_o_shift_en;
   logic                gp_i_rd_en_d, gp_i_rd_en_q;
   logic                gp_i_dbnc_rd_en_d, gp_i_dbnc_rd_en_q;
 
@@ -50,6 +51,8 @@ module gpio #(
     end else begin
       if (gp_o_wr_en) begin
         gp_o <= gp_o_d;
+      end else if (gp_o_shift_en) begin
+        gp_o <= {{(32 - GpoWidth){1'b0}}, gp_o[GpoWidth-2:0], device_wdata_i[0]};
       end
       device_rvalid_o   <= device_req_i;
       gp_i_rd_en_q      <= gp_i_rd_en_d;
@@ -71,6 +74,7 @@ module gpio #(
   assign gp_o_wr_en = device_req_i & device_we_i & (device_addr_i[9:0] == 0);
   assign gp_i_rd_en_d = device_req_i & ~device_we_i & (device_addr_i[9:0] == 4);
   assign gp_i_dbnc_rd_en_d = device_req_i & ~device_we_i & (device_addr_i[9:0] == 8);
+  assign gp_o_shift_en = device_req_i & device_we_i & (device_addr_i[9:0] == 12);
 
   // assign device_rdata_o according to request type
   always_comb begin
