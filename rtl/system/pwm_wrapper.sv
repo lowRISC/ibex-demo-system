@@ -23,21 +23,32 @@ module pwm_wrapper #(
   // Collected output of all PWMs.
   output logic [PwmWidth-1:0] pwm_o
 );
+
+  localparam int unsigned AddrWidth = 10;
+  localparam int unsigned PwmIdxOffset = $clog2(BusWidth / 8) + 1;
+  localparam int unsigned PwmIdxWidth = AddrWidth - PwmIdxOffset;
+
   // Generate PwmWidth number of PWMs.
   for (genvar i = 0; i < PwmWidth; i++) begin : gen_pwm
     logic [PwmCtrSize-1:0] data_d;
     logic [PwmCtrSize-1:0] counter_q;
     logic [PwmCtrSize-1:0] pulse_width_q;
-    logic pwm_en;
     logic counter_en;
     logic pulse_width_en;
+    logic [PwmIdxWidth-1:0] pwm_idx;
+
+    assign pwm_idx = i;
 
     // Byte enables are currently unsupported for PWM.
     assign data_d         = device_wdata_i[PwmCtrSize-1:0]; // Only take PwmCtrSize LSBs.
     // Each PWM has a 64-bit block. The most significant 32 bits are the counter and the least
     // significant 32 bits are the pulse width.
-    assign counter_en     = device_req_i & device_we_i & (device_addr_i[9:0] == ((i * 2*BusWidth/8) + BusWidth/8));
-    assign pulse_width_en = device_req_i & device_we_i & (device_addr_i[9:0] == (i * 2*BusWidth/8));
+    assign counter_en     = device_req_i & device_we_i
+                                         & (device_addr_i[AddrWidth-1:PwmIdxOffset] == pwm_idx)
+                                         & device_addr_i[PwmIdxOffset-1];
+    assign pulse_width_en = device_req_i & device_we_i
+                                         & (device_addr_i[AddrWidth-1:PwmIdxOffset] == pwm_idx)
+                                         & ~device_addr_i[PwmIdxOffset-1];
 
     always @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
@@ -74,4 +85,7 @@ module pwm_wrapper #(
       device_rvalid_o <= device_req_i;
     end
   end
+
+  logic _unused;
+  assign _unused = ^device_be_i ^ ^device_wdata_i;
 endmodule
