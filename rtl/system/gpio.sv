@@ -24,6 +24,7 @@ module gpio #(
   localparam int unsigned GPIO_OUT_REG = 32'h0;
   localparam int unsigned GPIO_IN_REG = 32'h4;
   localparam int unsigned GPIO_IN_DBNC_REG = 32'h8;
+  localparam int unsigned GPIO_OUT_SHIFT_REG = 32'hc;
 
   logic [11:0] reg_addr;
 
@@ -32,6 +33,7 @@ module gpio #(
   logic [GpoWidth-1:0] gp_o_d;
 
   logic                gp_o_wr_en;
+  logic                gp_o_shift_en;
   logic                gp_i_rd_en_d, gp_i_rd_en_q;
   logic                gp_i_dbnc_rd_en_d, gp_i_dbnc_rd_en_q;
 
@@ -58,6 +60,8 @@ module gpio #(
       gp_i_q <= {gp_i_q[1:0], gp_i};
       if (gp_o_wr_en) begin
         gp_o <= gp_o_d;
+      end else if (gp_o_shift_en) begin
+        gp_o <= {{(32 - GpoWidth){1'b0}}, gp_o[GpoWidth-2:0], device_wdata_i[0]};
       end
       device_rvalid_o   <= device_req_i;
       gp_i_rd_en_q      <= gp_i_rd_en_d;
@@ -80,6 +84,7 @@ module gpio #(
   assign gp_o_wr_en = device_req_i & device_we_i & (reg_addr == GPIO_OUT_REG[11:0]);
   assign gp_i_rd_en_d = device_req_i & ~device_we_i & (reg_addr == GPIO_IN_REG[11:0]);
   assign gp_i_dbnc_rd_en_d = device_req_i & ~device_we_i & (reg_addr == GPIO_IN_DBNC_REG[11:0]);
+  assign gp_o_shift_en = device_req_i & ~device_we_i & (reg_addr == GPIO_OUT_SHIFT_REG[11:0]);
 
   // assign device_rdata_o according to request type
   always_comb begin
