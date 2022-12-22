@@ -10,6 +10,9 @@
 #define GPIO_OUT_REG 0x0
 #define GPIO_IN_REG 0x4
 #define GPIO_IN_DBNC_REG 0x8
+#define GPIO_OUT_SHIFT_REG 0xC
+
+#define GPIO_OUT_MASK 0xF // Support 4-bit output
 
 typedef void* gpio_t;
 
