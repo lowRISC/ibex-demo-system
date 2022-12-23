@@ -24,10 +24,10 @@ filesets:
       - lowrisc:dv_verilator:simutil_verilator
       - lowrisc:dv_verilator:ibex_pcounts
     files:
-      - ibex_demo_system.cc: { file_type: cppSource }
-      - ibex_demo_system.h:  { file_type: cppSource, is_include_file: true}
-      - ibex_demo_system_main.cc: { file_type: cppSource }
-      - demo_system_verilator_lint.vlt:  { file_type: vlt }
+      - dv/verilator/ibex_demo_system.cc: { file_type: cppSource }
+      - dv/verilator/ibex_demo_system.h:  { file_type: cppSource, is_include_file: true}
+      - dv/verilator/ibex_demo_system_main.cc: { file_type: cppSource }
+      - dv/verilator/demo_system_verilator_lint.vlt:  { file_type: vlt }
 
   files_constraints:
     files:
