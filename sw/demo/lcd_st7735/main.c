@@ -109,7 +109,7 @@ int main(void) {
   do {
     lcd_st7735_clean(&lcd);
     // Show the main menu.
-    const char * items[] = {"0. LED","1. Fractal","2. PWM",};
+    const char * items[] = {"0. LED","1. Fractal","2. PWM","3. Cross"};
     Menu_t main_menu = {
       .title = "Main menu",
       .color = BGRColorBlue,
@@ -134,6 +134,8 @@ int main(void) {
         pwm_test(&lcd);
       break;
       case BTN3:
+        lcd_st7735_clean(&lcd);
+        lcd_st7735_draw_cross(&lcd, (LCD_Point){.x = 20, .y = 30}, 10, BGRColorRed);
       break;
       default:
       break;
