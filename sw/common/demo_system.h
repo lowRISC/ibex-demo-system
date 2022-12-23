@@ -24,6 +24,9 @@
 #define PWM_BASE   0x80003000
 #define NUM_PWM_MODULES 12
 
+#define SPI0_BASE 0x80004000
+#define DEFAULT_SPI SPI_FROM_BASE_ADDR(SPI0_BASE)
+
 /**
  * Writes character to default UART. Signature matches c stdlib function
  * of the same name.

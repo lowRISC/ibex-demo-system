@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "display_drivers",
+  target_dir: "display_drivers",
+  patch_dir: "",
+
+  upstream: {
+    url: "https://github.com/engdoreis/display_drivers.git",
+    rev: "main",
+  }
+}
