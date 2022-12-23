@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "demo_system.h"
 #include "string.h"
 #include "fractal.h"
 #include "lcd.h"
@@ -31,8 +32,10 @@ const uint32_t colors[] = {
 const int colornum = sizeof(colors) / sizeof(colors[0]);
 
 // Function to draw fractal_mandelbrot set
-void fractal_mandelbrot(St7735Context *lcd, bool by_pixel)
+void fractal_mandelbrot(St7735Context *lcd, bool by_pixel, unsigned int *compute_cycles)
 {
+    *compute_cycles = 0;
+
     int max_iterations = 512;
     int max_size = 4;
   
@@ -77,6 +80,7 @@ void fractal_mandelbrot(St7735Context *lcd, bool by_pixel)
     uint16_t buffer[WIDTH];
     for (int col = 0; col < WIDTH; col++ ) {
         for (int row = 0; row < HEIGHT; row++ ) {
+            reset_mcycle();
             float x_square = 0.0;
             float y_square = 0.0;
             float x = 0.0;
@@ -90,6 +94,7 @@ void fractal_mandelbrot(St7735Context *lcd, bool by_pixel)
                 x = x_square - y_square + P[col];
                 color++;
             }
+            *compute_cycles += get_mcycle();
 
 
             // Send the pixel If we are drawing in the LCD pixel by pixel, 
