@@ -10,6 +10,7 @@ module uart #(
   input logic         rst_ni,
 
   input  logic        device_req_i,
+  /* verilator lint_off UNUSED */
   input  logic [31:0] device_addr_i,
   input  logic        device_we_i,
   input  logic [3:0]  device_be_i,
@@ -25,7 +26,9 @@ module uart #(
   logic [$clog2(ClocksPerBaud)-1:0] baud_counter_q, baud_counter_d;
   logic                             baud_tick;
 
-  localparam int unsigned UART_TX_REG     = 32'h0;
+  /* verilator lint_off WIDTH */
+  localparam int unsigned UART_TX_REG = 32'h0;
+  /* verilator lint_off WIDTH */
   localparam int unsigned UART_STATUS_REG = 32'h4;
 
   typedef enum logic[1:0] {
@@ -77,10 +80,12 @@ module uart #(
     .rdata_o (tx_fifo_rdata),
 
     .full_o  (tx_fifo_full),
-    .depth_o ()
+    .depth_o (),
+    .err_o()
   );
 
   assign baud_counter_d = baud_tick ? '0 : baud_counter_q + 1'b1;
+  /* verilator lint_off WIDTH */
   assign baud_tick      = baud_counter_q == (ClocksPerBaud - 1);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin

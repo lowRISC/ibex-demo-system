@@ -5,13 +5,29 @@ CAPI=2:
 name: "lowrisc:ibex:demo_system"
 description: "Ibex Demo System for Arty A7 boards (both, -35 and -100)"
 filesets:
-  files_rtl_artya7:
+  files_rtl:
     depend:
       - lowrisc:ibex:demo_system_core
+
+  files_xilinx:
+    depend:
+      - lowrisc:ibex:rv_timer
       - lowrisc:ibex:fpga_xilinx_shared
     files:
       - rtl/fpga/top_artya7.sv
     file_type: systemVerilogSource
+
+  files_verilator:
+    depend:
+      - lowrisc:ibex:sim_shared
+      - lowrisc:dv_verilator:memutil_verilator
+      - lowrisc:dv_verilator:simutil_verilator
+      - lowrisc:dv_verilator:ibex_pcounts
+    files:
+      - ibex_demo_system.cc: { file_type: cppSource }
+      - ibex_demo_system.h:  { file_type: cppSource, is_include_file: true}
+      - ibex_demo_system_main.cc: { file_type: cppSource }
+      - demo_system_verilator_lint.vlt:  { file_type: vlt }
 
   files_constraints:
     files:
@@ -38,10 +54,15 @@ parameters:
     description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
 
 targets:
+  default: &default_target
+    filesets:
+      - files_rtl
   synth:
+    <<: *default_target
     default_tool: vivado
     filesets:
-      - files_rtl_artya7
+      - files_rtl
+      - files_xilinx
       - files_constraints
     toplevel: top_artya7
     parameters:
@@ -50,3 +71,31 @@ targets:
     tools:
       vivado:
         part: "xc7a35tcsg324-1"  # Default to Arty A7-35
+  sim:
+    <<: *default_target
+    default_tool: verilator
+    filesets:
+      - files_rtl
+      - files_verilator
+    parameters:
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
+    toplevel: ibex_demo_system
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+          # Disabling tracing reduces compile times but doesn't have a
+          # huge influence on runtime performance.
+          - '--trace'
+          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_demo_system"'
+          - '-LDFLAGS "-pthread -lutil -lelf"'
+          - "-Wall"
+          - "-Wwarn-IMPERFECTSCH"
+          # RAM primitives wider than 64bit (required for ECC) fail to build in
+          # Verilator without increasing the unroll count (see Verilator#1266)
+          - "--unroll-count 72"
+

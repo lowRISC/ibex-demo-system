@@ -116,6 +116,8 @@ module ibex_demo_system #(
   logic        dbg_slave_rvalid;
   logic [31:0] dbg_slave_rdata;
 
+  // Internally generated resets cause IMPERFECTSCH warnings
+  /* verilator lint_off IMPERFECTSCH */
   logic        rst_core_n;
   logic        ndmreset_req;
   logic        dm_debug_req;
@@ -205,51 +207,60 @@ module ibex_demo_system #(
      .RegFile         ( ibex_pkg::RegFileFPGA              ),
      .DbgTriggerEn    ( DbgTriggerEn                       ),
      .DbgHwBreakNum   ( DbgHwBreakNum                      ),
-     .DmHaltAddr      ( DEBUG_START + dm::HaltAddress      ),
-     .DmExceptionAddr ( DEBUG_START + dm::ExceptionAddress )
+     .DmHaltAddr      ( DEBUG_START + dm::HaltAddress[31:0]),
+     .DmExceptionAddr ( DEBUG_START + dm::ExceptionAddress[31:0])
   ) u_top (
-     .clk_i                 (clk_sys_i),
-     .rst_ni                (rst_core_n),
+     .clk_i                   (clk_sys_i),
+     .rst_ni                  (rst_core_n),
 
-     .test_en_i             (1'b0),
-     .scan_rst_ni           (1'b1),
-     .ram_cfg_i             (10'b0),
+     .test_en_i               ('b0),
+     .scan_rst_ni             (1'b1),
+     .ram_cfg_i               ('b0),
 
-     .hart_id_i             (32'b0),
+     .hart_id_i               (32'b0),
      // First instruction executed is at 0x0 + 0x80
-     .boot_addr_i           (32'h00100000),
+     .boot_addr_i             (32'h00100000),
 
-     .instr_req_o           (core_instr_req),
-     .instr_gnt_i           (core_instr_gnt),
-     .instr_rvalid_i        (core_instr_rvalid),
-     .instr_addr_o          (core_instr_addr),
-     .instr_rdata_i         (core_instr_rdata),
-     .instr_err_i           (1'b0),
+      .instr_req_o            (core_instr_req),
+      .instr_gnt_i            (core_instr_gnt),
+      .instr_rvalid_i         (core_instr_rvalid),
+      .instr_addr_o           (core_instr_addr),
+      .instr_rdata_i          (core_instr_rdata),
+      .instr_rdata_intg_i     ('0),
+      .instr_err_i            ('0),
 
-     .data_req_o            (host_req[CoreD]),
-     .data_gnt_i            (host_gnt[CoreD]),
-     .data_rvalid_i         (host_rvalid[CoreD]),
-     .data_we_o             (host_we[CoreD]),
-     .data_be_o             (host_be[CoreD]),
-     .data_addr_o           (host_addr[CoreD]),
-     .data_wdata_o          (host_wdata[CoreD]),
-     .data_rdata_i          (host_rdata[CoreD]),
-     .data_err_i            (host_err[CoreD]),
+      .data_req_o             (host_req[CoreD]),
+      .data_gnt_i             (host_gnt[CoreD]),
+      .data_rvalid_i          (host_rvalid[CoreD]),
+      .data_we_o              (host_we[CoreD]),
+      .data_be_o              (host_be[CoreD]),
+      .data_addr_o            (host_addr[CoreD]),
+      .data_wdata_o           (host_wdata[CoreD]),
+      .data_wdata_intg_o      (),
+      .data_rdata_i           (host_rdata[CoreD]),
+      .data_rdata_intg_i      ('0),
+      .data_err_i             (host_err[CoreD]),
 
-     .irq_software_i        (1'b0),
-     .irq_timer_i           (timer_irq),
-     .irq_external_i        (1'b0),
-     .irq_fast_i            (15'b0),
-     .irq_nm_i              (1'b0),
+     .irq_software_i          (1'b0),
+     .irq_timer_i             (timer_irq),
+     .irq_external_i          (1'b0),
+     .irq_fast_i              (15'b0),
+     .irq_nm_i                (1'b0),
 
-     .debug_req_i           (dm_debug_req),
-     .crash_dump_o          (),
+     .scramble_key_valid_i    ('0),
+     .scramble_key_i          ('0),
+     .scramble_nonce_i        ('0),
+     .scramble_req_o          (),
 
-     .fetch_enable_i        ('1),
-     .alert_minor_o         (),
-     .alert_major_internal_o(),
-     .alert_major_bus_o     (),
-     .core_sleep_o          ()
+     .debug_req_i             (dm_debug_req),
+     .crash_dump_o            (),
+    .double_fault_seen_o      (),
+
+     .fetch_enable_i          ('1),
+     .alert_minor_o           (),
+     .alert_major_internal_o  (),
+     .alert_major_bus_o       (),
+     .core_sleep_o            ()
   );
 
   ram_2p #(

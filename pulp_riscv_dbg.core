@@ -19,10 +19,24 @@ filesets:
       - vendor/pulp_riscv_dbg/src/dm_mem.sv
       - vendor/pulp_riscv_dbg/src/dmi_cdc.sv
       - vendor/pulp_riscv_dbg/src/dmi_jtag.sv
+    file_type: systemVerilogSource
+
+  files_vivado:
+    files:
       - vendor/pulp_riscv_dbg/src/dmi_bscane_tap.sv
+    file_type: systemVerilogSource
+
+  files_verilator:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - vendor/pulp_riscv_dbg/src/dmi_jtag_tap.sv
     file_type: systemVerilogSource
 
 targets:
   default:
     filesets:
       - files_src
+      - tool_verilator ? (files_verilator)
+      - tool_vivado ? (files_vivado)

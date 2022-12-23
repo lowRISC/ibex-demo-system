@@ -27,7 +27,9 @@ module debounce #(
     end
   end
 
+  /* verilator lint_off WIDTH */
   assign btn_d = (cnt_q >= ClkCount) ? btn_i : btn_q;
+  /* verilator lint_off WIDTH */
   assign cnt_d = (btn_i == btn_q) ? '0 : // clear counter if input equals stored value
                  (cnt_q >= ClkCount) ? '0 : // clear counter if maximum value reached
                  cnt_q + 1; // otherwise increment counter
