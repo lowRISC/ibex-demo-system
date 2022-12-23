@@ -44,6 +44,27 @@ typedef enum {
 
 static Buttons_t scan_buttons(uint32_t timeout);
 
+Result lcd_st7735_draw_cross(St7735Context *ctx, LCD_Point center, uint16_t length, uint32_t color) {
+  const LCD_Line horizonal_line = {
+    .length = length,
+    .origin = (LCD_Point){
+      .x = MAX(center.x - length / 2, 0),
+      .y = center.y,
+    },
+  };
+  const Result res = lcd_st7735_draw_horizontal_line(ctx, horizonal_line, color);
+  if (res.code != 0) return res;
+
+  const LCD_Line vertical_line = {
+    .length = length,
+    .origin = (LCD_Point){
+      .x = center.x,
+      .y = MAX(center.y - length / 2, 0),
+    },
+  };
+  return lcd_st7735_draw_vertical_line(ctx, vertical_line, color);
+}
+
 int main(void) {
   // Set the initial state of the LCD control pins.
   set_output_bit(GPIO_OUT, LcdDcPin, 0x0);
