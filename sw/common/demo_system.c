@@ -57,6 +57,16 @@ unsigned int get_mtval() {
   return result;
 }
 
+uint32_t get_mcycle(void) {
+  uint32_t result;
+  __asm__ volatile("csrr %0, mcycle;" : "=r"(result));
+  return result;
+}
+
+void reset_mcycle(void) {
+  __asm__ volatile("csrw mcycle, x0");
+}
+
 extern uint32_t _vectors_start;
 volatile uint32_t* exc_vectors = &_vectors_start;
 

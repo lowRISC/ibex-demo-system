@@ -57,5 +57,7 @@ int install_exception_handler(uint32_t vector_num, void(*handler_fn)(void));
 unsigned int get_mepc();
 unsigned int get_mcause();
 unsigned int get_mtval();
+uint32_t get_mcycle(void);
+void reset_mcycle(void);
 
 #endif
