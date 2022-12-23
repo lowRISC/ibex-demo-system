@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "demo_system.h"
 #include "fractal.h"
 #include "lcd.h"
 #include <stdint.h>
@@ -80,9 +81,11 @@ int mandel_iters_fixed(cmplx_fixed_t c, uint32_t max_iters) {
   return max_iters;
 }
 
-void fractal_mandelbrot_fixed(St7735Context *lcd) {
+void fractal_mandelbrot_fixed(St7735Context *lcd, unsigned int *compute_cycles) {
   cmplx_fixed_t cur_p;
   int32_t inc;
+
+  *compute_cycles = 0;
 
   LCD_rectangle rectangle = {.origin = {.x = 0, .y = 0},
     .width = 160, .height = 128 };
@@ -96,7 +99,9 @@ void fractal_mandelbrot_fixed(St7735Context *lcd) {
 
   for(int y = 0;y < 128; ++y) {
     for(int x = 0;x < 160; ++x) {
+      reset_mcycle();
       int iters = mandel_iters_fixed(cur_p, 50);
+      *compute_cycles += get_mcycle();
 
       uint16_t rgb = rgb_iters_palette[iters];
       lcd_st7735_rgb565_put(lcd, (uint8_t*)&rgb, sizeof(rgb));

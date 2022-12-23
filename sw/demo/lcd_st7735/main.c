@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <stdio.h>
+
 #include "demo_system.h"
 #include "timer.h"
 #include "gpio.h"
@@ -163,9 +165,17 @@ static Buttons_t scan_buttons(uint32_t timeout, Buttons_t def) {
 }
 
 static void fractal_test(St7735Context *lcd){
-    fractal_mandelbrot_float(lcd);
+    unsigned int compute_cycles;
+    char buf[32];
+
+    fractal_mandelbrot_float(lcd, &compute_cycles);
+    snprintf(buf, 32, "cycles: %10d", compute_cycles);
+    lcd_st7735_puts(lcd, (LCD_Point){.x = 0, .y = 112}, buf);
     timer_delay(5000);
-    fractal_mandelbrot_fixed(lcd);
+
+    fractal_mandelbrot_fixed(lcd, &compute_cycles);
+    snprintf(buf, 32, "cycles: %10d", compute_cycles);
+    lcd_st7735_puts(lcd, (LCD_Point){.x = 0, .y = 112}, buf);
     timer_delay(5000);
 }
 

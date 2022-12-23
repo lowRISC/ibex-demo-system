@@ -6,8 +6,8 @@
 
 #include "lcd.h"
 
-void fractal_mandelbrot_float(St7735Context *lcd);
-void fractal_mandelbrot_fixed(St7735Context *lcd);
+void fractal_mandelbrot_float(St7735Context *lcd, unsigned int *compute_cycles);
+void fractal_mandelbrot_fixed(St7735Context *lcd, unsigned int *compute_cycles);
 extern uint16_t rgb_iters_palette[51];
 
 #endif
