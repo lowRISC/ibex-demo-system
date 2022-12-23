@@ -1,6 +1,24 @@
-// Copyright lowRISC contributors.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
+// MIT License
+
+// Copyright (c) 2022 Aras Güngöre
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 #include "string.h"
 #include "fractal.h"
@@ -9,134 +27,74 @@
 #define WIDTH 128
 #define HEIGHT 160
 
-const uint32_t colors[] = {
-  0x000000, //BLACK
-  0x0000AA, //BLUE
-  0x00AA00, //GREEN
-  0x00AAAA, //CYAN
-  0xAA0000, //RED
-  0xAA00AA, //MAGENTA
-  0xAA5500, //BROWN
-  0xAAAAAA, //LIGHT_GREY
-  0x555555, //DARK_GREY
-  0x5555FF, //BRIGHT_BLUE
-  0x55FF55, //BRIGHT_GREEN
-  0x55FFFF, //BRIGHT_CYAN
-  0xFF5555, //BRIGHT_RED
-  0xFF55FF, //BRIGHT_MAGENTA
-  0xFFFF55, //YELLOW
-  0xFFFFFF, //WHITE
-};
-
-const int colornum = sizeof(colors) / sizeof(colors[0]);
+#define RGB_COMPONENT_COLOR 255		// each component of the RGB color model defines the intensity of the color between 0-255
 
 // Function to draw fractal_mandelbrot set
 void fractal_mandelbrot(St7735Context *lcd, bool by_pixel)
 {
-    int max_iterations = 512;
-    int max_size = 4;
-  
-    /*
-     * dimensions of the complex plane
-     */
-    float x_min = -2.0;
-    float x_max = 2.0;
-    float y_min = -2.0;
-    float y_max = 2.0;
-  
-    // calling rectangle function
-    // where required image will be seen
-
     lcd_st7735_clean(lcd);
-  
-     /*
-     * For each row and each column set real and imag parts of the complex
-     * number to be used in iteration
-     */
-    float delta_x = (x_max - x_min) / WIDTH;
-    float delta_y = (y_max - y_min) / HEIGHT;
-
-    float Q[HEIGHT] = { y_max };
-    float P[WIDTH] = { x_min };
-    for (int row = 1; row < HEIGHT; row++)
-        Q[row] = Q[row - 1] - delta_y;
-    for (int col = 1; col < WIDTH; col++ )
-        P[col] = P[col - 1] + delta_x;
     LCD_rectangle rectangle = {.origin = {.x = 0, .y = 0},
-        .width = HEIGHT, .height =WIDTH };
-    
+    .width = HEIGHT, .height =WIDTH };
     // If drawing in the LCD pixel by pixel rather then line by line, initialize the pixel engine.
     if ( by_pixel ){
       lcd_st7735_rgb565_start(lcd, rectangle);
     }
 
-    /*
-     * For every pixel calculate resulting value until the number becomes too
-     * big, or we run out of iterations
-     */
+	unsigned int iX, iY, iterator, counter = 0;
+	const unsigned int iterationMax = 200;
+	const double MinRe = -2.5, MaxRe = 1.5, MinIm = -2.0, escapeRadius = 2;
+	const double MaxIm = MinIm + (MaxRe - MinRe) * WIDTH / HEIGHT ;
+	const double Re_factor = (MaxRe - MinRe) / HEIGHT;
+	const double Im_factor = (MaxIm - MinIm) / WIDTH;
+	const double ER2 = escapeRadius*escapeRadius;
     uint16_t buffer[WIDTH];
-    for (int col = 0; col < WIDTH; col++ ) {
-        for (int row = 0; row < HEIGHT; row++ ) {
-            float x_square = 0.0;
-            float y_square = 0.0;
-            float x = 0.0;
-            float y = 0.0;
-
-            int color = 1;
-            while (color < max_iterations && x_square + y_square < max_size) {
-                x_square = x * x;
-                y_square = y * y;
-                y = 2 * x * y + Q[row];
-                x = x_square - y_square + P[col];
-                color++;
-            }
-
-
+	for(iY=0;iY<WIDTH;iY++) {
+		double c_im = MaxIm - iY*Im_factor;
+		for(iX=0;iX<HEIGHT;iX++) {
+			double c_re = MinRe + iX*Re_factor;
+			double Z_re = c_re, Z_im = c_im;
+			for(iterator=0;iterator<iterationMax;iterator++) {
+				double Z_re2 = Z_re*Z_re, Z_im2 = Z_im*Z_im;
+				if(Z_re2 + Z_im2 > ER2)
+					break;
+				Z_im = 2*Z_re*Z_im + c_im;
+            	Z_re = Z_re2 - Z_im2 + c_re;
+			}
+			double x = (double)iterator / iterationMax * RGB_COMPONENT_COLOR;
+            uint32_t color = 0;
+			if(x < RGB_COMPONENT_COLOR/2) {
+				color = (int)(15*x/8 + 16) << 16 | 0 << 8 | 0;
+			}
+			else if(x < RGB_COMPONENT_COLOR) {
+                color = RGB_COMPONENT_COLOR << 16 | (int)(2*x - RGB_COMPONENT_COLOR) << 8 |  (int)(2*x - RGB_COMPONENT_COLOR);
+			}
             // Send the pixel If we are drawing in the LCD pixel by pixel, 
             // otherwise we buffer it to write the whole line latter.
             if ( by_pixel ){
-              uint16_t rgb = LCD_rgb24_to_bgr565(colors[color % colornum]);
-              lcd_st7735_rgb565_put(lcd, (uint8_t*)&rgb, sizeof(rgb));
+              uint16_t bgr = LCD_rgb24_to_bgr565(color);
+              lcd_st7735_rgb565_put(lcd, (uint8_t*)&bgr, sizeof(bgr));
             }else {
-              buffer[row] = LCD_rgb24_to_bgr565(colors[color % colornum]);
+              buffer[iX] = LCD_rgb24_to_bgr565(color);
             }
-        }
-
+			counter++;
+		}
         // Send the buffered line.
-         if ( !by_pixel ){
-            rectangle.origin.x = col;
+        if ( !by_pixel ){
+            rectangle.origin.x = iY;
             rectangle.origin.y = 0;
             rectangle.width = 1;
             rectangle.height = HEIGHT;
             lcd_st7735_draw_rgb565(lcd, rectangle, (uint8_t*)buffer);
-         }
-    }
+        }
+	}
     lcd_st7735_rgb565_finish(lcd);
 }
 
 void fractal_bifurcation(St7735Context *lcd){
-    float r = .995, x_init = 0.5;
     size_t w, h;
     lcd_st7735_get_resolution(lcd, &h, &w);
 
     lcd_st7735_fill_rectangle(lcd, (LCD_rectangle){.origin = {.x = 0, .y = 0},
     .width = w, .height = h}, BGRColorBlack);
-    /* Population equation */
-    float delta_r = 0.005;
-    for (int col = 0; col < 639; col++) {
-        float x = x_init;
-        r += delta_r;
-        for (int i = 0; i < 256; ++i) {
-            x = r * x * (1 - x);
-            if ((x > 1000000) || (x < -1000000))
-                break;
-
-            int row = 349 - (x * 350);
-            if (i > 64 && row < 349 && row >= 0 && col >= 0 && col < 639) {
-                // ppm_dot_safe(ppm, col, row, PPM_WHITE);
-                lcd_st7735_draw_pixel(lcd, (LCD_Point){.x = col%w, .y = row%h}, BGRColorWhite);
-            }
-        }
-    }
 
 }
