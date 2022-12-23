@@ -8,7 +8,6 @@ filesets:
   files_rtl_demo_system:
     depend:
       - lowrisc:ibex:ibex_top
-      - lowrisc:ibex:rv_timer
       - pulp:riscv:debug_module
     files:
       - rtl/system/ibex_demo_system.sv
@@ -18,6 +17,8 @@ filesets:
       - rtl/system/pwm.sv
       - rtl/system/pwm_wrapper.sv
       - rtl/system/uart.sv
+      - rtl/system/spi_host.sv
+      - rtl/system/spi_top.sv
     file_type: systemVerilogSource
 
 targets:

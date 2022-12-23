@@ -8,6 +8,8 @@ following features:
 * A UART (transmit only for now)
 * GPIO (output only for now)
 * Timer
+* SPI
+* A basic peripheral to write ASCII output to a file and halt simulation from software
 
 Debug can be used via a USB connection to the Arty-A7 board. No external JTAG
 probe is required.
@@ -42,7 +44,7 @@ pip3 install -r python-requirements.txt
 You may need to run the last command twice if you get the following error:
 `ERROR: Failed building wheel for fusesoc`
 
-## Building
+## Building Software
 
 First the software must be built. This is provide an initial binary for the FPGA
 build.
@@ -59,6 +61,7 @@ Note the FPGA build relies on a fixed path to the initial binary (blank.vmem) so
 if you want to create your build directory elsewhere you need to adjust the path
 in `ibex_demo_system.core`
 
+## Building FPGA
 FuseSoC handles the FPGA build. Vivado tools must be setup beforehand. From the
 repository root:
 
@@ -66,7 +69,7 @@ repository root:
 source /path/to/vivado/settings64.sh
 fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:demo_system
 ```
-
+## Programming FPGA
 To program FPGAs the user using Vivado typically needs to have permissions to access USB devices connected to the PC. Depending on your security policy you can take different steps to enable this access. One way of doing so is given in the udev rule outlined below.
 
 To do so, create a file named /etc/udev/rules.d/90-arty-a7.rules and add the following content to it:
@@ -95,9 +98,9 @@ make -C ./build/lowrisc_ibex_demo_system_0/synth-vivado/ build-gui
 Inside Vivado you do not have to run the synthesis, the implementation or generate the bitstream.
 Simply click on "Open Hardware Manager", then on "Auto Connect" and finally on "Program Device".
 
-## Loading a program
+## Loading an application to the programmed FPGA
 
-The util/load_demo_system.sh script can be used to load and run a program. You
+The util/load_demo_system.sh script can be used to load and run an application. You
 can choose to immediately run it or begin halted, allowing you to attach a
 debugger.
 
@@ -121,9 +124,9 @@ In this case, you may try using `sudo`.
 
 To exit from the `screen` command, you should press control and a together, then release these two keys and press d.
 
-## Debugging a program
+## Debugging an application
 
-Either load a program and halt (see above) or start a new OpenOCD instance
+Either load an application and halt (see above) or start a new OpenOCD instance
 
 ```
 openocd -f util/arty-a7-openocd-cfg.tcl
@@ -136,4 +139,50 @@ remote target
 riscv32-unknown-elf-gdb ./sw/build/demo/demo
 
 (gdb) target extended-remote localhost:3333
+```
+## Building Simulation
+
+The Demo System simulator binary can be built via FuseSoC. From the Ibex
+repository root run:
+
+```
+fusesoc --cores-root=. run --target=sim --tool=verilator --setup --build lowrisc:ibex:demo_system
+```
+## Running the Simulator
+
+Having built the simulator and software, from the Ibex repository root run:
+
+```
+./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system [-t] --meminit=ram,<sw_elf_file>
+```
+
+`<sw_elf_file>` should be a path to an ELF file  (or alternatively a vmem file)
+built as described above. Use `./sw/build/demo/demo` to run the `demo`
+binary.
+
+Pass `-t` to get an FST trace of execution that can be viewed with
+[GTKWave](http://gtkwave.sourceforge.net/).
+
+```
+Simulation statistics
+=====================
+Executed cycles:  5899491
+Wallclock time:   1.934 s
+Simulation speed: 3.05041e+06 cycles/s (3050.41 kHz)
+
+Performance Counters
+====================
+Cycles:                     457
+NONE:                       0
+Instructions Retired:       296
+LSU Busy:                   108
+Fetch Wait:                 20
+Loads:                      53
+Stores:                     55
+Jumps:                      21
+Conditional Branches:       12
+Taken Conditional Branches: 7
+Compressed Instructions:    164
+Multiply Wait:              0
+Divide Wait:                0
 ```

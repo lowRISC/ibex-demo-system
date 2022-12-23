@@ -10,6 +10,7 @@
 // - UART for serial communication.
 // - Timer.
 // - Debug module.
+// - SPI for driving LCD screen
 module ibex_demo_system #(
   parameter int GpiWidth     = 8,
   parameter int GpoWidth     = 16,
@@ -22,33 +23,43 @@ module ibex_demo_system #(
   input  logic [GpiWidth-1:0] gp_i,
   output logic [GpoWidth-1:0] gp_o,
   output logic [PwmWidth-1:0] pwm_o,
-  output logic                uart_tx_o
+  output logic                uart_tx_o,
+  input  logic                spi_rx_i,
+  output logic                spi_tx_o,
+  output logic                spi_sck_o
 );
-  localparam logic [31:0] MEM_SIZE     = 64 * 1024; // 64 KiB
-  localparam logic [31:0] MEM_START    = 32'h00100000;
-  localparam logic [31:0] MEM_MASK     = ~(MEM_SIZE-1);
+  localparam logic [31:0] MEM_SIZE      = 64 * 1024; // 64 KiB
+  localparam logic [31:0] MEM_START     = 32'h00100000;
+  localparam logic [31:0] MEM_MASK      = ~(MEM_SIZE-1);
 
-  localparam logic [31:0] GPIO_SIZE    =  4 * 1024; //  4 KiB
-  localparam logic [31:0] GPIO_START   = 32'h80000000;
-  localparam logic [31:0] GPIO_MASK    = ~(GPIO_SIZE-1);
+  localparam logic [31:0] GPIO_SIZE     =  4 * 1024; //  4 KiB
+  localparam logic [31:0] GPIO_START    = 32'h80000000;
+  localparam logic [31:0] GPIO_MASK     = ~(GPIO_SIZE-1);
 
-  localparam logic [31:0] DEBUG_START  = 32'h1a110000;
-  localparam logic [31:0] DEBUG_SIZE   = 64 * 1024; // 64 KiB
-  localparam logic [31:0] DEBUG_MASK   = ~(DEBUG_SIZE-1);
+  localparam logic [31:0] DEBUG_START   = 32'h1a110000;
+  localparam logic [31:0] DEBUG_SIZE    = 64 * 1024; // 64 KiB
+  localparam logic [31:0] DEBUG_MASK    = ~(DEBUG_SIZE-1);
 
-  localparam logic [31:0] UART_SIZE    =  4 * 1024; //  4 KiB
-  localparam logic [31:0] UART_START   = 32'h80001000;
-  localparam logic [31:0] UART_MASK    = ~(UART_SIZE-1);
+  localparam logic [31:0] UART_SIZE     =  4 * 1024; //  4 KiB
+  localparam logic [31:0] UART_START    = 32'h80001000;
+  localparam logic [31:0] UART_MASK     = ~(UART_SIZE-1);
 
-  localparam logic [31:0] TIMER_SIZE   =  4 * 1024; //  4 KiB
-  localparam logic [31:0] TIMER_START  = 32'h80002000;
-  localparam logic [31:0] TIMER_MASK   = ~(TIMER_SIZE-1);
+  localparam logic [31:0] TIMER_SIZE    =  4 * 1024; //  4 KiB
+  localparam logic [31:0] TIMER_START   = 32'h80002000;
+  localparam logic [31:0] TIMER_MASK    = ~(TIMER_SIZE-1);
 
-  // Pulse width modulator parameters
-  localparam logic [31:0] PWM_SIZE     =  4 * 1024; //  4 KiB
-  localparam logic [31:0] PWM_START    = 32'h80003000;
-  localparam logic [31:0] PWM_MASK     = ~(PWM_SIZE-1);
+  localparam logic [31:0] PWM_SIZE      =  4 * 1024; //  4 KiB
+  localparam logic [31:0] PWM_START     = 32'h80003000;
+  localparam logic [31:0] PWM_MASK      = ~(PWM_SIZE-1);
   localparam int PwmCtrSize = 8;
+
+  parameter logic [31:0] SPI_SIZE       = 1 * 1024; // 1kB
+  parameter logic [31:0] SPI_START      = 32'h80004000;
+  parameter logic [31:0] SPI_MASK       = ~(SPI_SIZE-1);
+
+  parameter logic [31:0] SIM_CTRL_SIZE  = 1 * 1024; // 1kB
+  parameter logic [31:0] SIM_CTRL_START = 32'h20000;
+  parameter logic [31:0] SIM_CTRL_MASK  = ~(SIM_CTRL_SIZE-1);
 
   // debug functionality is optional
   localparam bit DBG = 1;
@@ -66,10 +77,12 @@ module ibex_demo_system #(
     Pwm,
     Uart,
     Timer,
+    Spi,
+    SimCtrl,
     DbgDev
   } bus_device_e;
 
-  localparam int NrDevices = DBG ? 6 : 5;
+  localparam int NrDevices = DBG ? 8 : 7;
   localparam int NrHosts = DBG ? 2 : 1;
 
   // interrupts
@@ -116,6 +129,8 @@ module ibex_demo_system #(
   logic        dbg_slave_rvalid;
   logic [31:0] dbg_slave_rdata;
 
+  // Internally generated resets cause IMPERFECTSCH warnings
+  /* verilator lint_off IMPERFECTSCH */
   logic        rst_core_n;
   logic        ndmreset_req;
   logic        dm_debug_req;
@@ -134,11 +149,15 @@ module ibex_demo_system #(
   assign cfg_device_addr_mask[Uart]   = UART_MASK;
   assign cfg_device_addr_base[Timer]  = TIMER_START;
   assign cfg_device_addr_mask[Timer]  = TIMER_MASK;
+  assign cfg_device_addr_base[Spi]    = SPI_START;
+  assign cfg_device_addr_mask[Spi]    = SPI_MASK;
+  assign cfg_device_addr_base[SimCtrl] = SIM_CTRL_START;
+  assign cfg_device_addr_mask[SimCtrl] = SIM_CTRL_MASK;
 
   if (DBG) begin : g_dbg_device_cfg
     assign cfg_device_addr_base[DbgDev] = DEBUG_START;
     assign cfg_device_addr_mask[DbgDev] = DEBUG_MASK;
-    assign device_err[DbgDev]           = 1'b0;
+    assign device_err[DbgDev] = 1'b0;
   end
 
   // Tie-off unused error signals
@@ -146,6 +165,8 @@ module ibex_demo_system #(
   assign device_err[Gpio] = 1'b0;
   assign device_err[Pwm]  = 1'b0;
   assign device_err[Uart] = 1'b0;
+  assign device_err[Spi] = 1'b0;
+  assign device_err[SimCtrl] = 1'b0;
 
   bus #(
     .NrDevices    ( NrDevices ),
@@ -202,48 +223,60 @@ module ibex_demo_system #(
   assign rst_core_n = rst_sys_ni & ~ndmreset_req;
 
   ibex_top #(
-     .RegFile         ( ibex_pkg::RegFileFPGA              ),
-     .DbgTriggerEn    ( DbgTriggerEn                       ),
-     .DbgHwBreakNum   ( DbgHwBreakNum                      ),
-     .DmHaltAddr      ( DEBUG_START + dm::HaltAddress      ),
-     .DmExceptionAddr ( DEBUG_START + dm::ExceptionAddress )
+     .RegFile         ( ibex_pkg::RegFileFPGA                   ),
+     .MHPMCounterNum  ( 10                                      ),
+     .RV32M           ( ibex_pkg::RV32MFast                     ),
+     .RV32B           ( ibex_pkg::RV32BNone                     ),
+     .DbgTriggerEn    ( DbgTriggerEn                            ),
+     .DbgHwBreakNum   ( DbgHwBreakNum                           ),
+     .DmHaltAddr      ( DEBUG_START + dm::HaltAddress[31:0]     ),
+     .DmExceptionAddr ( DEBUG_START + dm::ExceptionAddress[31:0])
   ) u_top (
-     .clk_i                 (clk_sys_i),
-     .rst_ni                (rst_core_n),
+     .clk_i (clk_sys_i),
+     .rst_ni(rst_core_n),
 
-     .test_en_i             (1'b0),
-     .scan_rst_ni           (1'b1),
-     .ram_cfg_i             (10'b0),
+     .test_en_i  ('b0),
+     .scan_rst_ni(1'b1),
+     .ram_cfg_i  ('b0),
 
-     .hart_id_i             (32'b0),
+     .hart_id_i(32'b0),
      // First instruction executed is at 0x0 + 0x80
-     .boot_addr_i           (32'h00100000),
+     .boot_addr_i(32'h00100000),
 
-     .instr_req_o           (core_instr_req),
-     .instr_gnt_i           (core_instr_gnt),
-     .instr_rvalid_i        (core_instr_rvalid),
-     .instr_addr_o          (core_instr_addr),
-     .instr_rdata_i         (core_instr_rdata),
-     .instr_err_i           (1'b0),
+      .instr_req_o       (core_instr_req),
+      .instr_gnt_i       (core_instr_gnt),
+      .instr_rvalid_i    (core_instr_rvalid),
+      .instr_addr_o      (core_instr_addr),
+      .instr_rdata_i     (core_instr_rdata),
+      .instr_rdata_intg_i('0),
+      .instr_err_i       ('0),
 
-     .data_req_o            (host_req[CoreD]),
-     .data_gnt_i            (host_gnt[CoreD]),
-     .data_rvalid_i         (host_rvalid[CoreD]),
-     .data_we_o             (host_we[CoreD]),
-     .data_be_o             (host_be[CoreD]),
-     .data_addr_o           (host_addr[CoreD]),
-     .data_wdata_o          (host_wdata[CoreD]),
-     .data_rdata_i          (host_rdata[CoreD]),
-     .data_err_i            (host_err[CoreD]),
+      .data_req_o       (host_req[CoreD]),
+      .data_gnt_i       (host_gnt[CoreD]),
+      .data_rvalid_i    (host_rvalid[CoreD]),
+      .data_we_o        (host_we[CoreD]),
+      .data_be_o        (host_be[CoreD]),
+      .data_addr_o      (host_addr[CoreD]),
+      .data_wdata_o     (host_wdata[CoreD]),
+      .data_wdata_intg_o(),
+      .data_rdata_i     (host_rdata[CoreD]),
+      .data_rdata_intg_i('0),
+      .data_err_i       (host_err[CoreD]),
 
-     .irq_software_i        (1'b0),
-     .irq_timer_i           (timer_irq),
-     .irq_external_i        (1'b0),
-     .irq_fast_i            (15'b0),
-     .irq_nm_i              (1'b0),
+     .irq_software_i(1'b0),
+     .irq_timer_i   (timer_irq),
+     .irq_external_i(1'b0),
+     .irq_fast_i    (15'b0),
+     .irq_nm_i      (1'b0),
 
-     .debug_req_i           (dm_debug_req),
-     .crash_dump_o          (),
+     .scramble_key_valid_i('0),
+     .scramble_key_i      ('0),
+     .scramble_nonce_i    ('0),
+     .scramble_req_o      (),
+
+     .debug_req_i        (dm_debug_req),
+     .crash_dump_o       (),
+     .double_fault_seen_o(),
 
      .fetch_enable_i        ('1),
      .alert_minor_o         (),
@@ -330,6 +363,46 @@ module ibex_demo_system #(
 
     .uart_tx_o
   );
+
+  spi_top #(
+    .ClockFrequency(50_000_000),
+    .CPOL(0),
+    .CPHA(1)
+  ) u_spi (
+    .clk_i (clk_sys_i),
+    .rst_ni(rst_sys_ni),
+
+    .device_req_i   (device_req[Spi]),
+    .device_addr_i  (device_addr[Spi]),
+    .device_we_i    (device_we[Spi]),
+    .device_be_i    (device_be[Spi]),
+    .device_wdata_i (device_wdata[Spi]),
+    .device_rvalid_o(device_rvalid[Spi]),
+    .device_rdata_o (device_rdata[Spi]),
+
+    .spi_rx_i(spi_rx_i), // Data received from SPI device
+    .spi_tx_o(spi_tx_o), // Data transmitted to SPI device
+    .sck_o(spi_sck_o), // Serial clock pin
+
+    .byte_data_o() // unused
+  );
+
+  `ifdef VERILATOR
+    simulator_ctrl #(
+      .LogName("ibex_demo_system.log")
+    ) u_simulator_ctrl (
+      .clk_i     (clk_sys_i),
+      .rst_ni    (rst_sys_ni),
+
+      .req_i     (device_req[SimCtrl]),
+      .we_i      (device_we[SimCtrl]),
+      .be_i      (device_be[SimCtrl]),
+      .addr_i    (device_addr[SimCtrl]),
+      .wdata_i   (device_wdata[SimCtrl]),
+      .rvalid_o  (device_rvalid[SimCtrl]),
+      .rdata_o   (device_rdata[SimCtrl])
+    );
+  `endif
 
   timer #(
     .DataWidth    ( 32 ),
