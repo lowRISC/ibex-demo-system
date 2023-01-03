@@ -72,7 +72,7 @@ fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:demo_syst
 ## Programming FPGA
 To program FPGAs the user using Vivado typically needs to have permissions to access USB devices connected to the PC. Depending on your security policy you can take different steps to enable this access. One way of doing so is given in the udev rule outlined below.
 
-To do so, create a file named /etc/udev/rules.d/90-arty-a7.rules and add the following content to it:
+To do so, create a file named `/etc/udev/rules.d/90-arty-a7.rules` and add the following content to it:
 
 ```
 # Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
@@ -82,6 +82,15 @@ ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idPro
 # Future Technology Devices International, Ltd FT232 Serial (UART) IC
 ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666"
 ```
+
+Run the following to reload the rules...
+
+```bash
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+And if your A7 is already connected, unplug your device and plug it back in.
 
 To program the FPGA, either use FuseSoC again
 
