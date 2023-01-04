@@ -11,7 +11,8 @@
 #include "gpio.h"
 
 #define UART0_BASE 0x80001000
-#define UART_IRQ (1 << 16)
+#define UART_IRQ_NUM 16
+#define UART_IRQ (1 << UART_IRQ_NUM)
 #define DEFAULT_UART UART_FROM_BASE_ADDR(UART0_BASE)
 
 #define GPIO_BASE 0x80000000
