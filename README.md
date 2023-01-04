@@ -34,8 +34,8 @@ recommended)
 
 ```bash
 # Setup python venv
-python3 -m venv .
-source ./bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 
 # Install python requirements
 pip3 install -r python-requirements.txt
@@ -50,11 +50,11 @@ First the software must be built. This is provide an initial binary for the FPGA
 build.
 
 ```
-cd sw
-mkdir build
-cd build
+mkdir sw/build
+pushd sw/build
 cmake ../
 make
+popd
 ```
 
 Note the FPGA build relies on a fixed path to the initial binary (blank.vmem) so

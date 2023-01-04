@@ -1,7 +1,3 @@
-bin/
 build/
-lib/
-lib64
-pyvenv.cfg
-share/
 sw/build/
+.venv/
