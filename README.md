@@ -96,6 +96,9 @@ To program the FPGA, either use FuseSoC again
 
 ```
 fusesoc --cores-root=. run --target=synth --run lowrisc:ibex:demo_system
+
+# If the above does not work, try executing the programming operation manually with..
+make -C ./build/lowrisc_ibex_demo_system_0/synth-vivado/ pgm
 ```
 
 Or use the Vivado GUI
