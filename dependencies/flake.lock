@@ -1,0 +1,63 @@
+{
+  "nodes": {
+    "lowrisc_edalize_src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1649340101,
+        "narHash": "sha256-iIf7bUBE2SeS/TByUNL9wI1LswlHTmgHYGJltWXNUWE=",
+        "owner": "lowRISC",
+        "repo": "edalize",
+        "rev": "5ae2c3e1ca306e27d81ce5fcc769f62cb7ac42d0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lowRISC",
+        "ref": "ot-0.2",
+        "repo": "edalize",
+        "type": "github"
+      }
+    },
+    "lowrisc_fusesoc_src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1646915773,
+        "narHash": "sha256-HFrx6vjthNbhrIeV4vNW3YmmqBwqb6lX8lu0dcmQnQM=",
+        "owner": "lowRISC",
+        "repo": "fusesoc",
+        "rev": "c64ca392382b0c432c893d5ce4a93b77af213fdf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lowRISC",
+        "ref": "ot-0.2",
+        "repo": "fusesoc",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1673439286,
+        "narHash": "sha256-CHlGzPceL90wBLD7wt8ZGvulHtf5ZfbXfR37DR10eRs=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "9c8bff77b5d51380f5da349d0a6fc515da6244b0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-22.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "lowrisc_edalize_src": "lowrisc_edalize_src",
+        "lowrisc_fusesoc_src": "lowrisc_fusesoc_src",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
