@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "openocd",
+  target_dir: "openocd",
+  patch_dir: "",
+
+  upstream: {
+    url: "https://github.com/openocd-org/openocd.git",
+    rev: "v0.11.0",
+  }
+}
