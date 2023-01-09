@@ -1,0 +1,679 @@
+- ID: ac701
+  Description: Xilinx Artix-7 FPGA AC701 Evaluation Kit
+  URL: https://www.xilinx.com/products/boards-and-kits/ek-a7-ac701-g.html
+  FPGA: Artix xc7a200t2fbg676c
+  Memory: OK
+  Flash: NT
+  Constraints: AC701
+
+- ID: acornCle215
+  Description: Acorn CLE 215+
+  URL: http://squirrelsresearch.com/acorn-cle-215
+  FPGA: Artix xc7a200tsbg484
+  Memory: OK
+  Flash: OK
+
+- ID: litex-acorn-baseboard-mini
+  Description: The LiteX-Acorn-Baseboards are baseboards developed around the SQRL's Acorn board (or Nite/LiteFury)
+  URL: https://github.com/enjoy-digital/litex-acorn-baseboard/
+  FPGA: Artix xc7a200tsbg484
+  Memory: OK
+  Flash: OK
+
+- ID: alchitry_au
+  Description: Alchitry Au
+  URL: https://alchitry.com/products/alchitry-au-fpga-development-board
+  FPGA: Artix xc7a35tftg256
+  Memory: OK
+  Flash: OK
+
+- ID: alchitry_au_plus
+  Description: Alchitry Au+ (Plus)
+  URL: https://www.sparkfun.com/products/17514
+  FPGA: Artix xc7a100tftg256
+  Memory: OK
+  Flash: OK
+
+- ID: alinx_ax516
+  Description: ALINX AX516
+  URL: https://www.alinx.com/en/detail/281
+  FPGA: Spartan6 xc6slx16csg324
+  Memory: OK
+  Flash: OK
+
+- ID: analogMax
+  Description: Trenz TEI0010 - AnalogMax
+  URL: https://wiki.trenz-electronic.de/display/PD/TEI0010+-+AnalogMax
+  FPGA: Max 10 10M08SAU169C8G
+  Memory: SVF
+  Flash: SVF
+
+- ID: arty_a7_35t
+  Description: Digilent Arty A7
+  URL: https://reference.digilentinc.com/reference/programmable-logic/arty-a7/start
+  FPGA: Artix xc7a35ticsg324
+  Memory: OK
+  Flash: OK
+  Constraints: Arty-A7-35T
+
+- ID: arty_a7_100t
+  Description: Digilent Arty A7
+  URL: https://reference.digilentinc.com/reference/programmable-logic/arty-a7/start
+  FPGA: Artix xc7a100tcsg324
+  Memory: OK
+  Flash: OK
+  Constraints: Arty-A7-100T
+
+- ID: arty_s7_25
+  Description: Digilent Arty S7
+  URL: https://reference.digilentinc.com/reference/programmable-logic/arty-s7/start
+  FPGA: Spartan7 xc7s25csga324
+  Memory: OK
+  Flash: OK
+  Constraints: Arty-S7-25
+
+- ID: arty_s7_50
+  Description: Digilent Arty S7
+  URL: https://reference.digilentinc.com/reference/programmable-logic/arty-s7/start
+  FPGA: Spartan7 xc7s50csga324
+  Memory: OK
+  Flash: OK
+  Constraints: Arty-S7-50
+
+- ID: arty_z7_10
+  Description: Digilent Arty S7
+  URL: https://reference.digilentinc.com/reference/programmable-logic/arty-z7/start
+  FPGA: Zynq7000 xc7z010csg400
+  Memory: OK
+  Flash: NA
+
+- ID: arty_z7_20
+  Description: Digilent Arty S7
+  URL: https://reference.digilentinc.com/reference/programmable-logic/arty-z7/start
+  FPGA: Zynq7000 xc7z020csg400
+  Memory: OK
+  Flash: NA
+
+- ID: arty
+  Description: Digilent Analog Discovery 2
+  URL: https://reference.digilentinc.com/test-and-measurement/analog-discovery-2/start
+  FPGA: Spartan6 xc6slx25
+  Memory: OK
+  Flash: NT
+
+- ID: arty
+  Description: Digilent Digital Discovery
+  URL: https://reference.digilentinc.com/test-and-measurement/digital-discovery/start
+  FPGA: Spartan6 xc6slx25
+  Memory: OK
+  Flash: NT
+
+- ID: axu2cga
+  Description: Alinx AXU2CGA Zynq MPSoC Dev Board
+  URL: http://www.alinx.com/en/index.php/default/content/101.html
+  FPGA: ZynqMPSoC XCZU2CG
+  Memory: OK
+  Flash: NA
+
+- ID: basys3
+  Description: Digilent Basys3
+  URL: https://reference.digilentinc.com/reference/programmable-logic/basys-3/start
+  FPGA: Artix xc7a35tcpg236
+  Memory: OK
+  Flash: OK
+
+- ID: cmod_s7
+  Description: Digilent Cmod S7
+  URL: https://https://digilent.com/reference/programmable-logic/cmod-s7/start
+  FPGA: Spartan7 xc7s25csga225
+  Memory: NA
+  Flash: OK
+
+- ID: gatemate_evb_jtag
+  Description: Cologne Chip GateMate FPGA Evaluation Board (JTAG mode)
+  URL: https://colognechip.com/programmable-logic/gatemate-evaluation-board/
+  FPGA: Cologne Chip GateMate Series
+  Memory: OK
+  Flash: OK
+
+- ID: gatemate_evb_spi
+  Description: Cologne Chip GateMate FPGA Evaluation Board (SPI mode)
+  URL: https://colognechip.com/programmable-logic/gatemate-evaluation-board/
+  FPGA: Cologne Chip GateMate Series
+  Memory: OK
+  Flash: OK
+
+- ID: gatemate_pgm_spi
+  Description: Cologne Chip GateMate FPGA Programmer (SPI mode)
+  URL: https://colognechip.com/programmable-logic/gatemate/
+  FPGA: Cologne Chip GateMate Series
+  Memory: OK
+  Flash: OK
+
+- ID: cmoda7_35t
+  Description: Digilent CmodA7
+  URL: https://digilent.com/reference/programmable-logic/cmod-a7/start
+  FPGA: Artix xc7a35tcpg236
+  Memory: OK
+  Flash: OK
+  Constraints: Cmod-A7-35T
+
+- ID: colorlight
+  Description: Colorlight 5A-75B (version 7)
+  URL: https://fr.aliexpress.com/item/32281130824.html
+  FPGA: ECP5 LFE5U-25F-6BG256C
+  Memory: OK
+  Flash: OK
+
+- ID: colorlight-i5
+  Description: Colorlight I5
+  URL: https://www.colorlight-led.com/product/colorlight-i5-led-display-receiver-card.html
+  FPGA: ECP5 LFE5U-25F-6BG381C
+  Memory: OK
+  Flash: OK
+  Constraints: Colorlight-i5-v7.0
+
+- ID: colorlight-i9
+  Description: Colorlight I9
+  URL: https://www.colorlightinside.com/Products/i%20Receiving-series/34_101.html
+  FPGA: ECP5 LFE5U-45F-6BG381C
+  Memory: OK
+  Flash: OK
+  Constraints: Colorlight-i9-v7.2
+
+- ID: crosslinknx_evn
+  Description: Lattice CrossLink-NX Evaluation Board
+  URL: https://www.latticesemi.com/en/Products/DevelopmentBoardsAndKits/CrossLink-NXEvaluationBoard
+  FPGA: Nexus LIFCL-40
+  Memory: OK
+  Flash: OK
+
+- ID: cyc1000
+  Description: Trenz cyc1000
+  URL: https://shop.trenz-electronic.de/en/TEI0003-02-CYC1000-with-Cyclone-10-FPGA-8-MByte-SDRAM
+  FPGA: Cyclone 10 LP 10CL025YU256C8G
+  Memory: OK
+  Flash: OK
+
+- ID: c10lp-refkit
+  Description: Trenz c10lp-refkit
+  URL: https://shop.trenz-electronic.de/en/TEI0009-02-055-8CA-Cyclone-10-LP-RefKit-10CL055-Development-Board-32-MByte-SDRAM-16-MByte-Flash
+  FPGA: Cyclone 10 LP 10CL055YU484C8G
+  Memory: OK
+  Flash: OK
+
+- ID: de0
+  Description: Terasic DE0
+  URL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?No=364
+  FPGA: Cyclone III EP3C16F484C6
+  Memory: OK
+  Flash: NT
+
+- ID: de0nano
+  Description: Terasic de0nano
+  URL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?No=593
+  FPGA: Cyclone IV E EP4CE22F17C6
+  Memory: OK
+  Flash: OK
+
+- ID: de0nanoSoc
+  Description: Terasic de0nanoSoc
+  URL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=205&No=941
+  FPGA: Cyclone V SoC 5CSEMA4U23C6
+  Memory: OK
+
+- ID: de10nano
+  Description: Terasic de10Nano
+  URL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=205&No=1046
+  FPGA: Cyclone V SoC 5CSEBA6U23I7
+  Memory: OK
+
+- ID: de1Soc
+  Description: Terasic DE1-SoC
+  URL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=167&No=836
+  FPGA: Cyclone V SoC 5CSEMA5F31C6
+  Memory: OK
+
+- ID: deca
+  Description: Arrow/Terasic DECA
+  URL: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=&No=944&PartNo=1
+  FPGA: MAX 10 10M50DAF484C6GES
+  Memory: OK
+
+- ID: ecp5_evn
+  Description: Lattice ECP5 5G Evaluation Board
+  URL: https://www.latticesemi.com/en/Products/DevelopmentBoardsAndKits/ECP5EvaluationBoard
+  FPGA: ECP5G LFE5UM5G-85F
+  Memory: OK
+  Flash: OK
+  Constraints: ECP5-EVN
+
+- ID: ecpix5
+  Description: LambdaConcept ECPIX-5
+  URL: https://shop.lambdaconcept.com/home/46-2-ecpix-5.html#/2-ecpix_5_fpga-ecpix_5_85f
+  FPGA: ECP5 LFE5UM5G-85F
+  Memory: OK
+  Flash: OK
+  Constraints:
+    - ECPIX-5-45F
+    - ECPIX-5-85F
+
+- ID: fireant
+  Description: Fireant Trion T8
+  URL: https://www.crowdsupply.com/jungle-elec/fireant
+  FPGA: Trion T8F81
+  Memory: NA
+  Flash: AS
+
+- ID: fomu
+  Description: Fomu PVT
+  URL: https://tomu.im/fomu.html
+  FPGA: iCE40UltraPlus UP5K
+  Memory: NA
+  Flash: OK
+  Constraints: Fomu-PVT
+
+- ID: honeycomb
+  Description: honeycomb
+  URL: https://github.com/Disasm/honeycomb-pcb
+  FPGA: littleBee GW1NS-2C
+  Memory: OK
+  Flash: IF
+
+- ID: ice40_generic
+  Description: iCEBreaker
+  URL: https://1bitsquared.com/collections/fpga/products/icebreaker
+  FPGA: iCE40UltraPlus UP5K
+  Memory: NA
+  Flash: AS
+  Constraints: iCEBreaker
+
+- ID: icebreaker-bitsy
+  Description: iCEBreaker-bitsy
+  URL: https://1bitsquared.com/collections/fpga/products/icebreaker-bitsy
+  FPGA: iCE40UltraPlus UP5K
+  Memory: NA
+  Flash: OK
+  Constraints:
+    - iCEBreaker-bitsy-v0
+    - iCEBreaker-bitsy-v1
+
+- ID: ice40_generic
+  Description: icestick
+  URL: https://www.latticesemi.com/icestick
+  FPGA: iCE40 HX1k
+  Memory: NA
+  Flash: AS
+  Constraints: IceStick
+
+- ID: ice40_generic
+  Description: iCE40-HX8K
+  URL: https://www.latticesemi.com/Products/DevelopmentBoardsAndKits/iCE40HX8KBreakoutBoard.aspx
+  FPGA: iCE40 HX8k
+  Memory: OK
+  Flash: AS
+  Constraints: iCE40-HX8K
+
+- ID: ice40_generic
+  Description: Olimex iCE40HX1K-EVB
+  URL: https://www.olimex.com/Products/FPGA/iCE40/iCE40HX1K-EVB/open-source-hardware
+  FPGA: iCE40 HX1k
+  Memory: NT
+  Flash: AS
+  Constraints: iCE40HX1K-EVB
+
+- ID: ice40_generic
+  Description: Olimex iCE40HX8K-EVB
+  URL: https://www.olimex.com/Products/FPGA/iCE40/iCE40HX8K-EVB/open-source-hardware
+  FPGA: iCE40 HX8k
+  Memory: NT
+  Flash: AS
+  Constraints: iCE40HX8K-EVB
+
+- ID: ice40_generic
+  Description: iCE40 UltraPlus Breakout Board (iCE40UP5K-B-EVN)
+  URL: https://www.latticesemi.com/Products/DevelopmentBoardsAndKits/iCE40UltraPlusBreakoutBoard
+  FPGA: iCE40-UP5K
+  Memory: NT
+  Flash: AS
+  Constraints: iCE40-UP
+
+- ID: ice40_generic
+  Description: Icezum Alhambra II
+  URL: https://alhambrabits.com/alhambra
+  FPGA: iCE40 HX4k
+  Memory: NT
+  Flash: AS
+  Constraints: IceZumAlhambraII
+
+- ID: kc705
+  Description: Xilinx KC705
+  URL: https://www.xilinx.com/products/boards-and-kits/ek-k7-kc705-g.html
+  FPGA: Kintex7 xc7k325t
+  Memory: OK
+  Flash: NT
+  Constraints: KC705
+
+- ID: licheeTang
+  Description: Sipeed Lichee Tang
+  URL: https://tang.sipeed.com/en/hardware-overview/lichee-tang/
+  FPGA: eagle s20 EG4S20BG256
+  Memory: OK
+  Flash: OK
+
+- ID: machXO2EVN
+  Description: Lattice MachXO2 Breakout Board Evaluation Kit
+  URL: https://www.latticesemi.com/products/developmentboardsandkits/machxo2breakoutboard
+  FPGA: MachXO2 LCMXO2-7000HE
+  Memory: OK
+  Flash: OK
+
+- ID: machXO3EVN
+  Description: Lattice MachXO3D Development Board
+  URL: https://www.latticesemi.com/products/developmentboardsandkits/machxo3d_development_board
+  FPGA: MachXO3D LCMXO3D-9400HC
+  Memory: OK
+  Flash: NT
+
+- ID: machXO3SK
+  Description: Lattice MachXO3LF Starter Kit
+  URL: https://www.latticesemi.com/en/Products/DevelopmentBoardsAndKits/MachXO3LFStarterKit
+  FPGA: MachXO3 LCMX03LF-6900C
+  Memory: OK
+  Flash: OK
+
+- ID: nexys_a7_50
+  Description: Digilent Nexys A7(Nexys 4 DDR)
+  URL: https://digilent.com/reference/programmable-logic/nexys-a7/start
+  FPGA: Artix xc7a50tcsg324
+  Memory: OK
+  Flash: OK
+  Constraints: Nexys4DDR
+
+- ID: nexys_a7_100
+  Description: Digilent Nexys A7(Nexys 4 DDR)
+  URL: https://digilent.com/reference/programmable-logic/nexys-a7/start
+  FPGA: Artix nexys_a7_100
+  Memory: OK
+  Flash: OK
+  Constraints: Nexys4DDR
+
+- ID: nexysVideo
+  Description: Digilent Nexys Video
+  URL: https://reference.digilentinc.com/reference/programmable-logic/nexys-video/start
+  FPGA: Artix xc7a200tsbg484
+  Memory: OK
+  Flash: OK
+
+- ID: orbtrace_dfu
+  Description: ORBTrace mini (dfu mode)
+  URL: https://store.zyp.no/product/orbtrace-mini
+  FPGA: ECP5 LFE5U-25F-8BG256C
+  Memory: NA
+  Flash: OK (DFU)
+
+- ID: orangeCrab
+  Description: Orange Crab
+  URL: https://github.com/gregdavill/OrangeCrab
+  FPGA: ECP5 LFE5U-25F-8MG285C
+  Memory: OK (JTAG)
+  Flash: OK (DFU)
+  Constraints: OrangeCrab-r0.2
+
+- ID: papilio_one
+  Description: Papilio One
+  URL: https://papilio.cc/index.php?n=Papilio.PapilioOne
+  FPGA: Spartan3E xc3s500e-vq100
+  Memory: OK
+  Flash: OK
+
+- ID: pipistrello
+  Description: Saanlima Pipistrello LX45
+  URL: http://pipistrello.saanlima.com/index.php?title=Welcome_to_Pipistrello
+  FPGA: Spartan6 xc6slx45-csg324
+  Memory: OK
+  Flash: OK
+
+- ID: pynq_z2
+  Description: PYNQ-Z2
+  URL: https://www.tulembedded.com/FPGA/ProductsPYNQ-Z2.html
+  FPGA: Zynq7000 xc7z020clg400
+  Memory: OK
+  Flash: NA
+
+- ID: qmtechCycloneIV
+  Description: QMTech CycloneIV Core Board
+  URL: https://fr.aliexpress.com/item/32949281189.html
+  FPGA: Cyclone IV EP4CE15F23C8N
+  Memory: OK
+  Flash: OK
+
+- ID: qmtechCycloneV
+  Description: QMTech CycloneV Core Board
+  URL: https://fr.aliexpress.com/i/1000006622149.html
+  FPGA: Cyclone V 5CEFA2F23I7
+  Memory: OK
+  Flash: OK
+
+- ID: qmtechCycloneV_5ce523
+  Description: QMTech CycloneV Core Board
+  URL: https://fr.aliexpress.com/item/1005001782703399.html
+  FPGA: Cyclone V 5CEFA5F23I7
+  Memory: OK
+  Flash: OK
+
+- ID: qmtechKintex7
+  Description: QMTech Kintex7 Core Board
+  URL: https://www.aliexpress.com/item/1005003668804223.html
+  FPGA: Kintex xc7k325tffg676
+  Memory: OK
+  Flash: OK
+
+- ID: genesys2
+  Description: Digilent Kintex7 Evaluation Board
+  URL: https://digilent.com/reference/programmable-logic/genesys-2/start
+  FPGA: Kintex xc7k325tffg900
+  Memory: OK
+  Flash: OK
+
+- ID: runber
+  Description: SeeedStudio Gowin RUNBER
+  URL: https://www.seeedstudio.com/Gowin-RUNBER-Development-Board-p-4779.html
+  FPGA: littleBee GW1N-4
+  Memory: OK
+  Flash: IF/EF
+
+- ID: runber
+  Description: Scarab Hardware MiniSpartan6+
+  URL: https://www.kickstarter.com/projects/1812459948/minispartan6-a-powerful-fpga-board-and-easy-to-use
+  FPGA: Spartan6 xc6slx25-3-ftg256
+  Memory: OK
+  Flash: NT
+
+- ID: spartanEdgeAccelBoard
+  Description: SeeedStudio Spartan Edge Accelerator Board
+  URL: http://wiki.seeedstudio.com/Spartan-Edge-Accelerator-Board
+  FPGA: Spartan7 xc7s15ftgb196
+  Memory: OK
+  Flash: NA
+
+- ID: SPEC150
+  Description: CERN Simple PCIe FMC carrier SPEC
+  URL: https://ohwr.org/project/spec150/wikis/home
+  FPGA: Spartan6 xc6slx150Tfgg484
+  Memory: OK
+  Flash: OK
+
+- ID: stlv7325
+  Description: Sitlinv STLV7325 Board
+  URL: https://www.aliexpress.com/item/1005001275162791.html
+  FPGA: Kintex xc7k325tffg676
+  Memory: OK
+  Flash: OK
+
+- ID: tangnano
+  Description: Sipeed Tang Nano
+  URL: https://tangnano.sipeed.com/en/
+  FPGA: littleBee GW1N-1
+  Memory: OK
+
+- ID: tangnano1k
+  Description: Sipeed Tang Nano 1K
+  URL: https://tangnano.sipeed.com/en/
+  FPGA: littleBee GW1NZ-1
+  Memory: OK
+  Flash: IF
+
+- ID: tangnano4k
+  Description: Sipeed Tang Nano 4K
+  URL: https://tangnano.sipeed.com/en/
+  FPGA: littleBee GW1NSR-4C
+  Memory: OK
+  Flash: IF/EF
+
+- ID: tangnano9k
+  Description: Sipeed Tang Nano 9K
+  URL: https://tangnano.sipeed.com/en/
+  FPGA: littleBee GW1NR-9C
+  Memory: OK
+  Flash: IF/EF
+
+- ID: tangprimer20k
+  Description: Sipeed Tang Primer 20k
+  URL: https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-Doc/summary.html
+  FPGA: Gowin Arora GW2A(R)-18(C)
+  Memory: OK
+  Flash: IF
+
+- ID: tec0117
+  Description: Trenz Gowin LittleBee (TEC0117)
+  URL: https://shop.trenz-electronic.de/en/TEC0117-01-FPGA-Module-with-GOWIN-LittleBee-and-8-MByte-internal-SDRAM
+  FPGA: littleBee GW1NR-9
+  Memory: OK
+  Flash: IF
+
+- ID: ulx3s
+  Description: Radiona ULX3S
+  URL: https://radiona.org/ulx3s/
+  FPGA: ECP5 LFE5U
+  Memory: OK
+  Flash: OK
+  Constraints:
+    - ULX3S-12F
+    - ULX3S-25F
+    - ULX3S-45F
+    - ULX3S-85F
+
+- ID: ulx3s_dfu
+  Description: Radiona ULX3S DFU mode
+  URL: https://github.com/emard/had2019-playground
+  FPGA: ECP5 LFE5U
+  Memory: NA
+  Flash: OK
+
+- ID: xtrx
+  Description: FairWaves XTRXPro
+  URL: https://www.crowdsupply.com/fairwaves/xtrx
+  FPGA: Artix xc7a50tcpg236
+  Memory: OK
+  Flash: OK
+
+- ID: xyloni_spi
+  Description: Efinix Xyloni
+  URL: https://www.efinixinc.com/products-devkits-xyloni.html
+  FPGA: Trion T8F81
+  Memory: NA
+  Flash: AS
+
+- ID: trion_t120_bga576_spi
+  Description: Efinix Trion T120 BGA576 Dev Kit
+  URL: https://www.efinixinc.com/products-devkits-triont120bga576.html
+  FPGA: Trion T120BGA576
+  Memory: NA
+  Flash: AS
+
+- ID: trion_ti60_f225_spi
+  Description: Efinix Titanium F225 Dev Kit
+  URL: https://www.efinixinc.com/products-devkits-titaniumti60f225.html
+  FPGA: Titanium Ti60F225
+  Memory: NA
+  Flash: AS
+
+- ID: usrpx300
+  Description: Ettus Research USRP X300
+  URL: https://www.ettus.com/all-products/x300-kit/
+  FPGA: Kintex xc7k325tffg900
+  Memory: OK
+  Flash: NA
+
+- ID: usrpx310
+  Description: Ettus Research USRP X300
+  URL: https://www.ettus.com/all-products/x310-kit/
+  FPGA: Kintex xc7k410tffg900
+  Memory: OK
+  Flash: NA
+
+- ID: xmf3
+  Description: PLDkit XMF3
+  URL: https://pldkit.com/xilinx/xmf3
+  FPGA: Xilinx xc3s200ft256, xcf01s
+  Memory: OK
+  Flash: OK
+
+- ID: zc702
+  Description: Xilinx ZC702
+  URL: https://www.xilinx.com/products/boards-and-kits/ek-z7-zc702-g.html
+  FPGA: zynq7000 xc7z020clg484
+  Memory: OK
+  Flash: NA
+
+- ID: zc706
+  Description: Xilinx ZC706
+  URL: https://www.xilinx.com/products/boards-and-kits/ek-z7-zc706-g.html
+  FPGA: zynq7000 xc7z045ffg900
+  Memory: OK
+  Flash: NA
+  Constraints: ZC706
+
+- ID: zcu102
+  Description: Xilinx ZCU102
+  URL: https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html
+  FPGA: zynqMPSoC XCZU9EG
+  Memory: OK
+  Flash: NA
+
+- ID: zcu106
+  Description: Xilinx ZCU106
+  URL: https://www.xilinx.com/products/boards-and-kits/zcu106.html
+  FPGA: zynqMPSoC XCZU7EV
+  Memory: OK
+  Flash: NA
+
+- ID: zedboard
+  Description: Avnet ZedBoard
+  URL: https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/zedboard/
+  FPGA: zynq7000 xc7z020clg484
+  Memory: OK
+  Flash: NA
+  Constraints: ZedBoard
+
+- ID: zybo_z7_10
+  Description: Digilent Zybo Z7-10
+  URL: https://reference.digilentinc.com/reference/programmable-logic/zybo-z7/start
+  FPGA: zynq7000 xc7z010clg400
+  Memory: OK
+  Flash: NA
+
+- ID: zybo_z7_20
+  Description: Digilent Zybo Z7-20
+  URL: https://reference.digilentinc.com/reference/programmable-logic/zybo-z7/start
+  FPGA: zynq7000 xc7z020clg400
+  Memory: OK
+  Flash: NA
+
+- ID: vcu118
+  Description: Xilinx VCU118
+  URL: https://www.xilinx.com/products/boards-and-kits/vcu118.html
+  FPGA: Virtex UltraScale+ xcvu9pl2flga2104e
+  Memory: OK
+  Flash: NA
