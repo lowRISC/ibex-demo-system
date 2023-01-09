@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "open_fpga_loader",
+  target_dir: "open_fpga_loader",
+  patch_dir: "",
+
+  upstream: {
+    url: "https://github.com/trabucayre/openFPGALoader.git",
+    rev: "master",
+  }
+}
