@@ -118,10 +118,10 @@ debugger.
 
 ```bash
 # Run demo
-./util/load_demo_system.sh run ./sw/build/demo/demo
+./util/load_demo_system.sh run ./sw/build/demo/hello_world/demo
 
 # Load demo and start halted awaiting a debugger
-./util/load_demo_system.sh halt ./sw/build/demo/demo
+./util/load_demo_system.sh halt ./sw/build/demo/hello_world/demo
 ```
 
 To view terminal output use screen:
@@ -148,7 +148,7 @@ Then run GDB against the running binary and connect to localhost:3333 as a
 remote target
 
 ```
-riscv32-unknown-elf-gdb ./sw/build/demo/demo
+riscv32-unknown-elf-gdb ./sw/build/demo/hello_world/demo
 
 (gdb) target extended-remote localhost:3333
 ```
@@ -169,7 +169,7 @@ Having built the simulator and software, from the Ibex repository root run:
 ```
 
 `<sw_elf_file>` should be a path to an ELF file  (or alternatively a vmem file)
-built as described above. Use `./sw/build/demo/demo` to run the `demo`
+built as described above. Use `./sw/build/demo/hello_world/demo` to run the `demo`
 binary.
 
 Pass `-t` to get an FST trace of execution that can be viewed with
