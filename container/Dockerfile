@@ -7,11 +7,13 @@
 
 # Global configuration options.
 ARG VERILATOR_VERSION=4.210
+ARG VERIBLE_VERSION=v0.0-2135-gb534c1fe
 ARG RISCV_TOOLCHAIN_RELEASE_TAG=20220210-1
 
 # Main container image.
 FROM ubuntu:20.04 AS ibex
 ARG VERILATOR_VERSION
+ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_RELEASE_TAG
 
 LABEL version="0.2"
@@ -38,18 +40,6 @@ RUN OBS_URL="https://download.opensuse.org/repositories"; \
     mv "$TMPDIR/obs.asc"  /etc/apt/trusted.gpg.d/obs.asc && \
     mv "$TMPDIR/obs.list" /etc/apt/sources.list.d/edatools.list
 
-# Install system packages
-#
-# Install (and cleanup) required packages (from apt-requirements.txt).
-# Also add some additional packages for the use within this container and for
-# developer convenience:
-# - gosu and sudo are used by the scripting to make the image more convenient
-#   to use.
-# - locales and locales-all are required to set the locale.
-# - minicom and screen are useful to see UART communication.
-# - dc and time are requirements of Synopsys VCS.
-# - software-properties-common is required to be able to install newer gcc versions.
-
 # Necessary to avoid user interaction with tzdata during install
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
@@ -66,6 +56,14 @@ RUN echo "verilator-${VERILATOR_VERSION}" >> /tmp/apt-requirements.txt \
 COPY container/get-toolchain.py /tmp/get-toolchain.py
 RUN /tmp/get-toolchain.py -r ${RISCV_TOOLCHAIN_RELEASE_TAG} \
     && rm -f /tmp/get-toolchain.py
+ENV PATH "/tools/riscv/bin:${PATH}"
+
+# Install Verible
+RUN curl -f -Ls -o verible.tar.gz \
+        https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz \
+    && mkdir -p /tools/verible \
+    && tar -C /tools/verible -xf verible.tar.gz --strip-components=1
+ENV PATH "/tools/verible/bin:${PATH}"
 
 # Set Locale to utf-8 everywhere
 ENV LC_ALL en_US.UTF-8
