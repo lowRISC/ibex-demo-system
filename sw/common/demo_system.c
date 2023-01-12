@@ -79,14 +79,20 @@ int install_exception_handler(uint32_t vector_num, void(*handler_fn)(void)) {
     return 1;
 
   volatile uint32_t* handler_jmp_loc = exc_vectors + vector_num;
-  uint32_t offset = (uint32_t)handler_fn - (uint32_t)handler_jmp_loc;
+  int32_t offset = (uint32_t)handler_fn - (uint32_t)handler_jmp_loc;
 
-  if (((int32_t)offset  >= (1 << 21)) || ((int32_t)offset  < -(1 << 21))) {
+  if ((offset  >= (1 << 19)) || (offset  < -(1 << 19))) {
     return 2;
   }
 
-  uint32_t jmp_ins = ((offset & 0x7fe) << 20) | ((offset & 0x800) << 20) |
-    ((offset & 0xff000) << 12) | ((offset & 0x10000) << 31) | 0x6f;
+  uint32_t offset_uimm = offset;
+
+  uint32_t jmp_ins =
+    ((offset_uimm & 0x7fe) << 20) | // imm[10:1] -> 21
+    ((offset_uimm & 0x800) << 9) | // imm[11] -> 20
+    (offset_uimm & 0xff000) | // imm[19:12] -> 12
+    ((offset_uimm & 0x100000) << 11) | // imm[20] -> 31
+    0x6f; // J opcode
 
   *handler_jmp_loc = jmp_ins;
 
