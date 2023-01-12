@@ -73,7 +73,9 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 
 # Scripting for use within this container.
+COPY container/start.sh /start.sh
 COPY container/sudoconf /etc/sudoers.d/dev
+COPY container/novnc.pem /novnc.pem
 
 # Add the development user (UID/GID to be replaced).
 RUN groupadd dev \
@@ -93,4 +95,4 @@ RUN python3 -m pip install --user -U pip setuptools \
     && rm -f /tmp/python-requirements.txt
 
 ENTRYPOINT [ ]
-CMD [ "/bin/bash" ]
+CMD [ "/start.sh" ]

@@ -12,6 +12,7 @@ screen
 dc
 time
 software-properties-common
+neovim
 
 # dev-y requirements
 autoconf
@@ -45,3 +46,12 @@ tree
 xsltproc
 zlib1g-dev
 xz-utils
+
+# GUI Stuff (XFCE4, TigerVNC, NoVNC, GTKWave)
+xfce4
+xfce4-goodies
+tigervnc-standalone-server
+tigervnc-xorg-extension
+novnc
+python3-websockify
+gtkwave
