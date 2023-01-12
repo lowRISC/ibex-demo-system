@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "demo_system.h"
+#include "dev_access.h"
 #include "uart.h"
 
 int putchar(int c) {
@@ -42,6 +43,8 @@ void puthex(uint32_t h) {
     h <<= 4;
   }
 }
+
+void sim_halt() { DEV_WRITE(SIM_CTRL_BASE + SIM_CTRL_CTRL, 1); }
 
 unsigned int get_mepc() {
   uint32_t result;
