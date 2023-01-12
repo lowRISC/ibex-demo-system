@@ -29,7 +29,6 @@ enum{
 static uint32_t spi_write(void *handle, uint8_t *data, size_t len);
 static uint32_t gpio_write(void *handle, bool cs, bool dc);
 static void timer_delay(uint32_t ms);
-static void timer_delay_micro(uint64_t micro);
 static void fractal_test(St7735Context *lcd);
 static void pwm_test(St7735Context *lcd);
 static void led_test(St7735Context *lcd);
@@ -45,6 +44,8 @@ typedef enum {
 static Buttons_t scan_buttons(uint32_t timeout);
 
 int main(void) {
+  timer_init();
+
   // Set the initial state of the LCD control pins.
   set_output_bit(GPIO_OUT, LcdDcPin, 0x0);
   set_output_bit(GPIO_OUT, LcdBlPin, 0x1);
@@ -158,17 +159,10 @@ static uint32_t gpio_write(void *handle, bool cs, bool dc){
 }
 
 static void timer_delay(uint32_t ms){
-  while(ms--){
-    timer_delay_micro(1000);
-  }
-  return;
+  // Configure timer to trigger every 1 ms
+  timer_enable(50000);
   uint32_t timeout = get_elapsed_time() + ms;
-  while(get_elapsed_time() < timeout){}
+  while(get_elapsed_time() < timeout){ asm volatile ("wfi"); }
+  timer_disable();
 }
 
-static void timer_delay_micro(uint64_t micro){
-  while(micro--){
-    for(uint32_t j = 0; j < 2; ++j){
-    }
-  }
-}
