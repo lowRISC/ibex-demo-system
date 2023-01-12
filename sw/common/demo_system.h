@@ -7,27 +7,23 @@
 
 #include <stdint.h>
 
+#include "demo_system_regs.h"
 #include "uart.h"
 #include "gpio.h"
 
-#define UART0_BASE 0x80001000
 #define UART_IRQ_NUM 16
 #define UART_IRQ (1 << UART_IRQ_NUM)
 #define DEFAULT_UART UART_FROM_BASE_ADDR(UART0_BASE)
 
-#define GPIO_BASE 0x80000000
 #define GPIO_OUT GPIO_FROM_BASE_ADDR(GPIO_BASE + GPIO_OUT_REG)
 #define GPIO_IN GPIO_FROM_BASE_ADDR(GPIO_BASE + GPIO_IN_REG)
 #define GPIO_IN_DBNC GPIO_FROM_BASE_ADDR(GPIO_BASE + GPIO_IN_DBNC_REG)
 #define GPIO_OUT_SHIFT GPIO_FROM_BASE_ADDR(GPIO_BASE + GPIO_OUT_SHIFT_REG)
 
-#define TIMER_BASE 0x80002000
 #define TIMER_IRQ (1 << 7)
 
-#define PWM_BASE   0x80003000
 #define NUM_PWM_MODULES 12
 
-#define SPI0_BASE 0x80004000
 #define DEFAULT_SPI SPI_FROM_BASE_ADDR(SPI0_BASE)
 
 /**
@@ -46,6 +42,11 @@ int putchar(int c);
  * @returns Character from the uart rx fifo
  */
 int getchar(void);
+
+/**
+ * Immediately halts the simulation
+ */
+void sim_halt();
 
 /**
  * Writes string to default UART. Signature matches c stdlib function of

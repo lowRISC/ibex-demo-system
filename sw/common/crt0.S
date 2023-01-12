@@ -1,6 +1,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+#include "demo_system_regs.h"
 
 .section .text
 
@@ -65,6 +66,11 @@ main_entry:
   addi x10, x0, 0
   addi x11, x0, 0
   jal x1, main
+
+  /* Halt simulation */
+  li x5, SIM_CTRL_BASE + SIM_CTRL_CTRL
+  li x6, 1
+  sw x6, 0(x5)
 
   /* If execution ends up here just put the core to sleep */
 sleep_loop:
