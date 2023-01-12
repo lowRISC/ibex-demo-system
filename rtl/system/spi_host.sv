@@ -40,7 +40,10 @@ module spi_host #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     // Do not start clock related logic unless we are starting
     // SPI transmission or already at SEND state.
-    if (!rst_ni || !(sck_en||start_i)) begin
+    if (!rst_ni) begin
+      count <= '0;
+      sck <= CPOL;
+    end else if (!(sck_en||start_i)) begin
       count <= '0;
       sck <= CPOL;
     // In the case of counter reaching to the limit, toggle SCK and start over.
@@ -113,7 +116,7 @@ module spi_host #(
     // If CPHA is HIGH, incoming data will be sampled on the falling edge while outgoing
     // data will get shifted out on the rising edge.
     if (CPHA) begin
-      always_ff @(posedge clk_i or negedge rst_ni) begin  
+      always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
           current_byte_q  <= '0;
           bit_counter_q   <= '0;
