@@ -21,9 +21,9 @@ module gpio #(
   output logic [GpoWidth-1:0] gp_o
 );
 
-  localparam int unsigned GPIO_OUT_REG = 12'h0;
-  localparam int unsigned GPIO_IN_REG = 12'h4;
-  localparam int unsigned GPIO_IN_DBNC_REG = 12'h8;
+  localparam int unsigned GPIO_OUT_REG = 32'h0;
+  localparam int unsigned GPIO_IN_REG = 32'h4;
+  localparam int unsigned GPIO_IN_DBNC_REG = 32'h8;
 
   logic [11:0] reg_addr;
 
@@ -77,9 +77,9 @@ module gpio #(
 
   // decode write and read requests
   assign reg_addr = device_addr_i[11:0];
-  assign gp_o_wr_en = device_req_i & device_we_i & (reg_addr == GPIO_OUT_REG);
-  assign gp_i_rd_en_d = device_req_i & ~device_we_i & (reg_addr == GPIO_IN_REG);
-  assign gp_i_dbnc_rd_en_d = device_req_i & ~device_we_i & (reg_addr == GPIO_IN_DBNC_REG);
+  assign gp_o_wr_en = device_req_i & device_we_i & (reg_addr == GPIO_OUT_REG[11:0]);
+  assign gp_i_rd_en_d = device_req_i & ~device_we_i & (reg_addr == GPIO_IN_REG[11:0]);
+  assign gp_i_dbnc_rd_en_d = device_req_i & ~device_we_i & (reg_addr == GPIO_IN_DBNC_REG[11:0]);
 
   // assign device_rdata_o according to request type
   always_comb begin
