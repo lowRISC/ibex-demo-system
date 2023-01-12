@@ -145,11 +145,10 @@ static Buttons_t scan_buttons(uint32_t timeout){
 }
 
 static uint32_t spi_write(void *handle, uint8_t *data, size_t len){
-    while(len--){
-      spi_send_byte_blocking(handle, *data++);
-    }
-    // while((spi_get_status(handle) & spi_status_fifo_empty) != spi_status_fifo_empty);
-    return 0;
+  while(len--){
+    spi_send_byte_blocking(handle, *data++);
+  }
+  while((spi_get_status(handle) & spi_status_fifo_empty) != spi_status_fifo_empty);
 }
 
 static uint32_t gpio_write(void *handle, bool cs, bool dc){
