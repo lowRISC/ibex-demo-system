@@ -14,8 +14,8 @@ To run the container,
 use the following command in the root of the repository.
 
 ```sh
-sudo docker run --rm \
-  -p 6080:6080
+sudo docker run -it --rm \
+  -p 6080:6080 \
   -p 3333:3333 \
   -v $(pwd):/home/dev/demo:Z \
   ibex
@@ -28,14 +28,14 @@ To access the container go to [http://localhost:6080/vnc.html](http://localhost:
 ```sh
 # build
 podman build . -t ibex -f container/Dockerfile
-# change repository to container user
+# change repository ownership to container user
 podman unshare chown 1000:1000 -R .
 # run
-podman run --rm \
-  -p 6080:6080
+podman run -it --rm \
+  -p 6080:6080 \
   -p 3333:3333 \
   -v $(pwd):/home/dev/demo:Z \
   ibex
-# change repository back to host user
+# change repository ownership back to host user
 podman unshare chown 0:0 -R .
 ```
