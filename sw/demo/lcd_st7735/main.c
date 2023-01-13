@@ -122,10 +122,9 @@ int main(void) {
 }
 
 static void fractal_test(St7735Context *lcd){
-    fractal_bifurcation(lcd);
-    timer_delay(2000); 
-
-    fractal_mandelbrot(lcd, true);
+    fractal_mandelbrot_float(lcd);
+    timer_delay(5000); 
+    fractal_mandelbrot_fixed(lcd);
     timer_delay(5000); 
 }
 
