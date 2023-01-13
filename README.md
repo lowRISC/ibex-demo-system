@@ -25,8 +25,7 @@ probe is required.
   https://github.com/lowRISC/lowrisc-toolchains/releases
   (For example: `lowrisc-toolchain-rv32imcb-20220524-1.tar.xz`)
 * cmake
-* python3 - Additional python dependencies in python-requirements.txt installed
-  with pip
+* python3 - Additional python dependencies in python-requirements.txt installed with pip
 * openocd (version 0.11.0 or above)
 * screen
 * srecord
@@ -35,6 +34,8 @@ probe is required.
 
 There is a prebuilt container of tools available you may want to use to get started quickly.
 There are instructions for building the container for either Docker/Podman located in ./container/README.md.
+
+**Linux/MacOS**
 
 A container image may be provided to you on a USB stick. You can load the containerfile by running :
 ```bash
@@ -63,6 +64,23 @@ podman unshare chown 0:0 -R .
 ```
 To access the container once running, go to [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html).
 
+**Windows**
+
+Run a command prompt in administrator mode and type:
+```powershell
+cd "C:\Program Files\Docker\Docker"
+.\DockerCli.exe -SwitchLinuxEngine
+```
+
+Go to the folder on the USB named "Docker Images" and run:
+```powershell
+docker load -i ibex_demo_image.tar
+```
+
+Go to the folder where you have decompressed the demo system repository:
+```powershell
+docker run -it --rm -p 6080:6080 -p 3333:3333 -v %cd%:/home/dev/demo:Z ibex
+```
 
 ## Native Python Environment
 
