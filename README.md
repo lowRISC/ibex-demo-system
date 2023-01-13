@@ -16,6 +16,8 @@ following features:
 Debug can be used via a USB connection to the Arty-A7 board. No external JTAG
 probe is required.
 
+![Arty A7 FPGA showing the Mandelbrot set](doc/ArtyA7WithMandelbrot.png "Arty A7 FPGA with Mandelbrot")
+
 ## Software Requirements
 
 * Xilinx Vivado - https://www.xilinx.com/support/download.html
