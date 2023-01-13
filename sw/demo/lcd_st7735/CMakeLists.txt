@@ -6,6 +6,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/../../../vendor/display_drivers/core/lucida_console_
 ${CMAKE_CURRENT_SOURCE_DIR}/../../../vendor/display_drivers/st7735/lcd_st7735.c
 )
 
+string(APPEND CMAKE_C_FLAGS " -O2")
+
 # add_executable(lcd_st7735 main.c)
 add_prog(lcd_st7735 "main.c;lcd.c;fractal.c")
 
