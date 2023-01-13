@@ -31,6 +31,43 @@ probe is required.
 * screen
 * srecord
 
+## Container Guide
+
+There is a prebuilt container of tools available you may want to use to get started quickly.
+There are instructions for building the container for either Docker/Podman located in ./container/README.md.
+
+A container image may be provided to you on a USB stick. You can load the containerfile by running :
+```bash
+sudo docker load < ibex_demo_image.tar
+# OR
+podman load < ibex_demo_image.tar
+```
+
+If you already have a container file, you can start the container by running :
+```bash
+sudo docker run -it --rm \
+  -p 6080:6080 \
+  -p 3333:3333 \
+  -v $(pwd):/home/dev/demo:Z \
+  ibex
+```
+OR
+```bash
+podman unshare chown 1000:1000 -R .
+podman run -it --rm \
+  -p 6080:6080 \
+  -p 3333:3333 \
+  -v $(pwd):/home/dev/demo:Z \
+  ibex
+podman unshare chown 0:0 -R .
+```
+To access the container once running, go to [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html).
+
+
+## Native Python Environment
+
+(NOT NEEDED IN THE CONTAINER ENVIRONMENT)
+
 To install python dependencies use pip, you may wish to do this inside a virtual
 environment to avoid disturbing you current python setup (note it uses a lowRISC
 fork of edalize and FuseSoC so if you already use these a virtual environment is
