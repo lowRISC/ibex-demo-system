@@ -1,5 +1,7 @@
 # Ibex Demo System
 
+![Ibex demo system block diagram](doc/IbexDemoSystemBlockDiagram.png "Ibex Demo System Block Diagram")
+
 This an example RISC-V SoC targeting the Arty-A7 FPGA board. It comprises the
 [lowRISC Ibex core](https://www.github.com/lowrisc/ibex) along with the
 following features:
