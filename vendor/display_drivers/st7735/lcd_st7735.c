@@ -96,6 +96,7 @@ Result lcd_st7735_set_orientation(St7735Context *ctx, LCD_Orientation orientatio
   };
 
   write_register(ctx, ST7735_MADCTL, st7735_orientation_map[orientation] | ST77_MADCTL_RGB);
+  return (Result){.code = 0};
 }
 
 Result lcd_st7735_clean(St7735Context *ctx) {
