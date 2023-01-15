@@ -30,7 +30,7 @@
 #define RGB_COMPONENT_COLOR 255		// each component of the RGB color model defines the intensity of the color between 0-255
 
 // Function to draw fractal_mandelbrot set
-void fractal_mandelbrot(St7735Context *lcd, bool by_pixel)
+void fractal_mandelbrot_float(St7735Context *lcd, bool by_pixel)
 {
     lcd_st7735_clean(lcd);
     LCD_rectangle rectangle = {.origin = {.x = 0, .y = 0},
