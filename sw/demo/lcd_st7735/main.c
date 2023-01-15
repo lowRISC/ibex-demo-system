@@ -142,9 +142,18 @@ static Buttons_t scan_buttons(uint32_t timeout, Buttons_t def) {
 }
 
 static void fractal_test(St7735Context *lcd){
-    fractal_mandelbrot_float(lcd);
+    unsigned int compute_cycles;
+    fractal_mandelbrot_float(lcd, &compute_cycles);
+    puthex(compute_cycles);
+    puts(" cycles with floats\n");
     timer_delay(5000);
-    fractal_mandelbrot_fixed(lcd);
+    fractal_mandelbrot_fixed(lcd, &compute_cycles);
+    puthex(compute_cycles);
+    puts(" cycles with fixed point numbers\n");
+    timer_delay(5000);
+    fractal_mandelbrot_cmplx_insn(lcd, &compute_cycles);
+    puthex(compute_cycles);
+    puts(" cycles with custom complex number instructions\n");
     timer_delay(5000);
 }
 

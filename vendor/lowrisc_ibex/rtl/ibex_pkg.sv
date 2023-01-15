@@ -58,6 +58,7 @@ package ibex_pkg;
 
   typedef enum logic [6:0] {
     OPCODE_LOAD     = 7'h03,
+    OPCODE_CMPLX    = 7'h0b,
     OPCODE_MISC_MEM = 7'h0f,
     OPCODE_OP_IMM   = 7'h13,
     OPCODE_AUIPC    = 7'h17,
@@ -168,6 +169,10 @@ package ibex_pkg;
     // Bit Field Place
     // RV32B
     ALU_BFP,
+
+    ALU_CMPLX_ADD,
+    ALU_CMPLX_MUL,
+    ALU_CMPLX_ABS_SQ,
 
     // Carry-less Multiply
     // RV32B

@@ -15,6 +15,7 @@ filesets:
       - lowrisc:ibex:ibex_icache
       - lowrisc:dv:dv_fcov_macros
     files:
+      - rtl/fp_mul.sv
       - rtl/ibex_alu.sv
       - rtl/ibex_branch_predict.sv
       - rtl/ibex_compressed_decoder.sv

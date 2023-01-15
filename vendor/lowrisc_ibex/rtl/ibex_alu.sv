@@ -1312,6 +1312,53 @@ module ibex_alu #(
     assign imd_val_we_o        = '{default: '0};
   end
 
+  logic [15:0] rs1_real, rs1_imag;
+  logic [15:0] rs2_real, rs2_imag;
+
+  assign rs1_real = operand_a_i[31:16];
+  assign rs1_imag = operand_a_i[15:0];
+  assign rs2_real = operand_b_i[31:16];
+  assign rs2_imag = operand_b_i[15:0];
+
+  logic [15:0] mul1_res, mul2_res, mul3_res, mul4_res;
+
+  // Multipliers for complex multiplication
+  fp_mul #(.CLAMP(0)) mul1(.a_i(rs1_real), .b_i(rs2_real), .result_o(mul1_res));
+  fp_mul #(.CLAMP(0)) mul2(.a_i(rs1_imag), .b_i(rs2_imag), .result_o(mul2_res));
+  fp_mul #(.CLAMP(0)) mul3(.a_i(rs1_real), .b_i(rs2_imag), .result_o(mul3_res));
+  fp_mul #(.CLAMP(0)) mul4(.a_i(rs1_imag), .b_i(rs2_real), .result_o(mul4_res));
+
+  logic [15:0] real_sq_res, imag_sq_res;
+  // Multipliers for complex absolute value
+  fp_mul #(.CLAMP(1)) real_sq(.a_i(rs1_real), .b_i(rs1_real), .result_o(real_sq_res));
+  fp_mul #(.CLAMP(1)) imag_sq(.a_i(rs1_imag), .b_i(rs1_imag), .result_o(imag_sq_res));
+
+  logic [16:0] abs_sq_res;
+  assign abs_sq_res = real_sq_res + imag_sq_res;
+
+  logic [31:0] cmplx_result;
+
+  always_comb begin
+    cmplx_result = '0;
+
+    case (operator_i)
+      ALU_CMPLX_ADD: begin
+        cmplx_result[31:16] = rs1_real + rs2_real;
+        cmplx_result[15:0] = rs1_imag + rs2_imag;
+      end
+      ALU_CMPLX_MUL: begin
+        cmplx_result[31:16] = mul1_res - mul2_res;
+        cmplx_result[15:0] = mul3_res + mul4_res;
+      end
+      ALU_CMPLX_ABS_SQ: begin
+        cmplx_result[31:17] = {15{abs_sq_res[16]}};
+        cmplx_result[16:0] = abs_sq_res;
+      end
+      default: ;
+    endcase
+  end
+
+
   ////////////////
   // Result mux //
   ////////////////
@@ -1320,6 +1367,10 @@ module ibex_alu #(
     result_o   = '0;
 
     unique case (operator_i)
+      ALU_CMPLX_ADD,
+      ALU_CMPLX_MUL,
+      ALU_CMPLX_ABS_SQ: result_o = cmplx_result;
+
       // Bitwise Logic Operations (negate: RV32B)
       ALU_XOR,  ALU_XNOR,
       ALU_OR,   ALU_ORN,

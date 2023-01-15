@@ -236,6 +236,16 @@ module ibex_decoder #(
 
     unique case (opcode)
 
+      OPCODE_CMPLX: begin
+        if (!(instr[14:12] inside {3'b000, 3'b001, 3'b010})) begin
+          illegal_insn = 1'b1;
+        end else begin
+          rf_ren_a_o = 1'b1;
+          rf_ren_b_o = 1'b1;
+          rf_we = 1'b1;
+        end
+      end
+
       ///////////
       // Jumps //
       ///////////
@@ -688,6 +698,18 @@ module ibex_decoder #(
     div_sel_o          = 1'b0;
 
     unique case (opcode_alu)
+
+      OPCODE_CMPLX: begin
+        alu_op_a_mux_sel_o = OP_A_REG_A;
+        alu_op_b_mux_sel_o = OP_B_REG_B;
+
+        unique case (instr[14:12])
+          3'b000: alu_operator_o = ALU_CMPLX_MUL;
+          3'b001: alu_operator_o = ALU_CMPLX_ADD;
+          3'b010: alu_operator_o = ALU_CMPLX_ABS_SQ;
+          default: ;
+        endcase
+      end
 
       ///////////
       // Jumps //
