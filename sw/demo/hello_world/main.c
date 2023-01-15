@@ -8,7 +8,7 @@
 #include "pwm.h"
 #include <stdbool.h>
 
-#define USE_GPIO_SHIFT_REG 0
+#define USE_GPIO_SHIFT_REG 1
 
 void test_uart_irq_handler(void) __attribute__((interrupt));
 
