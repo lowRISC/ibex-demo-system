@@ -55,3 +55,12 @@ tigervnc-xorg-extension
 novnc
 python3-websockify
 gtkwave
+
+# OpenOCD
+libtool
+libftdi1-dev
+libftdi1-2
+
+# openFPGAloader
+libftdi1-2
+libhidapi-hidraw0
