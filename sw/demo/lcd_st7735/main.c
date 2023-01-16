@@ -127,7 +127,7 @@ int main(void) {
         fractal_test(&lcd);
         break;
       case BTN1:
-        lcd_st7735_puts(&lcd, (LCD_Point){.x = 5, .y = 80}, "Button 1 pressed");
+        lcd_st7735_draw_cross(&lcd, (LCD_Point){.x = 80, .y = 80}, 10, BGRColorRed);
         timer_delay(1000);
         break;
       case BTN2:
