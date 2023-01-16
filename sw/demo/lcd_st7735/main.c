@@ -86,39 +86,51 @@ int main(void) {
   lcd_println(&lcd, "Booting...", alined_center, 7);
   timer_delay(1000); 
 
+  // Currently BROKEN
+  /* do { */
+  /*   menu_with_buttons(&lcd); */
+  /* } while(1); */
+
   do {
     lcd_st7735_clean(&lcd);
-    // Show the main menu.
-    const char * items[] = {"0. LED","1. Fractal","2. PWM",};
-    Menu_t main_menu = {
-      .title = "Main menu",
-      .color = BGRColorBlue,
-      .selected_color = BGRColorRed,
-      .background = BGRColorWhite,
-      .items_count = sizeof(items)/sizeof(items[0]),
-      .items = items,
-    };
-    lcd_show_menu(&lcd, &main_menu);
-
-    // TODO: Read the buttons.
-    switch(scan_buttons(1000)){
-      case BTN0:
-        led_test(&lcd);
-      break;
-      case BTN1:
-        // Run the fractal examples.
-        fractal_test(&lcd);
-      break;
-      case BTN2:
-        // Run the pwm example.
-        pwm_test(&lcd);
-      break;
-      case BTN3:
-      break;
-      default:
-      break;
-    }
+    fractal_test(&lcd);
   } while(1);
+}
+
+static void menu_with_buttons(St7735Context *lcd){
+do {
+  lcd_st7735_clean(&lcd);
+  /* Show the main menu. */
+  const char * items[] = {"0. LED","1. Fractal","2. PWM",};
+  Menu_t main_menu = {
+    .title = "Main menu",
+    .color = BGRColorBlue,
+    .selected_color = BGRColorRed,
+    .background = BGRColorWhite,
+    .items_count = sizeof(items)/sizeof(items[0]),
+    .items = items,
+  };
+  lcd_show_menu(&lcd, &main_menu);
+
+  // TODO: Read the buttons.
+  switch(scan_buttons(1000)){
+    case BTN0:
+      led_test(&lcd);
+    break;
+    case BTN1:
+      // Run the fractal examples.
+      fractal_test(&lcd);
+    break;
+    case BTN2:
+      // Run the pwm example.
+      pwm_test(&lcd);
+    break;
+    case BTN3:
+    break;
+    default:
+    break;
+  }
+ } while(1);
 }
 
 static void fractal_test(St7735Context *lcd){
