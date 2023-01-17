@@ -64,6 +64,27 @@ podman unshare chown 0:0 -R .
 ```
 To access the container once running, go to [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html).
 
+If you want to program the FPGA from the container, lets find out which bus and device our Arty is on:
+```bash
+$ lsusb
+...
+Bus 00X Device 00Y: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
+...
+```
+Where X and Y are numbers. Please note down what X and Y is for you (this will change if you unplug and replug your FPGA).
+
+Then run Docker with the following parameters:
+```bash
+sudo docker run -it --rm \
+  -p 6080:6080 \
+  -p 3333:3333 \
+  -v $(pwd):/home/dev/demo:Z \
+  --privileged \
+  --device=/dev/bus/usb/00X/00Y \
+  --device=/dev/ttyUSB1 \
+  ibex
+```
+
 **Windows**
 
 Run a command prompt in administrator mode and type:
