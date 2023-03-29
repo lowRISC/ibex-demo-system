@@ -1,0 +1,23 @@
+ChipWhisperer basic-passwdcheck application, intended to be run on a
+ChipWhisperer FPGA target (synth_cw305 or synth_cw312a35 targets).
+
+This can then be used with NewAE's "Power Analysis for Password Bypass" 
+notebook
+(https://github.com/newaetech/chipwhisperer-jupyter/tree/master/courses/sca101/),
+with modifications to the target clock and baud rate:
+    scope.clock.adc_mul = 1 # if using CW-Husky
+    scope.clock.adc_src = 'clkgen_x1' # if using CW-lite/pro
+    scope.clock.clkgen_freq = 100e6
+    target.baud = 115200
+
+Note that the password bypass attack will not work well on the CW305 target
+since that target lacks a method to reset the Ibex processor from the host PC
+(top_cw305.sv could be modified to achieve this). However it will work on the
+CW312-A35 target.
+
+Note that this application (and many others!) can also be built in the
+ChipWhisperer repository: 
+    https://github.com/newaetech/chipwhisperer/tree/develop/hardware/victims/firmware/basic-passwdcheck/
+using:
+    make PLATFORM=CW305_IBEX CRYPTO_TARGET=NONE
+
