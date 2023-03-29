@@ -72,8 +72,9 @@ parameters:
   SRAMInitFile:
     datatype: str
     description: SRAM initialization file in vmem hex format
-    #default: "../../../../../sw/build/blank/blank.vmem"
-    default: "../../../../../sw/build/demo/hello_world/demo.vmem"
+    default: "../../../../../sw/build/blank/blank.vmem"
+    #default: "../../../../../sw/build/demo/hello_world/demo.vmem"
+    #default: "../../../../../sw/build/demo/simpleserial-aes/simpleserial-aes.vmem"
     paramtype: vlogparam
 
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
@@ -108,8 +109,8 @@ targets:
     toplevel: top_cw305
     tools:
       vivado:
-        part: "xc7a100tftg256-2"
-        #part: "xc7a35tftg256-2"
+        part: "xc7a100tftg256-2" # default to a100 part
+        #part: "xc7a35tftg256-2" # a35 option
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
