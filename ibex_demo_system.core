@@ -73,8 +73,6 @@ parameters:
     datatype: str
     description: SRAM initialization file in vmem hex format
     default: "../../../../../sw/build/blank/blank.vmem"
-    #default: "../../../../../sw/build/demo/hello_world/demo.vmem"
-    #default: "../../../../../sw/build/demo/simpleserial-aes/simpleserial-aes.vmem"
     paramtype: vlogparam
 
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
