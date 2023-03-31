@@ -104,8 +104,9 @@ docker run -it --rm -p 6080:6080 -p 3333:3333 -v %cd%:/home/dev/demo:Z ibex
 ```
 
 
-#### Add udev rules for our device
-These are needed for the programmer to access the development board.
+## Add udev rules for our device
+For both the container and the native setups you will need to add user device permissions for our FPGA board.
+The following instructions are for Linux-based systems and are needed for the programmer to access the development board.
 
 Arty-A7
 ```bash
