@@ -27,42 +27,9 @@
 #define DEFAULT_SPI SPI_FROM_BASE_ADDR(SPI0_BASE)
 
 /**
- * Writes character to default UART. Signature matches c stdlib function
- * of the same name.
- *
- * @param c Character to output
- * @returns Character output (never fails so no EOF ever returned)
- */
-int putchar(int c);
-
-/**
- * Reads character from default UART. Signature matches c stdlib function
- * of the same name.
- *
- * @returns Character from the uart rx fifo
- */
-int getchar(void);
-
-/**
  * Immediately halts the simulation
  */
 void sim_halt();
-
-/**
- * Writes string to default UART. Signature matches c stdlib function of
- * the same name.
- *
- * @param str String to output
- * @returns 0 always (never fails so no error)
- */
-int puts(const char *str);
-
-/**
- * Writes ASCII hex representation of number to default UART.
- *
- * @param h Number to output in hex
- */
-void puthex(uint32_t h);
 
 /**
  * Install an exception handler by writing a `j` instruction to the handler in

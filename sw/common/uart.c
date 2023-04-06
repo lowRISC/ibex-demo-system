@@ -1,28 +1,42 @@
-// Copyright lowRISC contributors.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-
 #include "uart.h"
-#include "dev_access.h"
-#include "demo_system.h"
 
-void uart_enable_rx_int(void) {
-  enable_interrupts(UART_IRQ);
-  set_global_interrupt_enable(1);
+void uart_putc(char c) {
+    UART_TX_DATA_ADDR = c;
 }
 
-int uart_in(uart_t uart) {
-  int res = UART_EOF;
-
-  if (!(DEV_READ(uart + UART_STATUS_REG) & UART_STATUS_RX_EMPTY)) {
-    res = DEV_READ(uart + UART_RX_REG);
-  }
-
-  return res;
+void uart_puts(const char *str) {
+    while (*str) {
+        UART_TX_DATA_ADDR = *str;
+        str++;
+    }
 }
 
-void uart_out(uart_t uart, char c) {
-  while(DEV_READ(uart + UART_STATUS_REG) & UART_STATUS_TX_FULL);
+void uart_puth(uint32_t h) {
+    int cur_digit;
+    for (int i = 0; i < 8; i++) {
+        cur_digit = h >> 28;
 
-  DEV_WRITE(uart + UART_TX_REG, c);
+        if (cur_digit < 10)
+        uart_putc('0' + cur_digit);
+        else
+        uart_putc('A' - 10 + cur_digit);
+
+        h <<= 4;
+    }
+}
+
+char uart_getc() {
+    return UART_RX_DATA_ADDR;
+}
+
+void uart_enable(unsigned char en) {
+    UART_EN_ADDR = en;
+}
+
+void uart_disable() {
+    UART_EN_ADDR =  0x00;
+}
+
+void uart_setup(unsigned char parameters) {
+    UART_PARAMETER_SETUP_ADDR = parameters;
 }

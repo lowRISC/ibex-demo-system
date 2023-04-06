@@ -26,7 +26,7 @@ fi
 
 SCRIPT_DIR="$(dirname "$(readlink -e "$BASH_SOURCE")")"
 
-openocd -f $SCRIPT_DIR/arty-a7-openocd-cfg.tcl -c "load_image $2 0x0" \
+openocd -f $SCRIPT_DIR/arty-a7-openocd-cfg.tcl -c "load_image $2 0x0"\
  -c "verify_image $2 0x0" \
  -c "echo \"Doing reset\"" \
  -c "reset $1" \
