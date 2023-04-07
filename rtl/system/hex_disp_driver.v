@@ -1,11 +1,13 @@
 module hex_disp_driver(
     clk,
+    we,
     data_in,
     hex_out,
     sel
 );
 
 input wire clk;
+input wire we;
 input wire [31:0] data_in;
 output wire [7:0] hex_out;
 output wire [3:0] sel;
@@ -16,6 +18,8 @@ reg [7:0] d0;
 reg [7:0] d1;
 reg [7:0] d2;
 reg [7:0] d3;
+
+reg [31:0] data;
 
 assign sel = (c == 0)? 4'bzzz0 : (c == 1)? 4'bzz0z : (c == 2)? 4'bz0zz : 4'b0zzz;
 assign hex_out = (c == 0)? d3 : (c == 1)? d2 : (c == 2)? d1 : d0;
@@ -50,11 +54,19 @@ initial begin
     map_ra[14] <= 'hd3;
     map_ra[15] <= 'hd1;
 end
+
+always @(posedge clk) begin
+    if(we)
+        data <= data_in;
+    else
+        data <= data;
+end
+
 always @(data_in) begin
-    d3 <= map_ra[data_in[3:0]];
-    d2 <= map_ra[data_in[7:4]];
-    d1 <= map_ra[data_in[15:8]];
-    d0 <= map_ra[data_in[23:16]];
+    d3 <= map_ra[data[3:0]];
+    d2 <= map_ra[data[7:4]];
+    d1 <= map_ra[data[11:8]];
+    d0 <= map_ra[data[16:12]];
 end
 
 endmodule

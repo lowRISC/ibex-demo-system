@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-#include "/home/menios/Desktop/uart_lib/uart.h"
+#include "uart.h"
 #include "demo_system.h"
 #include "timer.h"
 #include "gpio.h"

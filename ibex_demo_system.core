@@ -17,22 +17,6 @@ filesets:
       - rtl/fpga/top_artya7.sv
     file_type: systemVerilogSource
 
-  files_xilinx_cw305:
-    depend:
-      - lowrisc:ibex:rv_timer
-      - lowrisc:ibex:fpga_xilinx_shared
-    files:
-      - rtl/fpga/top_cw305.sv
-    file_type: systemVerilogSource
-
-  files_xilinx_cw312a35:
-    depend:
-      - lowrisc:ibex:rv_timer
-      - lowrisc:ibex:fpga_xilinx_shared
-    files:
-      - rtl/fpga/top_cw312a35.sv
-    file_type: systemVerilogSource
-
   files_verilator:
     depend:
       - lowrisc:ibex:sim_shared
@@ -49,18 +33,6 @@ filesets:
     files:
       - data/pins_artya7.xdc
     file_type: xdc
-
-  files_constraints_cw305:
-    files:
-      - data/pins_cw305.xdc
-    file_type: xdc
-
-  files_constraints_cw312a35:
-    files:
-      - data/pins_cw312a35.xdc
-    file_type: xdc
-
-
 
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
@@ -94,38 +66,10 @@ targets:
     toplevel: top_artya7
     tools:
       vivado:
-        part: "xc7a35tcsg324-1"  # Default to Arty A7-35
+        part: "xc7a100tcsg324-1"  # Default to Arty A7-35
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-  synth_cw305:
-    <<: *default_target
-    default_tool: vivado
-    filesets_append:
-      - files_xilinx_cw305
-      - files_constraints_cw305
-    toplevel: top_cw305
-    tools:
-      vivado:
-        part: "xc7a100tftg256-2" # default to a100 part
-        #part: "xc7a35tftg256-2" # a35 option
-    parameters:
-      - SRAMInitFile
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-  synth_cw312a35:
-    <<: *default_target
-    default_tool: vivado
-    filesets_append:
-      - files_xilinx_cw312a35
-      - files_constraints_cw312a35
-    toplevel: top_cw312a35
-    tools:
-      vivado:
-        part: "xc7a35tcsg324-1"
-    parameters:
-      - SRAMInitFile
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-
   sim:
     <<: *default_target
     default_tool: verilator

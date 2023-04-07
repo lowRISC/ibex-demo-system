@@ -27,7 +27,11 @@ module ibex_demo_system #(
   output logic                uart_tx_o,
   input  logic                spi_rx_i,
   output logic                spi_tx_o,
-  output logic                spi_sck_o
+  output logic                spi_sck_o,
+  //
+  output logic [7:0]          hex_out,
+  output logic [3:0]          hex_sel
+  //
 );
   localparam logic [31:0] MEM_SIZE      = 64 * 1024; // 64 KiB
   localparam logic [31:0] MEM_START     = 32'h00100000;
@@ -348,43 +352,36 @@ module ibex_demo_system #(
 
     .pwm_o
   );
-/*
-  uart #(
-    .ClockFrequency ( 50_000_000 )
-  ) u_uart (
-    .clk_i          (clk_sys_i),
-    .rst_ni         (rst_sys_ni),
 
-    .device_req_i   (device_req[Uart]),
-    .device_addr_i  (device_addr[Uart]),
-    .device_we_i    (device_we[Uart]),
-    .device_be_i    (device_be[Uart]),
-    .device_wdata_i (device_wdata[Uart]),
-    .device_rvalid_o(device_rvalid[Uart]),
-    .device_rdata_o (device_rdata[Uart]),
-
-    .uart_rx_i,
-    .uart_irq_o     (uart_irq),
-    .uart_tx_o
-  );
-*/
+wire [31:0] uart_debug;
 uart #(
-  .FREQUENCY (50_000_000)
+  .CLOCK_FREQUENCY (50_000_000),
+  .RX_FIFO_DEPTH (128),
+  .TX_FIFO_DEPTH (128)
 ) u_uart (
     .clk_i(clk_sys_i),                    // clock
     .rst_ni(rst_sys_ni),                  // reset not
     .we(device_we[Uart]),                 // write enable
     .be(device_be[Uart]),                 // byte enable
-    .data_i(device_wdata[Uart]),          // data bus
+    .uart_wdata_i(device_wdata[Uart]),    // data bus
     .addr_i(device_addr[Uart]),           // addr bus
     .uart_req_i(device_req[Uart]),        // request from core (IBEX LSU)
     .rx(uart_rx_i),                       // rx line
     .tx(uart_tx_o),                       // tx line
-    .data_o(device_rdata[Uart]),          // data bus
+    .uart_rdata_o(device_rdata[Uart]),    // data bus
     .uart_req_gnt_o(),                    // request granted to core (IBEX LSU)
     .uart_rvalid_o(device_rvalid[Uart]),  // request valid to core (IBEX LSU)
     .uart_irq_o(uart_irq),                // interrupt request (CSR)
-    .uart_err_o()                         // error to core (IBEX LSU)
+    .uart_err_o(),                        // error to core (IBEX LSU)
+    .uart_debug_o(uart_debug)
+);
+
+hex_disp_driver hx_drvr (
+    .clk(clk_sys_i),
+    .we(device_req[Uart]),
+    .data_in(uart_debug),
+    .hex_out(hex_out),
+    .sel(hex_sel)
 );
 //
   spi_top #(

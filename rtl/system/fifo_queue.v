@@ -9,8 +9,10 @@ module fifo_queue #(
     input wire we,
     input wire re,
     output wire [WIDTH-1:0] data_out,
-    output reg full,
-    output reg empty
+    output wire full,
+    output wire empty,
+    
+    output wire [15:0] debug
 );
 
 localparam ADDR_BITS = $clog2(DEPTH);   // address width for buffer
@@ -24,6 +26,7 @@ wire [ADDR_BITS:0] w_ptr_next_gray, r_ptr_next_gray;
 wire [ADDR_BITS-1:0] w_addr, r_addr;
 
 wire [ADDR_BITS:0] w_ptr_sync_gray, r_ptr_sync_gray;
+reg [ADDR_BITS:0] w_ptr_sync_bin, r_ptr_sync_bin;
 
 wire full_next, empty_next;
 
@@ -59,13 +62,23 @@ cdc #(
     .data_out(r_ptr_sync_gray)
 );
 
+integer i;
+always @(*) begin : gray_to_bin_w_ptr
+    for(i=0; i<ADDR_BITS+1; i = i+1)
+        w_ptr_sync_bin[i] = ^(w_ptr_sync_gray >> i);
+end
+
+always @(*) begin : gray_to_bin_r_ptr
+    for(i=0; i<ADDR_BITS+1; i = i+1)
+        r_ptr_sync_bin[i] = ^(r_ptr_sync_gray >> i);
+end
+
 always @(posedge clk1, negedge rstn)
     if(~rstn)
         w_ptr <= 0;
     else
         w_ptr <= w_ptr_next;
 
-integer i;
 always @(posedge clk1, negedge rstn) begin : write
     if(~rstn)
         for(i = 0; i < DEPTH; i = i+1)
@@ -81,21 +94,9 @@ always @(posedge clk2, negedge rstn) begin : read
         r_ptr <= r_ptr_next;
 end
 
-assign full_next = w_ptr_next_gray == {~r_ptr_sync_gray[ADDR_BITS:ADDR_BITS-1], r_ptr_sync_gray[ADDR_BITS-2:0]};
-assign empty_next = r_ptr_next_gray == w_ptr_sync_gray;
-
-always @(posedge clk1, negedge rstn)
-    if(~rstn)
-        full <= 1'b0;
-    else
-        full <= full_next;
-
-always @(posedge clk2, negedge rstn)
-    if(~rstn)
-        empty <= 1'b1;
-    else
-        empty <= empty_next;
-
+assign full = w_ptr == {~r_ptr_sync_bin[ADDR_BITS], r_ptr_sync_bin[ADDR_BITS-1:0]};
+assign empty = r_ptr == w_ptr_sync_bin;
 assign data_out = mem[r_addr];
+assign debug = {mem[1][7:0], mem[0][7:0]};
 
 endmodule

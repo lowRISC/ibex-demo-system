@@ -1,0 +1,298 @@
+/*
+
+Xilinx Vivado v2022.2 (64-bit) [Major: 2022, Minor: 2]
+SW Build: 3671981 on Fri Oct 14 04:59:54 MDT 2022
+IP Build: 3669848 on Fri Oct 14 08:30:02 MDT 2022
+
+Process ID (PID): 3140
+License: Customer
+Mode: GUI Mode
+
+Current time: 	Fri Apr 07 19:03:32 EEST 2023
+Time zone: 	Eastern European Standard Time (Europe/Athens)
+
+OS: Ubuntu
+OS Version: 5.19.0-38-generic
+OS Architecture: amd64
+Available processors (cores): 4
+
+Display: 0
+Screen size: 1488x930
+Screen resolution (DPI): 100
+Available screens: 1
+Default font: family=Dialog,name=Dialog,style=plain,size=12
+Scale size: 12
+
+Java version: 	11.0.11 64-bit
+Java home: 	/opt/Xilinx/Vivado/2022.2/tps/lnx64/jre11.0.11_9
+Java executable: 	/opt/Xilinx/Vivado/2022.2/tps/lnx64/jre11.0.11_9/bin/java
+Java arguments: 	[-Dsun.java2d.pmoffscreen=false, -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2, -Dsun.java2d.xrender=false, -Djdk.gtk.version=2, -Dsun.java2d.uiScale.enabled=false, -Xverify:none, -Dswing.aatext=true, -XX:-UsePerfData, -Djdk.map.althashing.threshold=512, -XX:StringTableSize=4072, --add-opens=java.desktop/com.sun.awt=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.plaf.synth=ALL-UNNAMED, --add-opens=java.base/java.nio=ALL-UNNAMED, --add-opens=java.desktop/sun.swing=ALL-UNNAMED, --add-opens=java.desktop/javax.swing=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.tree=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.plaf.synth=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED, --add-opens=java.desktop/javax.swing=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.tree=ALL-UNNAMED, --add-opens=java.desktop/java.awt.event=ALL-UNNAMED, --add-exports=java.desktop/javax.swing.plaf.synth=ALL-UNNAMED, --add-exports=java.base/java.nio=ALL-UNNAMED, --add-exports=java.desktop/sun.swing=ALL-UNNAMED, --add-exports=java.desktop/javax.swing=ALL-UNNAMED, --add-exports=java.desktop/javax.swing.tree=ALL-UNNAMED, --add-exports=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED, --add-exports=java.desktop/sun.swing=ALL-UNNAMED, --add-exports=java.desktop/sun.swing.table=ALL-UNNAMED, --add-exports=java.desktop/sun.swing.plaf.synth=ALL-UNNAMED, --add-exports=java.desktop/sun.awt.shell=ALL-UNNAMED, --add-exports=java.base/sun.security.action=ALL-UNNAMED, --add-exports=java.desktop/sun.font=ALL-UNNAMED, --add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED, -XX:NewSize=60m, -XX:MaxNewSize=60m, -Xms256m, -Xmx3072m, -Xss5m, -Xrs]
+Java initial memory (-Xms): 	256 MB
+Java maximum memory (-Xmx):	 3 GB
+
+
+User name: 	menios
+User home directory: /home/menios
+User working directory: /home/menios/Desktop/ibex-demo-system
+User country: 	US
+User language: 	en
+User locale: 	en_US
+
+RDI_BASEROOT: /opt/Xilinx/Vivado
+HDI_APPROOT: /opt/Xilinx/Vivado/2022.2
+RDI_DATADIR: /opt/Xilinx/Vivado/2022.2/data
+RDI_BINDIR: /opt/Xilinx/Vivado/2022.2/bin
+
+Vivado preferences file: /home/menios/.Xilinx/Vivado/2022.2/vivado.xml
+Vivado preferences directory: /home/menios/.Xilinx/Vivado/2022.2/
+Vivado layouts directory: /home/menios/.Xilinx/Vivado/2022.2/data/layouts
+PlanAhead jar file: 	/opt/Xilinx/Vivado/2022.2/lib/classes/planAhead.jar
+Vivado log file: 	/home/menios/Desktop/ibex-demo-system/vivado.log
+Vivado journal file: 	/home/menios/Desktop/ibex-demo-system/vivado.jou
+Engine tmp dir: 	./.Xil/Vivado-3140-menios-virtual-machine
+
+Xilinx Environment Variables
+----------------------------
+RDI_APPROOT: /opt/Xilinx/Vivado/2022.2
+RDI_BASEROOT: /opt/Xilinx/Vivado
+RDI_BINROOT: /opt/Xilinx/Vivado/2022.2/bin
+RDI_BUILD: yes
+RDI_DATADIR: /opt/Xilinx/Vivado/2022.2/data
+RDI_INSTALLROOT: /opt/Xilinx
+RDI_INSTALLVER: 2022.2
+RDI_JAVA_PLATFORM: 
+RDI_JAVA_VERSION: 11.0.11_9
+RDI_LIBDIR: /opt/Xilinx/Vivado/2022.2/lib/lnx64.o/Ubuntu:/opt/Xilinx/Vivado/2022.2/lib/lnx64.o
+RDI_OPT_EXT: .o
+RDI_PATCHROOT: 
+RDI_PLATFORM: lnx64
+RDI_PREPEND_PATH: /opt/Xilinx/Vivado/2022.2/ids_lite/ISE/bin/lin64
+RDI_PROG: /opt/Xilinx/Vivado/2022.2/bin/unwrapped/lnx64.o/vivado
+RDI_TPS_ROOT: /opt/Xilinx/Vivado/2022.2/tps/lnx64
+RDI_USE_JDK11: True
+XILINX: /opt/Xilinx/Vivado/2022.2/ids_lite/ISE
+XILINX_DSP: /opt/Xilinx/Vivado/2022.2/ids_lite/ISE
+XILINX_HLS: /opt/Xilinx/Vitis_HLS/2022.2
+XILINX_PLANAHEAD: /opt/Xilinx/Vivado/2022.2
+XILINX_VITIS: 
+XILINX_VIVADO: /opt/Xilinx/Vivado/2022.2
+XILINX_VIVADO_HLS: /opt/Xilinx/Vivado/2022.2
+
+
+GUI allocated memory:	308 MB
+GUI max memory:		3,072 MB
+Engine allocated memory: 988 MB
+
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+
+*/
+
+// TclEventType: START_GUI
+// Tcl Message: start_gui 
+// WARNING: HEventQueue.dispatchEvent() is taking  1153 ms.
+// HMemoryUtils.trashcanNow. Engine heap size: 953 MB. GUI used memory: 52 MB. Current time: 4/7/23, 7:03:33 PM EEST
+// WARNING: HEventQueue.dispatchEvent() is taking  1001 ms.
+selectList(PAResourceQtoS.SyntheticaGettingStartedView_RECENT_PROJECTS, "/home/menios/Desktop/trial/ibex-demo-system/build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.xpr", 0, false, false, false, true, false); // b.a - Popup Trigger
+selectMenuItem(PAResourceEtoH.GettingStartedView_CLEAR_LIST, "Clear List"); // ao
+selectButton(PAResourceEtoH.GettingStartedView_OPEN_PROJECT, "Open Project"); // u
+// Run Command: PAResourceCommand.PACommandNames_OPEN_PROJECT
+// HMemoryUtils.trashcanNow. Engine heap size: 1,017 MB. GUI used memory: 58 MB. Current time: 4/7/23, 7:03:53 PM EEST
+// Elapsed time: 10 seconds
+setFileChooser("/home/menios/Desktop/ibex-demo-system/build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.xpr");
+// Opening Vivado Project: /home/menios/Desktop/ibex-demo-system/build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.xpr. Version: Vivado v2022.2 
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: FLOW_ADDED
+// TclEventType: MSGMGR_MOVEMSG
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: FILE_SET_NEW
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_CURRENT
+// TclEventType: PROJECT_DASHBOARD_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_NEW
+// Tcl Message: open_project /home/menios/Desktop/ibex-demo-system/build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.xpr 
+// Tcl Message: INFO: [filemgmt 56-3] Default IP Output Path : Could not find the directory '/home/menios/Desktop/ibex-demo-system/build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.gen/sources_1'. 
+// Tcl Message: Scanning sources... Finished scanning sources 
+// Tcl Message: INFO: [IP_Flow 19-234] Refreshing IP repositories INFO: [IP_Flow 19-1704] No user IP repositories specified 
+// TclEventType: PROJECT_NEW
+// [GUI Memory]: 120 MB (+123586kb) [00:00:52]
+// [Engine Memory]: 1,071 MB (+971512kb) [00:00:52]
+// [Engine Memory]: 1,134 MB (+10363kb) [00:00:54]
+// WARNING: HEventQueue.dispatchEvent() is taking  5001 ms.
+// Tcl Message: INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/opt/Xilinx/Vivado/2022.2/data/ip'. 
+// WARNING: HEventQueue.dispatchEvent() is taking  1036 ms.
+// Tcl Message: open_project: Time (s): cpu = 00:00:18 ; elapsed = 00:00:07 . Memory (MB): peak = 6404.707 ; gain = 111.348 ; free physical = 2447 ; free virtual = 6748 
+// Project name: lowrisc_ibex_demo_system_0; location: /home/menios/Desktop/ibex-demo-system/build/lowrisc_ibex_demo_system_0/synth-vivado; part: xc7a100tcsg324-1
+dismissDialog("Open Project"); // bq
+selectButton(RDIResource.AbstractSearchablePanel_SHOW_SEARCH, "Sources_search"); // v: TRUE
+setText("PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE_SEARCH_FIELD", "uart", true); // OverlayTextField
+// PAPropertyPanels.initPanels (uart.v) elapsed time: 0.3s
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, SystemVerilog, xil_defaultlib, uart.v]", 3, false); // D
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, SystemVerilog, xil_defaultlib, uart.v]", 3, false, false, false, false, false, true); // D - Double Click
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, SystemVerilog, xil_defaultlib, uart.v]", 3, false); // D
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, SystemVerilog, xil_defaultlib, uart.v]", 3, false, false, false, false, false, true); // D - Double Click
+// [GUI Memory]: 134 MB (+7598kb) [00:01:09]
+// HMemoryUtils.trashcanNow. Engine heap size: 1,172 MB. GUI used memory: 67 MB. Current time: 4/7/23, 7:04:23 PM EEST
+// Elapsed time: 74 seconds
+collapseTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Program and Debug, Open Hardware Manager]", 21); // f
+expandTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Program and Debug, Open Hardware Manager]", 21); // f
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Program and Debug, Open Hardware Manager, Open Target]", 22, false); // f
+// Run Command: PAResourceCommand.PACommandNames_OPEN_HW_TARGET
+selectMenuItem(PAResourceCommand.PACommandNames_AUTO_CONNECT_TARGET, "Auto Connect"); // ao
+// Run Command: PAResourceCommand.PACommandNames_OPEN_HARDWARE_MANAGER
+// Tcl Command: 'rdi::info_commands get_hw_probes'
+// Tcl Command: 'load_features labtools'
+// TclEventType: LOAD_FEATURE
+// TclEventType: HW_SESSION_OPEN
+// WARNING: HEventQueue.dispatchEvent() is taking  2566 ms.
+// Tcl Message: open_hw_manager 
+// HMemoryUtils.trashcanNow. Engine heap size: 1,219 MB. GUI used memory: 70 MB. Current time: 4/7/23, 7:05:39 PM EEST
+closeView(PAResourceOtoP.PAViews_PROJECT_SUMMARY, "Project Summary"); // t
+// 'K' command handler elapsed time: 3 seconds
+// Run Command: PAResourceCommand.PACommandNames_AUTO_CONNECT_TARGET
+dismissDialog("Open Hardware Manager"); // bq
+// [Engine Memory]: 1,220 MB (+30339kb) [00:02:28]
+// Tcl Message: connect_hw_server -allow_non_jtag 
+// Tcl Message: INFO: [Labtools 27-2285] Connecting to hw_server url TCP:localhost:3121 INFO: [Labtools 27-2222] Launching hw_server... 
+// TclEventType: HW_SERVER_UPDATE
+// Tcl Message: INFO: [Labtools 27-2221] Launch Output:  ****** Xilinx hw_server v2022.2   **** Build date : Oct 14 2022 at 05:10:28     ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.   INFO: [Labtools 27-3415] Connecting to cs_server url TCP:localhost:0 INFO: [Labtools 27-3417] Launching cs_server... 
+// TclEventType: HW_SERVER_UPDATE
+// Tcl Message: INFO: [Labtools 27-2221] Launch Output:   ******** Xilinx cs_server v2022.2.0   ****** Build date   : Oct 05 2022-02:25:37     **** Build number : 2022.2.1664925937       ** Copyright 2017-2023 Xilinx, Inc. All Rights Reserved.    
+// Tcl Message: connect_hw_server: Time (s): cpu = 00:00:05 ; elapsed = 00:00:06 . Memory (MB): peak = 6475.434 ; gain = 0.105 ; free physical = 2331 ; free virtual = 6715 
+// TclEventType: HW_TARGET_CHANGE
+// TclEventType: HW_TARGET_CLOSE
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: HW_SYSMON_ADD
+// TclEventType: HW_TARGET_UPDATE
+// WARNING: HEventQueue.dispatchEvent() is taking  22896 ms.
+// Tcl Message: open_hw_target 
+// Tcl Message: INFO: [Labtoolstcl 44-466] Opening hw_target localhost:3121/xilinx_tcf/Digilent/210319B26AF3A 
+// HMemoryUtils.trashcanNow. Engine heap size: 3,095 MB. GUI used memory: 90 MB. Current time: 4/7/23, 7:06:10 PM EEST
+// Tcl Message: open_hw_target: Time (s): cpu = 00:00:08 ; elapsed = 00:00:23 . Memory (MB): peak = 8346.434 ; gain = 1871.000 ; free physical = 386 ; free virtual = 4772 
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: set_property PROGRAM.FILE {/home/menios/Desktop/ibex-demo-system/build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.runs/impl_1/top_artya7.bit} [get_hw_devices xc7a100t_0] 
+// HMemoryUtils.trashcanNow. Engine heap size: 3,120 MB. GUI used memory: 70 MB. Current time: 4/7/23, 7:06:10 PM EEST
+// Tcl Message: current_hw_device [get_hw_devices xc7a100t_0] 
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: HW_SYSMON_CHANGE
+// TclEventType: HW_DEVICE_UPDATE
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: refresh_hw_device -update_hw_probes false [lindex [get_hw_devices xc7a100t_0] 0] 
+// Tcl Message: INFO: [Labtools 27-1434] Device xc7a100t (JTAG device index = 0) is programmed with a design that has no supported debug core(s) in it. 
+// [Engine Memory]: 3,120 MB (+1927877kb) [00:02:59]
+// Elapsed time: 30 seconds
+dismissDialog("Auto Connect"); // bq
+selectButton(PAResourceOtoP.ProgramDebugTab_PROGRAM_DEVICE, "Program device"); // g
+// Run Command: PAResourceCommand.PACommandNames_PROGRAM_FPGA
+selectButton(PAResourceOtoP.ProgramFpgaDialog_PROGRAM, "Program"); // a
+dismissDialog("Program Device"); // aP
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: set_property PROBES.FILE {} [get_hw_devices xc7a100t_0] 
+// Tcl Message: set_property FULL_PROBES.FILE {} [get_hw_devices xc7a100t_0] 
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: set_property PROGRAM.FILE {/home/menios/Desktop/ibex-demo-system/build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.runs/impl_1/top_artya7.bit} [get_hw_devices xc7a100t_0] 
+// Tcl Message: program_hw_devices [get_hw_devices xc7a100t_0] 
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: INFO: [Labtools 27-3164] End of startup status: HIGH 
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: HW_SYSMON_CHANGE
+// TclEventType: HW_DEVICE_UPDATE
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: HW_DEVICE_PROBES_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: HW_DEVICE_PROBES_CHANGE
+// Tcl Message: refresh_hw_device [lindex [get_hw_devices xc7a100t_0] 0] 
+// Tcl Message: INFO: [Labtools 27-1434] Device xc7a100t (JTAG device index = 0) is programmed with a design that has no supported debug core(s) in it. 
+// 'D' command handler elapsed time: 6 seconds
+dismissDialog("Program Device"); // bq
+// Elapsed time: 14 seconds
+selectButton(PAResourceOtoP.ProgramDebugTab_PROGRAM_DEVICE, "Program device"); // g
+// Run Command: PAResourceCommand.PACommandNames_PROGRAM_FPGA
+selectButton(PAResourceOtoP.ProgramFpgaDialog_PROGRAM, "Program"); // a
+// TclEventType: HW_DEVICE_CHANGE
+dismissDialog("Program Device"); // aP
+// Tcl Message: set_property PROBES.FILE {} [get_hw_devices xc7a100t_0] 
+// Tcl Message: set_property FULL_PROBES.FILE {} [get_hw_devices xc7a100t_0] 
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: set_property PROGRAM.FILE {/home/menios/Desktop/ibex-demo-system/build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.runs/impl_1/top_artya7.bit} [get_hw_devices xc7a100t_0] 
+// Tcl Message: program_hw_devices [get_hw_devices xc7a100t_0] 
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: INFO: [Labtools 27-3164] End of startup status: HIGH 
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: HW_SYSMON_CHANGE
+// TclEventType: HW_DEVICE_UPDATE
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: HW_DEVICE_PROBES_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: HW_DEVICE_PROBES_CHANGE
+// Tcl Message: refresh_hw_device [lindex [get_hw_devices xc7a100t_0] 0] 
+// Tcl Message: INFO: [Labtools 27-1434] Device xc7a100t (JTAG device index = 0) is programmed with a design that has no supported debug core(s) in it. 
+// 'D' command handler elapsed time: 4 seconds
+dismissDialog("Program Device"); // bq
+// Elapsed time: 15 seconds
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Program and Debug, Generate Bitstream]", 20, false); // f
+// Run Command: PAResourceCommand.PACommandNames_RUN_BITGEN
+selectButton("OptionPane.button", "OK"); // JButton
+// TclEventType: RUN_MODIFY
+// TclEventType: RUN_RESET
+// TclEventType: RUN_MODIFY
+// Tcl Message: reset_run impl_1 -prev_step  
+// Tcl Message: launch_runs impl_1 -to_step write_bitstream -jobs 2 
+// TclEventType: RUN_LAUNCH
+// TclEventType: RUN_MODIFY
+// Tcl Message: [Fri Apr  7 19:07:01 2023] Launched impl_1... Run output will be captured here: /home/menios/Desktop/ibex-demo-system/build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.runs/impl_1/runme.log 
+dismissDialog("Generate Bitstream"); // bq
+selectButton(RDIResource.AbstractSearchablePanel_SHOW_SEARCH, "Hardware_search"); // v: TRUE
+selectButton(RDIResource.AbstractSearchablePanel_SHOW_SEARCH, "Hardware_search"); // v: TRUE
+// TclEventType: RUN_STATUS_CHANGE
+selectMenu(PAResourceItoN.MainMenuMgr_WINDOW, "Window"); // ag
+selectMenuItem(PAResourceCommand.PACommandNames_FILESET_WINDOW, "Sources"); // ao
+dismissMenu(PAResourceItoN.MainMenuMgr_WINDOW, "Window"); // ag
+// Run Command: PAResourceCommand.PACommandNames_FILESET_WINDOW
+setText("PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE_SEARCH_FIELD", "demo", true); // OverlayTextField
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, SystemVerilog, xil_defaultlib, ibex_demo_system.sv]", 3, false); // D
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, SystemVerilog, xil_defaultlib, ibex_demo_system.sv]", 3, false, false, false, false, false, true); // D - Double Click
+// HMemoryUtils.trashcanNow. Engine heap size: 3,151 MB. GUI used memory: 72 MB. Current time: 4/7/23, 7:07:23 PM EEST
+// Elapsed time: 15 seconds
+selectTab(PAResourceEtoH.FileSetView_TABBED_PANE, (HResource) null, "Hierarchy", 0); // g
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints]", 34); // D
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1, pins_artya7.xdc]", 36, false); // D
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1, pins_artya7.xdc]", 36, false, false, false, false, false, true); // D - Double Click
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// Elapsed time: 172 seconds
+selectButton(RDIResource.AbstractSearchablePanel_SHOW_SEARCH, "Sources_search"); // v: TRUE
+setText("PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE_SEARCH_FIELD", "top", true); // OverlayTextField
+selectTab(PAResourceEtoH.FileSetView_TABBED_PANE, (HResource) null, "Libraries", 1); // g
+setText("PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE_SEARCH_FIELD", "top", true); // OverlayTextField
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, SystemVerilog, xil_defaultlib, top_artya7.sv]", 6, false); // D
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, SystemVerilog, xil_defaultlib, top_artya7.sv]", 6, false, false, false, false, false, true); // D - Double Click
+// Elapsed time: 36 seconds
+selectButton(PAResourceTtoZ.TaskBanner_CLOSE, (String) null); // j
+closeTask("Program and Debug", "Hardware Manager", "DesignTask.PROGRAM_DEBUG");
+// TclEventType: HW_OBJECT_DELETE
+// TclEventType: HW_SERVER_CLOSE
+// TclEventType: HW_SYSMON_DELETE
+// TclEventType: HW_TARGET_CLOSE
+// Tcl Message: close_hw_manager 
+// TclEventType: HW_TARGET_CLOSE
+// TclEventType: HW_TARGET_UPDATE
+// TclEventType: DEBUG_PROBE_DELETE
+// TclEventType: HW_SESSION_CLOSE
+// WARNING: HEventQueue.dispatchEvent() is taking  2077 ms.
+dismissDialog("Close Hardware Manager"); // bq
+// HMemoryUtils.trashcanNow. Engine heap size: 3,171 MB. GUI used memory: 73 MB. Current time: 4/7/23, 7:11:18 PM EEST

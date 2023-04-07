@@ -1,3 +1,6 @@
+#ifndef UART_H__
+#define UART_H__
+
 #include <stdint.h>
 
 #define UART_DEFAULT_BASE_ADDR 0x80001000
@@ -89,3 +92,5 @@ void uart_disable();
  * @returns Nothing
  */
 void uart_setup(unsigned char parameters);
+
+#endif

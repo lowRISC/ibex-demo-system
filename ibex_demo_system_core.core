@@ -16,7 +16,13 @@ filesets:
       - rtl/system/gpio.sv
       - rtl/system/pwm.sv
       - rtl/system/pwm_wrapper.sv
-      - rtl/system/uart.sv
+      - rtl/system/uart.v
+      - rtl/system/clock_divider.v
+      - rtl/system/tx_module.v
+      - rtl/system/rx_module.v
+      - rtl/system/fifo_queue.v
+      - rtl/system/cdc.v
+      - rtl/system/hex_disp_driver.v
       - rtl/system/spi_host.sv
       - rtl/system/spi_top.sv
     file_type: systemVerilogSource

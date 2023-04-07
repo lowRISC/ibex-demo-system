@@ -84,15 +84,15 @@ void set_global_interrupt_enable(uint32_t enable) {
 }
 
 void simple_exc_handler(void) {
-  puts("EXCEPTION!!!\n");
-  puts("============\n");
-  puts("MEPC:   0x");
-  puthex(get_mepc());
-  puts("\nMCAUSE: 0x");
-  puthex(get_mcause());
-  puts("\nMTVAL:  0x");
-  puthex(get_mtval());
-  putchar('\n');
+  uart_puts("EXCEPTION!!!\n");
+  uart_puts("============\n");
+  uart_puts("MEPC:   0x");
+  uart_puth(get_mepc());
+  uart_puts("\nMCAUSE: 0x");
+  uart_puth(get_mcause());
+  uart_puts("\nMTVAL:  0x");
+  uart_puth(get_mtval());
+  uart_putc('\n');
 
   while(1);
 }

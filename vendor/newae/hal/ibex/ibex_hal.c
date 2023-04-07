@@ -17,18 +17,18 @@ void trigger_low (void) {
 
 int getch (void) {
     int uart_in_char;
-    while ((uart_in_char = uart_in(DEFAULT_UART)) == -1) {
+    while ((uart_in_char = uart_getc()) == -1) {
     }
     return uart_in_char;
 }
 
 void putch (char c) {
-    uart_out(DEFAULT_UART, c);
+    uart_putc(c);
 }
 
 void print (const char *ptr) {
     while (*ptr != 0) {
-        uart_out(DEFAULT_UART, *ptr);
+        uart_putc(*ptr);
         ptr++;
     }
 }
