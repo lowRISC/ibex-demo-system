@@ -1,4 +1,4 @@
-module uart #(
+module uart_top #(
     parameter CLOCK_FREQUENCY = 50_000_000,
     parameter RX_FIFO_DEPTH = 128,
     parameter TX_FIFO_DEPTH = 128
@@ -16,9 +16,7 @@ module uart #(
     output wire uart_req_gnt_o,     // request granted to core (IBEX LSU)
     output wire uart_rvalid_o,      // request valid to core (IBEX LSU)
     output wire uart_irq_o,         // interrupt request (CSR)
-    output wire uart_err_o,         // error to core (IBEX LSU)
-    
-    output wire [31:0] uart_debug_o
+    output wire uart_err_o          // error to core (IBEX LSU)
 );
 
 reg [31:0] uart_rdata_q, uart_rdata_d;
@@ -69,11 +67,12 @@ clock_divider baud_rate_gen (
     .clk_m(baud_rate_clk)
 );
 
-rx_module rx0 (
-    .clk_i(baud_rate_clk),          // baud rate
+uart_rx rx0 (
+    .clk_i(clk_i),                  // clock
     .rst_ni(rst_ni),                // negative reset signal
     .en(rx_en),                     // rx enable
     .rx(rx),                        // rx pin
+    .baud_rate_i(baud_rate),        // main clock divisor
     .data_size_i(data_size),        // data size (payload)
     .parity_size_i(parity_size),    // parity bit
     .parity_type_i(parity_type),    // parity type
@@ -84,27 +83,27 @@ rx_module rx0 (
 );
 
 // FIFO queue for rx module
-fifo_queue #(
-    .WIDTH(9),                  // width of data bus
-    .DEPTH(RX_FIFO_DEPTH)        // depth of FIFO buffer
+async_fifo #(
+    .WIDTH(9),                    // width of data bus
+    .DEPTH(RX_FIFO_DEPTH)         // depth of FIFO buffer
 ) rx_async_fifo (
-    .clk1(baud_rate_clk),       // input clock 1 (write)
-    .clk2(clk_i),               // input clock 2 (read)
-    .rstn(rst_ni),              // reset signal
-    .data_in(rx_data),          // input data
-    .we(rx_fq_we),              // write enable signal
-    .data_out(rx_fq_data_out),  // output data
-    .re(rx_fq_re),              // read enable signal
-    .full(rx_fq_full),          // full flag
-    .empty(rx_fq_empty),        // empty flag
-    .debug()
+    .wclk_i(baud_rate_clk),       // input clock 1 (write)
+    .rclk_i(clk_i),               // input clock 2 (read)
+    .rst_ni(rst_ni),              // reset signal
+    .wdata_i(rx_data),            // input data
+    .we_i(rx_fq_we),              // write enable signal
+    .rdata_o(rx_fq_data_out),     // output data
+    .re_i(rx_fq_re),              // read enable signal
+    .full_o(rx_fq_full),          // full flag
+    .empty_o(rx_fq_empty)         // empty flag
 );
 
-tx_module tx0 (
-    .clk_i(baud_rate_clk),        // baud rate
-    .rst_ni(rst_ni),              // reset signal
+uart_tx tx0 (
+    .clk_i(clk_i),                // clock
+    .rst_ni(rst_ni),              // negative reset signal
     .en(tx_en),                   // tx enable
     .tx_start_i(~tx_fq_empty),    // start transmission flag
+    .baud_rate_i(baud_rate),      // main clock divisor
     .data_size_i(data_size),      // payload size
     .parity_size_i(parity_size),  // parity bit size
     .parity_type_i(parity_type),  // type of parity
@@ -115,20 +114,19 @@ tx_module tx0 (
 );
 
 // FIFO queue for tx module
-fifo_queue #(
-    .WIDTH(9),                  // width of data bus
-    .DEPTH(TX_FIFO_DEPTH)        // depth of FIFO buffer
+async_fifo #(
+    .WIDTH(9),                    // width of data bus
+    .DEPTH(TX_FIFO_DEPTH)         // depth of FIFO buffer
 ) tx_async_fifo (
-    .clk1(clk_i),               // input clock 1 (write)
-    .clk2(baud_rate_clk),       // input clock 2 (read)
-    .rstn(rst_ni),              // reset signal
-    .data_in(uart_wdata_i[8:0]),// input data
-    .we(tx_fq_we),              // write enable signal
-    .data_out(tx_fq_data_out),  // output data
-    .re(tx_fq_re),              // read enable signal
-    .full(tx_fq_full),          // full flag
-    .empty(tx_fq_empty),        // empty flag
-    .debug(uart_debug_o)
+    .wclk_i(clk_i),               // input clock 1 (write)
+    .rclk_i(baud_rate_clk),       // input clock 2 (read)
+    .rst_ni(rst_ni),              // reset signal
+    .wdata_i(uart_wdata_i[8:0]),  // input data
+    .we_i(tx_fq_we),              // write enable signal
+    .rdata_o(tx_fq_data_out),     // output data
+    .re_i(tx_fq_re),              // read enable signal
+    .full_o(tx_fq_full),          // full flag
+    .empty_o(tx_fq_empty)         // empty flag
 );
 
 assign tx_fq_we = (opcode == OP_WRITE_UART_DATA) & tx_en ;

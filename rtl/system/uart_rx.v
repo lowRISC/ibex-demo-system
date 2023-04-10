@@ -1,8 +1,9 @@
-module rx_module (
+module uart_rx (
     input wire clk_i,
     input wire rst_ni,
     input wire en,
     input wire rx,
+    input wire [31:0] baud_rate_i,
     input wire [3:0] data_size_i,
     input wire parity_size_i,
     input wire parity_type_i,
@@ -33,6 +34,30 @@ reg [1:0] next_state;
 reg [8:0] data_d;
 reg rx_rdy_d;
 reg rx_err_d;
+
+reg [31:0] baud_rate;
+reg [31:0] baud_rate_counter;
+reg clk_en;
+always @(posedge clk_i, negedge rst_ni) begin
+    if(~rst_ni) begin
+        baud_rate_counter <= 32'b0;
+        clk_en <= 1'b0;
+    end
+    else begin
+        case(state)
+        IDLE : begin
+            if(next_state == DATA) begin
+                baud_rate_counter <= (baud_rate_counter == baud_rate / 2)? 32'b0 : baud_rate_counter + 1'b1;
+                clk_en <= (baud_rate_counter == baud_rate / 2);
+            end
+        end
+        default : begin
+            baud_rate_counter <= (baud_rate_counter == baud_rate)? 32'b0 : baud_rate_counter + 1'b1;
+            clk_en <= (baud_rate_counter == baud_rate);
+        end
+        endcase
+    end
+end
 
 always @(*) begin
     case(data_size)
@@ -70,10 +95,11 @@ always @(posedge clk_i, negedge rst_ni) begin
     if(~rst_ni) begin
        state <= IDLE;
 	end
-    else begin
+    else if(clk_en) begin
 	   state <= next_state;
 	   case(state)
-            IDLE : begin                
+            IDLE : begin    
+                baud_rate <= baud_rate_i;                            
                 data_counter <= data_size_i - 1;
                 parity_counter <= parity_size_i - 1;
                 stop_counter <= stop_size_i - 1;

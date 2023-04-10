@@ -1,8 +1,9 @@
-module tx_module (
+module uart_tx (
     input wire clk_i,
     input wire rst_ni,
     input wire en,
     input wire tx_start_i,
+    input wire [31:0] baud_rate_i,
     input wire [3:0] data_size_i,
     input wire parity_size_i,
     input wire parity_type_i,
@@ -20,14 +21,29 @@ reg [12:0] frame_buffer;
 reg state;
 reg next_state;
 
+reg [31:0] baud_rate;
+reg [31:0] baud_rate_counter;
+reg clk_en;
+always @(posedge clk_i, negedge rst_ni) begin
+    if(~rst_ni) begin
+        baud_rate_counter <= 32'b0;
+        clk_en <= 1'b0;
+    end
+    else begin
+        baud_rate_counter <= (baud_rate_counter == baud_rate)? 32'b0 : baud_rate_counter + 1'b1;
+        clk_en <= (baud_rate_counter == baud_rate);
+    end
+end
+
 always @ (posedge clk_i, negedge rst_ni) begin
     if(~rst_ni) begin
         state <= IDLE;
     end
-    else begin
+    else if(clk_en) begin
         state <= next_state;
         case(state)
             IDLE : begin
+                baud_rate <= baud_rate_i;
                 // Size of frame in bits
                 frame_counter <= stop_size_i + parity_size_i + data_size_i + 1 + 1;
                 // if none parity just fill with logic 1
