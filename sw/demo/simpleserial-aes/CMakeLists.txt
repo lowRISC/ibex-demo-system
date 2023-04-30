@@ -16,7 +16,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/../../../vendor/newae/crypto/aes-independant.c
 ${CMAKE_CURRENT_SOURCE_DIR}/../../../vendor/newae/crypto/tiny-AES128-C/aes.c
 )
 
-add_prog(simpleserial-aes ${CMAKE_CURRENT_SOURCE_DIR}/../../../vendor/newae/simpleserial-aes/simpleserial-aes.c)
+add_executable(simpleserial-aes ${CMAKE_CURRENT_SOURCE_DIR}/../../../vendor/newae/simpleserial-aes/simpleserial-aes.c)
 
-target_link_libraries(simpleserial-aes simpleserial tiny-AES128)
+target_link_libraries(simpleserial-aes common simpleserial tiny-AES128)
 

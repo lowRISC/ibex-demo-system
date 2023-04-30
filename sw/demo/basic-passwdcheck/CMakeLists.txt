@@ -6,7 +6,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../vendor/newae/simpleseri
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../common)
 
 
-add_prog(basic-passwdcheck ${CMAKE_CURRENT_SOURCE_DIR}/../../../vendor/newae/basic-passwdcheck/basic-passwdcheck.c)
+add_executable(basic-passwdcheck ${CMAKE_CURRENT_SOURCE_DIR}/../../../vendor/newae/basic-passwdcheck/basic-passwdcheck.c)
 
-target_link_libraries(basic-passwdcheck simpleserial)
+target_link_libraries(basic-passwdcheck common simpleserial)
 

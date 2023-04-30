@@ -1,1 +1,2 @@
-add_prog(demo main.c)
+add_executable(demo main.c)
+target_link_libraries(demo common)
