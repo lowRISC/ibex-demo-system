@@ -396,7 +396,7 @@ to a verilator simulation model to be simulated on a PC.
 ```
 mkdir sw/build
 pushd sw/build
-cmake ../
+cmake ..
 make
 popd
 ```
