@@ -1,7 +1,7 @@
+#!/bin/sh
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-#!/bin/sh
 
 if [ $# -ne 2 ]; then
   echo "Usage $0 run|halt elf_file"
@@ -24,7 +24,7 @@ if [ $1 = "run" ]; then
   EXIT_CMD='-c "exit"'
 fi
 
-SCRIPT_DIR="$(dirname "$(readlink -e "$BASH_SOURCE")")"
+SCRIPT_DIR="$(dirname "$(readlink -e "$0")")"
 
 openocd -f $SCRIPT_DIR/arty-a7-openocd-cfg.tcl -c "load_image $2 0x0" \
  -c "verify_image $2 0x0" \
