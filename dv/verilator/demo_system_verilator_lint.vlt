@@ -23,3 +23,6 @@ lint_off -rule IMPERFECTSCH -file "*pulp_riscv_dbg*"
 lint_off -rule DECLFILENAME -file "*pulp_riscv_dbg*"
 lint_off -rule PINMISSING -file "*pulp_riscv_dbg*"
 lint_off -rule UNUSED -file "*ibex_register_file_fpga*"
+
+lint_off -rule UNOPTFLAT -file "*/lowrisc_prim_fifo_0/rtl/prim_fifo_async_simple.sv"
+lint_off -rule WIDTHEXPAND -file "*pulp_riscv_dbg/src/dm_mem.sv"

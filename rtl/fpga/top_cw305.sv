@@ -49,7 +49,13 @@ module top_cw305 (
 
     .spi_rx_i(1'b0),
     .spi_tx_o(),
-    .spi_sck_o()
+    .spi_sck_o(),
+
+    .trst_ni(1'b1),
+    .tms_i(1'b0),
+    .tck_i(1'b0),
+    .td_i(1'b0),
+    .td_o()
   );
 
   // clock source select:
