@@ -14,5 +14,7 @@
   exclude_from_upstream: [
     // GitHub CI configuration
     '.github',
+    // OpenTitan primitives
+    "vendor/lowrisc_ip/ip*"
   ]
 }
