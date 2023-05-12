@@ -24,9 +24,9 @@ module dm_mem #(
 ) (
   input  logic                             clk_i,       // Clock
   input  logic                             rst_ni,      // debug module reset
-  input  logic                             ndmreset_i,
 
   output logic [NrHarts-1:0]               debug_req_o,
+  input  logic                             ndmreset_i,
   input  logic [19:0]                      hartsel_i,
   // from Ctrl and Status register
   input  logic [NrHarts-1:0]               haltreq_i,
@@ -78,9 +78,9 @@ module dm_mem #(
   localparam logic [DbgAddressBits-1:0] FlagsEndAddr  = 'h7FF;
 
   localparam logic [DbgAddressBits-1:0] HaltedAddr    = 'h100;
-  localparam logic [DbgAddressBits-1:0] GoingAddr     = 'h104;
-  localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h108;
-  localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h10C;
+  localparam logic [DbgAddressBits-1:0] GoingAddr     = 'h108;
+  localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h110;
+  localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h118;
 
   logic [dm::ProgBufSize/2-1:0][63:0]   progbuf;
   logic [7:0][63:0]   abstract_cmd;
@@ -112,9 +112,9 @@ module dm_mem #(
   assign resumereq_wdata_aligned = NrHartsAligned'(resumereq_i);
 
   assign halted_q_aligned        = NrHartsAligned'(halted_q);
-  assign halted_d                = ndmreset_i ? '0 : NrHarts'(halted_d_aligned);
+  assign halted_d                = NrHarts'(halted_d_aligned);
   assign resuming_q_aligned      = NrHartsAligned'(resuming_q);
-  assign resuming_d              = ndmreset_i ? '0 : NrHarts'(resuming_d_aligned);
+  assign resuming_d              = NrHarts'(resuming_d_aligned);
 
   // distinguish whether we need to forward data from the ROM or the FSM
   // latch the address for this
@@ -202,6 +202,13 @@ module dm_mem #(
       cmderror_valid_o = 1'b1;
       cmderror_o = dm::CmdErrorException;
     end
+
+    if (ndmreset_i) begin
+      // Clear state of hart and its control signals when it is being reset.
+      state_d = Idle;
+      go      = 1'b0;
+      resume  = 1'b0;
+    end
   end
 
   // word mux for 32bit and 64bit buses
@@ -215,14 +222,13 @@ module dm_mem #(
   end
 
   // read/write logic
-  logic [63:0] data_bits;
+  logic [dm::DataCount-1:0][31:0] data_bits;
   logic [7:0][7:0] rdata;
-  always_comb begin : p_rw_logic
+  always_comb (* xprop_off *) begin : p_rw_logic
 
     halted_d_aligned   = NrHartsAligned'(halted_q);
     resuming_d_aligned = NrHartsAligned'(resuming_q);
     rdata_d        = rdata_q;
-    // convert the data in bits representation
     data_bits      = data_i;
     rdata          = '0;
 
@@ -259,9 +265,19 @@ module dm_mem #(
           // core can write data registers
           [DataBaseAddr:DataEndAddr]: begin
             data_valid_o = 1'b1;
-            for (int i = 0; i < $bits(be_i); i++) begin
-              if (be_i[i]) begin
-                data_bits[i*8+:8] = wdata_i[i*8+:8];
+            for (int dc = 0; dc < dm::DataCount; dc++) begin
+              if ((addr_i[DbgAddressBits-1:2] - DataBaseAddr[DbgAddressBits-1:2]) == dc) begin
+                for (int i = 0; i < $bits(be_i); i++) begin
+                  if (be_i[i]) begin
+                    if (i>3) begin // for upper 32bit data write (only used for BusWidth ==  64)
+                      if ((dc+1) < dm::DataCount) begin // ensure we write to an implemented data register
+                        data_bits[dc+1][(i-4)*8+:8] = wdata_i[i*8+:8];
+                      end
+                    end else begin // for lower 32bit data write
+                      data_bits[dc][i*8+:8] = wdata_i[i*8+:8];
+                    end
+                  end
+                end
               end
             end
           end
@@ -294,10 +310,8 @@ module dm_mem #(
 
           [DataBaseAddr:DataEndAddr]: begin
             rdata_d = {
-                      data_i[$clog2(dm::ProgBufSize)'(addr_i[DbgAddressBits-1:3] -
-                          DataBaseAddr[DbgAddressBits-1:3] + 1'b1)],
-                      data_i[$clog2(dm::ProgBufSize)'(addr_i[DbgAddressBits-1:3] -
-                          DataBaseAddr[DbgAddressBits-1:3])]
+                      data_i[$clog2(dm::DataCount)'(((addr_i[DbgAddressBits-1:3] - DataBaseAddr[DbgAddressBits-1:3]) << 1) + 1'b1)],
+                      data_i[$clog2(dm::DataCount)'(((addr_i[DbgAddressBits-1:3] - DataBaseAddr[DbgAddressBits-1:3]) << 1))]
                       };
           end
 
@@ -324,6 +338,12 @@ module dm_mem #(
           default: ;
         endcase
       end
+    end
+
+    if (ndmreset_i) begin
+      // When harts are reset, they are neither halted nor resuming.
+      halted_d_aligned   = '0;
+      resuming_d_aligned = '0;
     end
 
     data_o = data_bits;
