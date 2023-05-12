@@ -43,7 +43,13 @@ module top_artya7 #(
 
     .spi_rx_i (SPI_RX),
     .spi_tx_o (SPI_TX),
-    .spi_sck_o(SPI_SCK)
+    .spi_sck_o(SPI_SCK),
+
+    .trst_ni(1'b1),
+    .tms_i  (1'b0),
+    .tck_i  (1'b0),
+    .td_i   (1'b0),
+    .td_o   ()
   );
 
   // Generating the system clock and reset for the FPGA.

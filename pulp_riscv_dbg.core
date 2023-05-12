@@ -19,24 +19,28 @@ filesets:
       - vendor/pulp_riscv_dbg/src/dm_mem.sv
       - vendor/pulp_riscv_dbg/src/dmi_cdc.sv
       - vendor/pulp_riscv_dbg/src/dmi_jtag.sv
+      - vendor/lowrisc_ip/ip/prim/rtl/prim_sync_reqack.sv
     file_type: systemVerilogSource
 
-  files_vivado:
+  files_xilinx_bscane_tap:
     files:
       - vendor/pulp_riscv_dbg/src/dmi_bscane_tap.sv
+    file_type: systemVerilogSource
+
+  files_jtag_tap:
+    files:
+      - vendor/pulp_riscv_dbg/src/dmi_jtag_tap.sv
     file_type: systemVerilogSource
 
   files_verilator:
     depend:
       # common waivers
       - lowrisc:lint:common
-    files:
-      - vendor/pulp_riscv_dbg/src/dmi_jtag_tap.sv
-    file_type: systemVerilogSource
 
 targets:
   default:
     filesets:
       - files_src
       - tool_verilator ? (files_verilator)
-      - tool_vivado ? (files_vivado)
+      - "use_bscane_tap ? (files_xilinx_bscane_tap)"
+      - "!use_bscane_tap ? (files_jtag_tap)"

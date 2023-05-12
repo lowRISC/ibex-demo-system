@@ -27,7 +27,13 @@ module ibex_demo_system #(
   output logic                uart_tx_o,
   input  logic                spi_rx_i,
   output logic                spi_tx_o,
-  output logic                spi_sck_o
+  output logic                spi_sck_o,
+
+  input  logic        tck_i,    // JTAG test clock pad
+  input  logic        tms_i,    // JTAG test mode select pad
+  input  logic        trst_ni,  // JTAG test reset pad
+  input  logic        td_i,     // JTAG test data input pad
+  output logic        td_o      // JTAG test data output pad
 );
   localparam logic [31:0] MEM_SIZE      = 64 * 1024; // 64 KiB
   localparam logic [31:0] MEM_START     = 32'h00100000;
@@ -444,7 +450,8 @@ module ibex_demo_system #(
 
   if (DBG) begin : gen_dm_top
     dm_top #(
-      .NrHarts ( 1 )
+      .NrHarts      ( 1                              ),
+      .IdcodeValue  ( jtag_id_pkg::RV_DM_JTAG_IDCODE )
     ) u_dm_top (
       .clk_i        (clk_sys_i),
       .rst_ni       (rst_sys_ni),
@@ -470,7 +477,13 @@ module ibex_demo_system #(
       .host_be_o     (host_be[DbgHost]),
       .host_gnt_i    (host_gnt[DbgHost]),
       .host_r_valid_i(host_rvalid[DbgHost]),
-      .host_r_rdata_i(host_rdata[DbgHost])
+      .host_r_rdata_i(host_rdata[DbgHost]),
+
+      .tck_i,
+      .tms_i,
+      .trst_ni,
+      .td_i,
+      .td_o
     );
   end else begin : gen_no_dm
     assign dm_debug_req = 1'b0;
