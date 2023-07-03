@@ -10,3 +10,6 @@ runner = "riscv32-unknown-elf-gdb -q -x gdb_init"
 rustflags = [
   "-C", "link-arg=-T../common/link.ld",
 ]
+
+[unstable]
+build-std = ["core"]

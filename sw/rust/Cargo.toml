@@ -4,5 +4,6 @@
 
 [workspace]
 members = [
-    "demo/hello_world"
+    "ibex-demo-system-pac",
+    "demo/hello_world",
 ]
