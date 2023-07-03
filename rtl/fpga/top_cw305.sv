@@ -59,7 +59,7 @@ module top_cw305 (
      .I0        (I_pll_clk1),
      .I1        (I_cw_clkin),
      .S         (J16) // J16 selects the clock; 0=on-board PLL, 1=from CW HS2 pin
-  );    
+  );
 
 
   // Generating the system clock and reset for the FPGA.

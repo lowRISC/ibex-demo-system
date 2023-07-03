@@ -41,7 +41,7 @@ module gpio #(
       .ClkCount(500)
     ) dbnc (
       .clk_i,
-      .rst_ni,  
+      .rst_ni,
       .btn_i(gp_i_q[2][i]),
       .btn_o(gp_i_dbnc[i])
     );
