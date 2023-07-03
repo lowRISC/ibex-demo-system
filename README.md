@@ -423,10 +423,9 @@ binary.
 Run from the repository root run:
 ```
 # For example :
-./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system [-t] \
-  --meminit=ram,./sw/build/demo/hello_world/demo
+./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system -t --meminit=ram,$(pwd)/sw/build/demo/hello_world/demo
 
-# You need to substitute the <sw_elf_file> for a binary we have build above.
+# You need to substitute the <sw_elf_file> for a binary we have built above and decide whether you want tracing enabled with -t :
 ./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system [-t] --meminit=ram,<sw_elf_file>
 
 ```
