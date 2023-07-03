@@ -141,18 +141,18 @@ module ibex_demo_system #(
   logic [31:0] cfg_device_addr_base [NrDevices];
   logic [31:0] cfg_device_addr_mask [NrDevices];
 
-  assign cfg_device_addr_base[Ram]    = MEM_START;
-  assign cfg_device_addr_mask[Ram]    = MEM_MASK;
-  assign cfg_device_addr_base[Gpio]   = GPIO_START;
-  assign cfg_device_addr_mask[Gpio]   = GPIO_MASK;
-  assign cfg_device_addr_base[Pwm]    = PWM_START;
-  assign cfg_device_addr_mask[Pwm]    = PWM_MASK;
-  assign cfg_device_addr_base[Uart]   = UART_START;
-  assign cfg_device_addr_mask[Uart]   = UART_MASK;
-  assign cfg_device_addr_base[Timer]  = TIMER_START;
-  assign cfg_device_addr_mask[Timer]  = TIMER_MASK;
-  assign cfg_device_addr_base[Spi]    = SPI_START;
-  assign cfg_device_addr_mask[Spi]    = SPI_MASK;
+  assign cfg_device_addr_base[Ram]     = MEM_START;
+  assign cfg_device_addr_mask[Ram]     = MEM_MASK;
+  assign cfg_device_addr_base[Gpio]    = GPIO_START;
+  assign cfg_device_addr_mask[Gpio]    = GPIO_MASK;
+  assign cfg_device_addr_base[Pwm]     = PWM_START;
+  assign cfg_device_addr_mask[Pwm]     = PWM_MASK;
+  assign cfg_device_addr_base[Uart]    = UART_START;
+  assign cfg_device_addr_mask[Uart]    = UART_MASK;
+  assign cfg_device_addr_base[Timer]   = TIMER_START;
+  assign cfg_device_addr_mask[Timer]   = TIMER_MASK;
+  assign cfg_device_addr_base[Spi]     = SPI_START;
+  assign cfg_device_addr_mask[Spi]     = SPI_MASK;
   assign cfg_device_addr_base[SimCtrl] = SIM_CTRL_START;
   assign cfg_device_addr_mask[SimCtrl] = SIM_CTRL_MASK;
 
@@ -163,11 +163,11 @@ module ibex_demo_system #(
   end
 
   // Tie-off unused error signals
-  assign device_err[Ram]  = 1'b0;
-  assign device_err[Gpio] = 1'b0;
-  assign device_err[Pwm]  = 1'b0;
-  assign device_err[Uart] = 1'b0;
-  assign device_err[Spi] = 1'b0;
+  assign device_err[Ram]     = 1'b0;
+  assign device_err[Gpio]    = 1'b0;
+  assign device_err[Pwm]     = 1'b0;
+  assign device_err[Uart]    = 1'b0;
+  assign device_err[Spi]     = 1'b0;
   assign device_err[SimCtrl] = 1'b0;
 
   bus #(
