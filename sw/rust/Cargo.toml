@@ -6,4 +6,5 @@
 members = [
     "ibex-demo-system-pac",
     "demo/hello_world",
+    "demo/led",
 ]

@@ -1,0 +1,2 @@
+[target.riscv32imc-unknown-none-elf]
+runner = "../../../../util/load_demo_system.sh run"
