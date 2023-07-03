@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ Copyright lowRISC contributors.
+ Licensed under the Apache License, Version 2.0, see LICENSE for details.
+ SPDX-License-Identifier: Apache-2.0
+-->
+<device schemaVersion="1.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="CMSIS-SVD.xsd">
+  <vendor>lowRISC</vendor>
+  <name>Ibex Demo System</name>
+  <version>0.1</version>
+  <description>
+    Single-core 3-stage pipeline RISC-V processor,
+    128 KiB on-chip SRAM\n
+    1 x UART, 1 x SPI controller, 1 x PWM channels\n
+    </description>
+  <licenseText>
+    Copyright lowRISC contributors.\n
+    Licensed under the Apache License, Version 2.0, see LICENSE for details.\n
+    SPDX-License-Identifier: Apache-2.0\n
+  </licenseText>
+  <cpu>
+    <name>Ibex</name>
+    <revision>r0p1</revision>
+    <endian>little</endian>
+    <mpuPresent>false</mpuPresent>
+    <fpuPresent>false</fpuPresent>
+    <vtorPresent>1</vtorPresent>
+    <nvicPrioBits>2</nvicPrioBits>
+    <vendorSystickConfig>false</vendorSystickConfig>
+    <deviceNumInterrupts>1</deviceNumInterrupts>
+  </cpu>
+  <addressUnitBits>8</addressUnitBits>
+  <width>32</width>
+  <peripherals>
+    <peripheral>
+      <name>UART0</name>
+      <version>1</version>
+      <baseAddress>0x80001000</baseAddress>
+      <size>32</size>
+      <addressBlock>
+        <offset>0</offset>
+        <size>0x1000</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <interrupt>
+        <name>UART0_IRQ</name>
+        <value>1</value>
+      </interrupt>
+      <registers>
+        <register>
+          <name>RX</name>
+          <description>Rx register, UART_RX</description>
+          <addressOffset>0x0000</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>DATA</name>
+              <description>Receive (read) data character. Transmit (write) data character.</description>
+              <bitRange>[7:0]</bitRange>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>TX</name>
+          <description>Tx register, UART_TX</description>
+          <addressOffset>0x0004</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>DATA</name>
+              <description>Transmit (write) data character.</description>
+              <bitRange>[7:0]</bitRange>
+              <access>write-only</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>STATUS</name>
+          <description>Uart Status Register, UART_STATUS</description>
+          <addressOffset>0x0008</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>TX_FULL</name>
+              <description>1 indicates that the TX FIFO is full.</description>
+              <bitRange>[1:1]</bitRange>
+              <access>read-only</access>
+            </field>
+            <field>
+              <name>RX_EMPTY</name>
+              <description>1 indicates that the RX FIFO is empty.</description>
+              <bitRange>[0:0]</bitRange>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
+    <peripheral derivedFrom="UART0">
+      <name>UART1</name>
+      <baseAddress>0x8000A000</baseAddress>
+      <interrupt>
+        <name>UART1_IRQ</name>
+        <value>21</value>
+      </interrupt>
+    </peripheral>
+    <peripheral>
+      <name>SPI0</name>
+      <version>1</version>
+      <baseAddress>0x80004000</baseAddress>
+      <size>32</size>
+      <addressBlock>
+        <offset>0</offset>
+        <size>0x1000</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <interrupt>
+        <name>SPI0_IRQ</name>
+        <value>18</value>
+      </interrupt>
+      <registers>
+        <register>
+          <name>TX</name>
+          <description>Tx register, SPI_TX</description>
+          <addressOffset>0x0000</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>DATA</name>
+              <description>Transmit (write) data character.</description>
+              <bitRange>[7:0]</bitRange>
+              <access>write-only</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>STATUS</name>
+          <description>SPI Status Register, SPI_STATUS</description>
+          <addressOffset>0x0004</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>TX_EMPTY</name>
+              <description>1 indicates that the TX FIFO is empty.</description>
+              <bitRange>[1:1]</bitRange>
+              <access>read-only</access>
+            </field>
+            <field>
+              <name>TX_FULL</name>
+              <description>1 indicates that the TX FIFO is full.</description>
+              <bitRange>[0:0]</bitRange>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
+    <peripheral>
+      <name>PWM</name>
+      <version>1</version>
+      <description>Simple PWM</description>
+      <baseAddress>0x80003000</baseAddress>
+      <size>32</size>
+      <addressBlock>
+        <offset>0</offset>
+        <size>0x1000</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <interrupt>
+        <name>PWM_IRQ_WRAP</name>
+        <value>4</value>
+      </interrupt>
+      <registers>
+        <register>
+          <name>WIDTH</name>
+          <description>PWM width</description>
+          <addressOffset>0x0000</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>Pwm width.</description>
+              <bitRange>[31:0]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>COUNTER</name>
+          <description>PWM counter</description>
+          <addressOffset>0x0004</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>Pwm counter.</description>
+              <bitRange>[31:0]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
+    <peripheral>
+      <name>TIMER</name>
+      <version>1</version>
+      <description>Controls timer</description>
+      <baseAddress>0x80002000</baseAddress>
+      <size>32</size>
+      <addressBlock>
+        <offset>0</offset>
+        <size>0x1000</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <interrupt>
+        <name>TIMER_IRQ_0</name>
+        <value>0</value>
+      </interrupt>
+      <registers>
+        <register>
+          <name>MTIME</name>
+          <description>mtime</description>
+          <addressOffset>0x0000</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>mtime low.</description>
+              <bitRange>[31:0]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>MTIMEH</name>
+          <description>mtime high</description>
+          <addressOffset>0x0004</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>mtime high.</description>
+              <bitRange>[31:0]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>MTIMECMP</name>
+          <description>mtime cmp</description>
+          <addressOffset>0x0008</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>mtime cmp.</description>
+              <bitRange>[31:0]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>MTIMECMPH</name>
+          <description>mtime cmp high</description>
+          <addressOffset>0x000C</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>mtime cmp high.</description>
+              <bitRange>[31:0]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
+    <peripheral>
+      <name>GPIO</name>
+      <version>1</version>
+      <description>gpios</description>
+      <baseAddress>0x80000000</baseAddress>
+      <size>32</size>
+      <addressBlock>
+        <offset>0</offset>
+        <size>0x1000</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <interrupt>
+        <name>GPIO_IRQ</name>
+        <value>0</value>
+      </interrupt>
+      <registers>
+        <register>
+          <name>OUT</name>
+          <description>Write to control the gpio state</description>
+          <addressOffset>0x0000</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>PINS</name>
+              <description>Pins.</description>
+              <bitRange>[31:0]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>IN</name>
+          <description>Read the gpio state</description>
+          <addressOffset>0x0004</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>PINS</name>
+              <description>Pins.</description>
+              <bitRange>[31:0]</bitRange>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>IN_DBNC</name>
+          <description>DBNC</description>
+          <addressOffset>0x0008</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>DBNC.</description>
+              <bitRange>[31:0]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>OUT_SHIFT</name>
+          <description>Shift register</description>
+          <addressOffset>0x000C</addressOffset>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>VALUE</name>
+              <description>Shift.</description>
+              <bitRange>[31:0]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
+  </peripherals>
+</device>
