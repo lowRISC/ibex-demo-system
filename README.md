@@ -467,6 +467,17 @@ repository root:
 fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:demo_system
 ```
 
+To build for other support development boards such as the NewAE CW305, NewAE CW312-A35, or the TUL PYNQ-Z2, use the command
+
+```
+# NewAE CW305
+fusesoc --cores-root=. run --target=synth_cw305 --setup --build lowrisc:ibex:demo_system
+# NewAE CW312-A35
+fusesoc --cores-root=. run --target=synth_cw312a35 --setup --build lowrisc:ibex:demo_system
+# TUL PYNQ-Z2
+fusesoc --cores-root=. run --target=synth_pynqz2 --setup --build lowrisc:ibex:demo_system
+```
+
 ## Programming FPGA
 
 To program the FPGA, either use FuseSoC again
@@ -486,11 +497,11 @@ debugger.
 
 ```bash
 # Run demo
-./util/load_demo_system.sh run ./sw/build/demo/hello_world/demo
-./util/load_demo_system.sh run ./sw/build/demo/lcd_st7735/lcd_st7735
+./util/load_demo_system.sh <artya7|pynqz2> run ./sw/build/demo/hello_world/demo
+./util/load_demo_system.sh <artya7|pynqz2> run ./sw/build/demo/lcd_st7735/lcd_st7735
 
 # Load demo and start halted awaiting a debugger
-./util/load_demo_system.sh halt ./sw/build/demo/hello_world/demo
+./util/load_demo_system.sh <artya7|pynqz2> halt ./sw/build/demo/hello_world/demo
 ```
 
 To view terminal output use screen:
@@ -504,6 +515,14 @@ If you see an immediate `[screen is terminating]`, it may mean that you need sup
 In this case, you may try using `sudo`.
 
 To exit from the `screen` command, you should press control and a together, then release these two keys and press d.
+
+### Note on the UART connection of the PYNQ-Z2 development board
+
+There is no direct connection between the FTDI chip and the programming logic (PL) side of the Zynq 7020 SOC used in the PYNQ-Z2 development board. However, we may attach a 2.54mm pin header to J13 (pin 1: UART RX, pin 2: UART TX) on the board, route the UART signals to any available I/O pins, and make a connection using jumper wires.
+
+The following image shows a one-way connection between the TX pin of the Ibex and the RX pin of the FTDI chip.
+
+![PYNQ-Z2 UART jumper wire connection](doc/PynqZ2UARTConnection.jpg)
 
 ## Debugging an application
 
