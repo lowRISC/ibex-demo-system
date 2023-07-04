@@ -402,6 +402,8 @@ make
 popd
 ```
 
+The HALT_SIM_WHEN_EXIT CMake option can be used to automatically stop the simulation when the program exits (`cmake -DHALT_SIM_WHEN_EXIT=ON ../`). This option should be disabled when building software for loading into an FPGA, otherwise the chip will not accept subsequent applications via the `util/load_demo_system.sh` script once the current program exits.
+
 Note the FPGA build relies on a fixed path to the initial binary (blank.vmem) so
 if you want to create your build directory elsewhere you need to adjust the path
 in `ibex_demo_system.core`
