@@ -3,9 +3,14 @@ project(demo_system_sw)
 
 option(SIM_CTRL_OUTPUT
        "Send string output to simulator control rather than UART")
+option(HALT_SIM_WHEN_EXIT
+       "Halt the simulator when the program exits otherwise the core will be kept in a sleep loop")
 
 if(SIM_CTRL_OUTPUT)
   add_compile_definitions(SIM_CTRL_OUTPUT)
+endif()
+if(HALT_SIM_WHEN_EXIT)
+  add_compile_definitions(HALT_SIM_WHEN_EXIT)
 endif()
 
 set(COMMON_DIR "${CMAKE_CURRENT_LIST_DIR}/common")

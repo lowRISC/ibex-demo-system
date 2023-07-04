@@ -67,10 +67,12 @@ main_entry:
   addi x11, x0, 0
   jal x1, main
 
+#ifdef HALT_SIM_WHEN_EXIT
   /* Halt simulation */
   li x5, SIM_CTRL_BASE + SIM_CTRL_CTRL
   li x6, 1
   sw x6, 0(x5)
+#endif
 
   /* If execution ends up here just put the core to sleep */
 sleep_loop:
