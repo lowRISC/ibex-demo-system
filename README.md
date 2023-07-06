@@ -388,19 +388,28 @@ You may need to run the last command twice if you get the following error:
 
 
 
-## Building Software
+## Building Software 
+### C stack
 
 First the software must be built.
 This can be loaded into an FPGA to run on a synthesized Ibex processor, or passed
 to a verilator simulation model to be simulated on a PC.
 
 ```
-mkdir sw/build
-pushd sw/build
+mkdir sw/c/build
+pushd sw/c/build
 cmake ..
 make
 popd
 ```
+### Rust stack
+
+```sh
+pushd sw/rust
+cargo build --bin led
+popd
+```
+For more details, please refer to [Ibex Rust stack](sw/rust/README.md).
 
 Note the FPGA build relies on a fixed path to the initial binary (blank.vmem) so
 if you want to create your build directory elsewhere you need to adjust the path
@@ -418,14 +427,14 @@ fusesoc --cores-root=. run --target=sim --tool=verilator --setup --build lowrisc
 
 Having built the simulator and software, to simulate using Verilator we can use the following commands.
 `<sw_elf_file>` should be a path to an ELF file  (or alternatively a vmem file)
-built as described above. Use `./sw/build/demo/hello_world/demo` to run the `demo`
+built as described above. Use `./sw/c/build/demo/hello_world/demo` to run the `demo`
 binary.
 
 Run from the repository root run:
 ```
 # For example :
 ./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system [-t] \
-  --meminit=ram,./sw/build/demo/hello_world/demo
+  --meminit=ram,./sw/c/build/demo/hello_world/demo
 
 # You need to substitute the <sw_elf_file> for a binary we have build above.
 ./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system [-t] --meminit=ram,<sw_elf_file>
@@ -486,11 +495,11 @@ debugger.
 
 ```bash
 # Run demo
-./util/load_demo_system.sh run ./sw/build/demo/hello_world/demo
-./util/load_demo_system.sh run ./sw/build/demo/lcd_st7735/lcd_st7735
+./util/load_demo_system.sh run ./sw/c/build/demo/hello_world/demo
+./util/load_demo_system.sh run ./sw/c/build/demo/lcd_st7735/lcd_st7735
 
 # Load demo and start halted awaiting a debugger
-./util/load_demo_system.sh halt ./sw/build/demo/hello_world/demo
+./util/load_demo_system.sh halt ./sw/c/build/demo/hello_world/demo
 ```
 
 To view terminal output use screen:
@@ -517,7 +526,7 @@ Then run GDB against the running binary and connect to localhost:3333 as a
 remote target
 
 ```
-riscv32-unknown-elf-gdb ./sw/build/demo/hello_world/demo
+riscv32-unknown-elf-gdb ./sw/c/build/demo/hello_world/demo
 
 (gdb) target extended-remote localhost:3333
 ```

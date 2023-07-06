@@ -1,5 +1,5 @@
 # Ibex demo system PAC (Peripheral Access Crate)
-A Peripheral Access Crate (PAC) for the IBex Demo System from lowRISC. See the [svd2rust](https://docs.rs/svd2rust/0.29.0/svd2rust/) documentation for more information on how to use this crate.
+A Peripheral Access Crate (PAC) for the Ibex Demo System from lowRISC. See the [svd2rust](https://docs.rs/svd2rust/0.29.0/svd2rust/) documentation for more information on how to use this crate.
 
 The Ibex demo system pac is automatically generated when imported by cargo and it is based on the ibex.svd file. 
 ## How to generate manually (Optional)
