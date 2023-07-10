@@ -49,7 +49,8 @@ case "$ID-$VERSION_ID" in
         libelf-dev \
         clang-format \
         wget \
-        xz-utils
+        xz-utils \
+        libcairo2-dev
 
     wget https://storage.googleapis.com/ibex-cosim-builds/ibex-cosim-"$IBEX_COSIM_VERSION".tar.gz
     $SUDO_CMD mkdir -p /tools/riscv-isa-sim
@@ -69,7 +70,7 @@ case "$ID-$VERSION_ID" in
     # an older version of a package must be used for a certain Python version.
     # If that information is not read, pip installs the latest version, which
     # then fails to run.
-    $SUDO_CMD pip3 install -U pip setuptools
+    $SUDO_CMD pip3 install -U pip "setuptools<66.0.0"
 
     $SUDO_CMD pip3 install -r python-requirements.txt
 

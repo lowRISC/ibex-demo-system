@@ -1,4 +1,7 @@
-[![Build Status](https://dev.azure.com/lowrisc/ibex/_apis/build/status/lowRISC.ibex?branchName=master)](https://dev.azure.com/lowrisc/ibex/_build/latest?definitionId=3&branchName=master)
+[Ibex OpenTitan configuration Nightly Regression](https://ibex.reports.lowrisc.org/opentitan/latest/report.html)
+<a href="https://ibex.reports.lowrisc.org/opentitan/latest/report.html">
+  <img src="https://ibex.reports.lowrisc.org/opentitan/latest/summary.svg">
+</a>
 
 # Ibex RISC-V Core
 
@@ -9,8 +12,6 @@ seen multiple tape-outs. Ibex supports the Integer (I) or Embedded (E),
 Integer Multiplication and Division (M), Compressed (C), and B (Bit
 Manipulation) extensions.
 
-The block diagram below shows the *small* parametrization with a 2-stage
-pipeline.
 <p align="center"><img src="doc/03_reference/images/blockdiagram.svg" width="650"></p>
 
 Ibex was initially developed as part of the [PULP platform](https://www.pulp-platform.org)
@@ -31,7 +32,7 @@ These are configurations on which lowRISC is focusing for performance evaluation
 | Performance (CoreMark/MHz) | 0.904 | 2.47 | 3.13 | 3.13 |
 | Area - Yosys (kGE) | 16.85 | 26.60 | 32.48 | 66.02 |
 | Area - Commercial (estimated kGE) | ~15 | ~24 | ~30 | ~61 |
-| Verification status | Red | Green | Amber | Amber |
+| Verification status | Red | Green | Green | Green |
 
 Notes:
 
@@ -62,10 +63,10 @@ The Ibex repository includes [Simple System](examples/simple_system/README.md).
 This is an intentionally simple integration of Ibex with a basic system that targets simulation.
 It is intended to provide an easy way to get bare metal binaries running on Ibex in simulation.
 
-A more complete example can be found in the [Ibex Super System repository](https://github.com/GregAC/ibex_super_system).
+A more complete example can be found in the [Ibex Demo System repository](https://github.com/lowrisc/ibex-demo-system).
 In particular it includes a integration of the [PULP RISC-V debug module](https://github.com/pulp-platform/riscv-dbg).
 It targets the [Arty A7 FPGA board from Digilent](https://digilent.com/shop/arty-a7-artix-7-fpga-development-board/) and supports debugging via OpenOCD and GDB over USB (no external JTAG probe required).
-The Ibex Super System is written by lowRISC but is not an official part of Ibex, nor officially supported by lowRISC.
+The Ibex Demo System is maintained by lowRISC but is not an official part of Ibex.
 
 ## Contributing
 
