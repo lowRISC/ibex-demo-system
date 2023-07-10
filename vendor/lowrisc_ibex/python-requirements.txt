@@ -14,8 +14,10 @@ junit-xml
 # dataclass  # needed for backports?
 pathlib3x  # Backports some useful features
 typing-utils  # Ditto
-typeguard
+typeguard ~= 2.13
 portalocker
+pydantic < 2.0
+svg.py
 
 # Needed by dvsim.py (not actually used in Ibex)
 hjson

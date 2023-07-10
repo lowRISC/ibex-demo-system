@@ -126,6 +126,7 @@ module ibex_top import ibex_pkg::*; #(
   output logic [31:0]                  rvfi_ext_mhpmcounters [10],
   output logic [31:0]                  rvfi_ext_mhpmcountersh [10],
   output logic                         rvfi_ext_ic_scr_key_valid,
+  output logic                         rvfi_ext_irq_valid,
 `endif
 
   // CPU Control Signals
@@ -398,6 +399,7 @@ module ibex_top import ibex_pkg::*; #(
     .rvfi_ext_mhpmcounters,
     .rvfi_ext_mhpmcountersh,
     .rvfi_ext_ic_scr_key_valid,
+    .rvfi_ext_irq_valid,
 `endif
 
     .fetch_enable_i        (fetch_enable_buf),
@@ -619,6 +621,36 @@ module ibex_top import ibex_pkg::*; #(
           .rerror_o    (),
           .cfg_i       (ram_cfg_i)
         );
+
+        `ifdef INC_ASSERT
+          // Sample scramble key whenever it is valid for use in the assertions below.  This may be
+          // redundant with the sampling performed in the actual design, but that is okay because
+          // the assertions exist to check the correct functioning of the design.
+          logic [SCRAMBLE_KEY_W-1:0] sampled_scramble_key;
+          always_ff @(posedge clk_i, negedge rst_ni) begin
+            if (!rst_ni) begin
+              sampled_scramble_key <= 'x;
+            end else if (scramble_key_valid_i) begin
+              sampled_scramble_key <= scramble_key_i;
+            end
+          end
+
+          // Ensure that when a scramble key is received, it is correctly applied to the icache
+          // scrambled memory primitives.  The upper bound in the cycle ranges below is not exact,
+          // but it should not take more than 10 cycles.
+          `ASSERT(ScrambleKeyAppliedAtTagBank_A,
+                  scramble_key_valid_i
+                  |-> ##[0:10]
+                  tag_bank.key_valid_i && (tag_bank.key_i == sampled_scramble_key),
+                  clk_i, !rst_ni
+          )
+          `ASSERT(ScrambleKeyAppliedAtDataBank_A,
+                  scramble_key_valid_i
+                  |-> ##[0:10]
+                  data_bank.key_valid_i && (data_bank.key_i == sampled_scramble_key),
+                  clk_i, !rst_ni
+          )
+        `endif
 
       end else begin : gen_noscramble_rams
 
@@ -1269,4 +1301,33 @@ module ibex_top import ibex_pkg::*; #(
     crash_dump_o.exception_pc === u_ibex_core.cs_registers_i.mepc_q)
   `ASSERT(CrashDumpExceptionAddrConn,
     crash_dump_o.exception_addr === u_ibex_core.cs_registers_i.mtval_q)
+
+  // Explicit INC_ASSERT due to instantiation of prim_secded_inv_39_32_dec below that is only used
+  // by assertions
+  `ifdef INC_ASSERT
+  if (MemECC) begin : g_mem_ecc_asserts
+    logic [1:0] data_ecc_err, instr_ecc_err;
+
+    // Check alerts from memory integrity failures
+
+    prim_secded_inv_39_32_dec u_data_intg_dec (
+      .data_i     (data_rdata_core),
+      .data_o     (),
+      .syndrome_o (),
+      .err_o      (data_ecc_err)
+    );
+    `ASSERT(MajorAlertOnDMemIntegrityErr,
+      data_rvalid_i && (|data_ecc_err) |-> ##[0:5] alert_major_bus_o)
+
+    prim_secded_inv_39_32_dec u_instr_intg_dec (
+      .data_i     (instr_rdata_core),
+      .data_o     (),
+      .syndrome_o (),
+      .err_o      (instr_ecc_err)
+    );
+    // Check alerts from memory integrity failures
+    `ASSERT(MajorAlertOnIMemIntegrityErr,
+      instr_rvalid_i && (|instr_ecc_err) |-> ##[0:5] alert_major_bus_o)
+  end
+  `endif
 endmodule
