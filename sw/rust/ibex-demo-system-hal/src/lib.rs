@@ -10,6 +10,7 @@ pub use ibex_demo_system_pac as pac;
 
 pub mod gpio;
 pub mod serial;
+pub mod spi;
 pub mod utils;
 
 #[cfg(test)]
