@@ -9,6 +9,7 @@ members = [
     "demo/hello_world",
     "demo/led",
     "demo/led_hal",
+    "demo/lcd_hal",
 ]
 
 [profile.release]
