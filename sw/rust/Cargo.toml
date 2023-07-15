@@ -8,6 +8,7 @@ members = [
     "ibex-demo-system-hal",
     "demo/hello_world",
     "demo/led",
+    "demo/led_hal",
 ]
 
 [profile.release]
