@@ -1,0 +1,116 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#![no_main]
+#![no_std]
+
+extern crate panic_halt as _;
+
+use core::iter;
+use riscv::delay::McycleDelay;
+use riscv_rt::entry;
+
+use embedded_hal;
+use embedded_hal::{blocking::delay::DelayMs, PwmPin};
+
+use crate::hal::pac;
+use ibex_demo_system_hal as hal;
+
+use smart_leds as leds;
+
+const CPU_CLOCK_HZ: u32 = 50_000_000;
+
+struct RgbLed<R, G, B> {
+    r: R,
+    g: G,
+    b: B,
+}
+
+trait SetColor {
+    fn set_color(&mut self, color: leds::RGB8);
+}
+
+impl<R, G, B> RgbLed<R, G, B>
+where
+    R: PwmPin<Duty = u32>,
+    G: PwmPin<Duty = u32>,
+    B: PwmPin<Duty = u32>,
+{
+    fn new(mut b: B, mut g: G, mut r: R) -> Self {
+        b.enable();
+        g.enable();
+        r.enable();
+        Self { r, g, b }
+    }
+}
+
+impl<R, G, B> SetColor for RgbLed<R, G, B>
+where
+    R: PwmPin<Duty = u32>,
+    G: PwmPin<Duty = u32>,
+    B: PwmPin<Duty = u32>,
+{
+    fn set_color(&mut self, color: leds::RGB8) {
+        let max = self.r.get_max_duty();
+        self.r.set_duty(color.r as u32 * max / u8::MAX as u32);
+        self.g.set_duty(color.g as u32 * max / u8::MAX as u32);
+        self.b.set_duty(color.b as u32 * max / u8::MAX as u32);
+    }
+}
+
+#[entry]
+fn main() -> ! {
+    let mut delay = McycleDelay::new(CPU_CLOCK_HZ);
+    let p = pac::Peripherals::take().unwrap();
+
+    let pwm0 = hal::pwm::Pwm::new(p.PWM0);
+    let pwm1 = hal::pwm::Pwm::new(p.PWM1);
+    let pwm2 = hal::pwm::Pwm::new(p.PWM2);
+    let pwm3 = hal::pwm::Pwm::new(p.PWM3);
+    let pwm4 = hal::pwm::Pwm::new(p.PWM4);
+    let pwm5 = hal::pwm::Pwm::new(p.PWM5);
+    let pwm6 = hal::pwm::Pwm::new(p.PWM6);
+    let pwm7 = hal::pwm::Pwm::new(p.PWM7);
+    let pwm8 = hal::pwm::Pwm::new(p.PWM8);
+    let pwm9 = hal::pwm::Pwm::new(p.PWM9);
+    let pwm10 = hal::pwm::Pwm::new(p.PWM10);
+    let pwm11 = hal::pwm::Pwm::new(p.PWM11);
+
+    let mut led0 = RgbLed::new(pwm0, pwm1, pwm2);
+    let mut led1 = RgbLed::new(pwm3, pwm4, pwm5);
+    let mut led2 = RgbLed::new(pwm6, pwm7, pwm8);
+    let mut led3 = RgbLed::new(pwm9, pwm10, pwm11);
+
+    let mut n: u8 = 128;
+
+    loop {
+        delay.delay_ms(30);
+
+        let color = wheel(n);
+        n = n.wrapping_add(1);
+        led0.set_color(color);
+        led1.set_color(color);
+        led2.set_color(color);
+        led3.set_color(color);
+    }
+}
+
+fn wheel(mut wheel_pos: u8) -> leds::RGB8 {
+    wheel_pos = u8::MAX - wheel_pos;
+    let color = if wheel_pos < 85 {
+        // No green in this sector - red and blue only
+        (u8::MAX - (wheel_pos * 3), 0, wheel_pos * 3).into()
+    } else if wheel_pos < 170 {
+        // No red in this sector - green and blue only
+        wheel_pos -= 85;
+        (0, wheel_pos * 3, u8::MAX - (wheel_pos * 3)).into()
+    } else {
+        // No blue in this sector - red and green only
+        wheel_pos -= 170;
+        (wheel_pos * 3, u8::MAX - (wheel_pos * 3), 0).into()
+    };
+    leds::gamma(leds::brightness(iter::once(color), 150))
+        .next()
+        .unwrap()
+}
