@@ -9,6 +9,7 @@ pub use gpio::pin::{ErasePin, GpioExt};
 pub use ibex_demo_system_pac as pac;
 
 pub mod gpio;
+pub mod pwm;
 pub mod serial;
 pub mod spi;
 pub mod utils;
