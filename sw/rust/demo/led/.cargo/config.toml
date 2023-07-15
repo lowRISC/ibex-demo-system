@@ -1,2 +1,7 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
 [target.riscv32imc-unknown-none-elf]
-runner = "../../../../util/load_demo_system.sh run"
+runner = "riscv32-unknown-elf-gdb -q -x gdb_init"
+
