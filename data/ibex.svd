@@ -97,14 +97,6 @@
         </register>
       </registers>
     </peripheral>
-    <peripheral derivedFrom="UART0">
-      <name>UART1</name>
-      <baseAddress>0x8000A000</baseAddress>
-      <interrupt>
-        <name>UART1_IRQ</name>
-        <value>21</value>
-      </interrupt>
-    </peripheral>
     <peripheral>
       <name>SPI0</name>
       <version>1</version>
