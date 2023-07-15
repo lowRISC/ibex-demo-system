@@ -5,6 +5,10 @@
 [workspace]
 members = [
     "ibex-demo-system-pac",
+    "ibex-demo-system-hal",
     "demo/hello_world",
     "demo/led",
 ]
+
+[profile.release]
+debug = true
