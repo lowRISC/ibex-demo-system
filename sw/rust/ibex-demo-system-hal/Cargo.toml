@@ -11,6 +11,8 @@ edition = "2021"
 
 [dependencies]
 embedded-hal = { features = ["unproven"], version = "0.2.7" }
+fugit = "0.3.7"
 ibex-demo-system-pac = {path = "../ibex-demo-system-pac"}
 nb = "1.1.0"
 riscv = "0.10.1"
+void = { version = "1.0.2", default-features = false }

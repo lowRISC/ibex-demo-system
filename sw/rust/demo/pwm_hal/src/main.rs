@@ -8,13 +8,14 @@
 extern crate panic_halt as _;
 
 use core::iter;
-use riscv::delay::McycleDelay;
+use embedded_hal::timer::CountDown;
 use riscv_rt::entry;
 
 use embedded_hal;
-use embedded_hal::{blocking::delay::DelayMs, PwmPin};
+use embedded_hal::PwmPin;
 
 use crate::hal::pac;
+use fugit::{ExtU32, RateExtU32};
 use ibex_demo_system_hal as hal;
 
 use smart_leds as leds;
@@ -61,8 +62,10 @@ where
 
 #[entry]
 fn main() -> ! {
-    let mut delay = McycleDelay::new(CPU_CLOCK_HZ);
     let p = pac::Peripherals::take().unwrap();
+
+    let timer = hal::timer::Timer::new(p.TIMER0, CPU_CLOCK_HZ.Hz());
+    let mut count_down = timer.new_count_down();
 
     let pwm0 = hal::pwm::Pwm::new(p.PWM0);
     let pwm1 = hal::pwm::Pwm::new(p.PWM1);
@@ -83,16 +86,18 @@ fn main() -> ! {
     let mut led3 = RgbLed::new(pwm9, pwm10, pwm11);
 
     let mut n: u8 = 128;
-
+    count_down.start(30u32.millis());
     loop {
-        delay.delay_ms(30);
+        if count_down.wait().is_ok() {
+            let color = wheel(n);
+            n = n.wrapping_add(1);
+            led0.set_color(color);
+            led1.set_color(color);
+            led2.set_color(color);
+            led3.set_color(color);
 
-        let color = wheel(n);
-        n = n.wrapping_add(1);
-        led0.set_color(color);
-        led1.set_color(color);
-        led2.set_color(color);
-        led3.set_color(color);
+            count_down.start(30u32.millis());
+        }
     }
 }
 

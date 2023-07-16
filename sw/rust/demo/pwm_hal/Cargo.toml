@@ -16,3 +16,5 @@ riscv-rt = "0.11.0"
 ibex-demo-system-hal = {path = "../../ibex-demo-system-hal"}
 embedded-hal = "0.2.7"
 smart-leds = "0.3.0"
+nb = "1.1.0"
+fugit = "0.3.7"

@@ -283,7 +283,7 @@
       </interrupt>
     </peripheral>
     <peripheral>
-      <name>TIMER</name>
+      <name>TIMER0</name>
       <version>1</version>
       <description>Controls timer</description>
       <baseAddress>0x80002000</baseAddress>
@@ -295,18 +295,18 @@
       </addressBlock>
       <interrupt>
         <name>TIMER_IRQ_0</name>
-        <value>0</value>
+        <value>7</value>
       </interrupt>
       <registers>
         <register>
-          <name>MTIME</name>
-          <description>mtime</description>
+          <name>MTIMEL</name>
+          <description>mtime low</description>
           <addressOffset>0x0000</addressOffset>
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
               <name>VALUE</name>
-              <description>mtime low.</description>
+              <description>mtime low</description>
               <bitRange>[31:0]</bitRange>
               <access>read-write</access>
             </field>
@@ -320,21 +320,21 @@
           <fields>
             <field>
               <name>VALUE</name>
-              <description>mtime high.</description>
+              <description>mtime high</description>
               <bitRange>[31:0]</bitRange>
               <access>read-write</access>
             </field>
           </fields>
         </register>
         <register>
-          <name>MTIMECMP</name>
-          <description>mtime cmp</description>
+          <name>MTIMECMPL</name>
+          <description>mtime cmp low</description>
           <addressOffset>0x0008</addressOffset>
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
               <name>VALUE</name>
-              <description>mtime cmp.</description>
+              <description>mtime cmp low</description>
               <bitRange>[31:0]</bitRange>
               <access>read-write</access>
             </field>
@@ -348,7 +348,7 @@
           <fields>
             <field>
               <name>VALUE</name>
-              <description>mtime cmp high.</description>
+              <description>mtime cmp high</description>
               <bitRange>[31:0]</bitRange>
               <access>read-write</access>
             </field>
