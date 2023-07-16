@@ -12,6 +12,7 @@ pub mod gpio;
 pub mod pwm;
 pub mod serial;
 pub mod spi;
+pub mod timer;
 pub mod utils;
 
 #[cfg(test)]
