@@ -107,8 +107,7 @@ targets:
     toplevel: top_cw305
     tools:
       vivado:
-        part: "xc7a100tftg256-2" # default to a100 part
-        #part: "xc7a35tftg256-2" # a35 option
+        part: "xc7a35tftg256-2" # a35 option
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
