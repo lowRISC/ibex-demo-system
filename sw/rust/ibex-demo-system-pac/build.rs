@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use std::process::Command;
 
 use svd2rust::{Config, Target};
 
@@ -17,7 +18,10 @@ fn main() {
     let generated = svd2rust::generate(&svd, &config).unwrap();
 
     let out = env::var("OUT_DIR").unwrap();
-    fs::write(format!("{out}/ibex_demo_system_pac.rs"), generated.lib_rs).unwrap();
+    let out_file = format!("{out}/ibex_demo_system_pac.rs");
+    fs::write(&out_file, generated.lib_rs).unwrap();
+
+    let _ = Command::new("rustfmt").arg(out_file).status();
 
     fs::write(
         format!("{out}/lib.rs"),
