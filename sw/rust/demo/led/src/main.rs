@@ -22,7 +22,7 @@ fn main() -> ! {
 
     let mut uart = Uart::new(p.UART0);
 
-    let gpio = p.GPIO;
+    let gpio = p.GPIOA;
     let mut gpio_value = 0xff;
     let _ = writeln!(uart, "Hello Rusty Ibex System!!");
     let _ = writeln!(uart, "Press a button (BTN0-4) and watch the LEDs");

@@ -357,9 +357,9 @@
       </registers>
     </peripheral>
     <peripheral>
-      <name>GPIO</name>
+      <name>GPIOA</name>
       <version>1</version>
-      <description>gpios</description>
+      <description>Gpio port a</description>
       <baseAddress>0x80000000</baseAddress>
       <size>32</size>
       <addressBlock>
@@ -368,7 +368,7 @@
         <usage>registers</usage>
       </addressBlock>
       <interrupt>
-        <name>GPIO_IRQ</name>
+        <name>GPIOA_IRQ</name>
         <value>0</value>
       </interrupt>
       <registers>
