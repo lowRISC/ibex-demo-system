@@ -9,9 +9,9 @@ extern crate panic_halt as _;
 
 use core::fmt::{self, Write};
 use embedded_hal::blocking::delay::DelayMs;
+use ibex_demo_system_pac::Peripherals;
 use riscv::delay::McycleDelay;
 use riscv_rt::entry;
-use ibex_demo_system_pac::Peripherals;
 
 const CPU_CLOCK_HZ: u32 = 50_000_000;
 
@@ -34,9 +34,7 @@ fn main() -> ! {
                 let _ = writeln!(uart, " Button {} pressed", get_button(in_val));
 
                 gpio.out.write(|w| {
-                    unsafe {
-                        w.pins().bits(in_val << 4);
-                    }
+                    w.pins().variant(in_val << 4);
                     w
                 });
             } else {
@@ -65,7 +63,7 @@ impl Uart {
 
     fn uart_putc(&self, c: u8) {
         self.uart.tx.write(|w| {
-            unsafe { w.data().bits(c) };
+            w.data().variant(c);
             w
         });
     }
