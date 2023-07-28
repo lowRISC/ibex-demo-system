@@ -9,13 +9,19 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+defaults:
+  run:
+    working-directory: sw/rust
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Linting
+      run: cargo fmt --check
+
     - name: Build
-      run: cd sw/rust;cargo build --verbose --release
-      
+      run: cargo build --verbose --release
