@@ -138,4 +138,3 @@ void simple_exc_handler(void) {
 
   while(1);
 }
-

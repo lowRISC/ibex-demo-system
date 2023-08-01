@@ -1,7 +1,3 @@
-// Copyright lowRISC contributors.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-
 #include "uart.h"
 #include "dev_access.h"
 #include "demo_system.h"
@@ -25,4 +21,19 @@ void uart_out(uart_t uart, char c) {
   while(DEV_READ(uart + UART_STATUS_REG) & UART_STATUS_TX_FULL);
 
   DEV_WRITE(uart + UART_TX_REG, c);
+}
+
+void uart_enable(uart_t uart, char en) {
+
+  DEV_WRITE(uart + UART_ENABLE_REG, en);
+}
+
+void uart_disable(uart_t uart) {
+
+  DEV_WRITE(uart + UART_ENABLE_REG, 0x00);
+}
+
+void uart_setup(uart_t uart, char parameters) {
+
+  DEV_WRITE(uart + UART_PARAMETERS_REG, parameters);
 }
