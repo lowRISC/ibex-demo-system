@@ -3,19 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "gpio.h"
-#include "dev_access.h"
+
 #include "demo_system.h"
+#include "dev_access.h"
 
-void set_outputs(gpio_t gpio, uint32_t outputs) {
-  DEV_WRITE(gpio, outputs);
-}
+void set_outputs(gpio_t gpio, uint32_t outputs) { DEV_WRITE(gpio, outputs); }
 
-uint32_t read_gpio(gpio_t gpio) {
-  return DEV_READ(gpio);
-}
+uint32_t read_gpio(gpio_t gpio) { return DEV_READ(gpio); }
 
-void set_output_bit(gpio_t gpio, uint32_t output_bit_index,
-    uint32_t output_bit) {
+void set_output_bit(gpio_t gpio, uint32_t output_bit_index, uint32_t output_bit) {
   output_bit &= 1;
 
   uint32_t output_bits = read_gpio(gpio);

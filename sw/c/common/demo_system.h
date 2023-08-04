@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "demo_system_regs.h"
-#include "uart.h"
 #include "gpio.h"
+#include "uart.h"
 
 #define UART_IRQ_NUM 16
 #define UART_IRQ (1 << UART_IRQ_NUM)
@@ -79,7 +79,7 @@ void puthex(uint32_t h);
  * `handler_fn` is too far from the exception handler base to use with a `j`
  * instruction.
  */
-int install_exception_handler(uint32_t vector_num, void(*handler_fn)(void));
+int install_exception_handler(uint32_t vector_num, void (*handler_fn)(void));
 
 /**
  * Set per-interrupt enables (`mie` CSR)
@@ -110,6 +110,5 @@ unsigned int get_mcause();
 unsigned int get_mtval();
 uint32_t get_mcycle(void);
 void reset_mcycle(void);
-
 
 #endif

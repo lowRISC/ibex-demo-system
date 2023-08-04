@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "uart.h"
-#include "dev_access.h"
+
 #include "demo_system.h"
+#include "dev_access.h"
 
 void uart_enable_rx_int(void) {
   enable_interrupts(UART_IRQ);
@@ -22,7 +23,8 @@ int uart_in(uart_t uart) {
 }
 
 void uart_out(uart_t uart, char c) {
-  while(DEV_READ(uart + UART_STATUS_REG) & UART_STATUS_TX_FULL);
+  while (DEV_READ(uart + UART_STATUS_REG) & UART_STATUS_TX_FULL)
+    ;
 
   DEV_WRITE(uart + UART_TX_REG, c);
 }

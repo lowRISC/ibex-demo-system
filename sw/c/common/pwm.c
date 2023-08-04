@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "pwm.h"
+
 #include "dev_access.h"
 
 void set_pwm(pwm_t pwm, uint32_t counter, uint32_t pulse_width) {
