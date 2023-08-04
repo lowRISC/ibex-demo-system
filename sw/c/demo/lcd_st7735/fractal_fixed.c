@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <stdint.h>
+
 #include "fractal.h"
 #include "lcd.h"
-#include <stdint.h>
 
 #define FP_EXP 12
 #define FP_MANT 15
@@ -19,7 +20,7 @@ typedef struct {
 
 int32_t fp_clamp(int32_t x) {
   if ((x < 0) && (x < -(1 << FP_MANT))) {
-      return -(1 << FP_MANT);
+    return -(1 << FP_MANT);
   }
 
   if ((x > 0) && (x >= (1 << FP_MANT))) {
@@ -36,17 +37,11 @@ int32_t to_fp(int32_t x) {
   return res;
 }
 
-int32_t fp_add(int32_t a, int32_t b) {
-  return fp_clamp(a + b);
-}
+int32_t fp_add(int32_t a, int32_t b) { return fp_clamp(a + b); }
 
-int32_t fp_mul(int32_t a, int32_t b) {
-  return fp_clamp((a * b) >> FP_EXP);
-}
+int32_t fp_mul(int32_t a, int32_t b) { return fp_clamp((a * b) >> FP_EXP); }
 
-int32_t cmplx_fixed_abs_sq(cmplx_fixed_t c) {
-  return fp_mul(c.real, c.real) + fp_mul(c.imag, c.imag);
-}
+int32_t cmplx_fixed_abs_sq(cmplx_fixed_t c) { return fp_mul(c.real, c.real) + fp_mul(c.imag, c.imag); }
 
 cmplx_fixed_t cmplx_fixed_mul(cmplx_fixed_t c1, cmplx_fixed_t c2) {
   cmplx_fixed_t res;
@@ -84,8 +79,7 @@ void fractal_mandelbrot_fixed(St7735Context *lcd) {
   cmplx_fixed_t cur_p;
   int32_t inc;
 
-  LCD_rectangle rectangle = {.origin = {.x = 0, .y = 0},
-    .width = 160, .height = 128 };
+  LCD_rectangle rectangle = {.origin = {.x = 0, .y = 0}, .width = 160, .height = 128};
   lcd_st7735_clean(lcd);
   lcd_st7735_rgb565_start(lcd, rectangle);
 
@@ -94,12 +88,12 @@ void fractal_mandelbrot_fixed(St7735Context *lcd) {
 
   inc = MAKE_FP(0, 0x40, 12);
 
-  for(int y = 0;y < 128; ++y) {
-    for(int x = 0;x < 160; ++x) {
+  for (int y = 0; y < 128; ++y) {
+    for (int x = 0; x < 160; ++x) {
       int iters = mandel_iters_fixed(cur_p, 50);
 
       uint16_t rgb = rgb_iters_palette[iters];
-      lcd_st7735_rgb565_put(lcd, (uint8_t*)&rgb, sizeof(rgb));
+      lcd_st7735_rgb565_put(lcd, (uint8_t *)&rgb, sizeof(rgb));
 
       cur_p.real += inc;
     }

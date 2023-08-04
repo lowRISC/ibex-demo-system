@@ -11,7 +11,7 @@
 
 #define TIMER_BASE 0x80002000
 
-#define PWM_BASE   0x80003000
+#define PWM_BASE 0x80003000
 
 #define SPI0_BASE 0x80004000
 

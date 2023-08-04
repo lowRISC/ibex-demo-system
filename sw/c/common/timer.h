@@ -5,6 +5,8 @@
 #ifndef TIMER_H__
 #define TIMER_H__
 
+#include "stdint.h"
+
 #define TIMER_MTIME_REG 0x0
 #define TIMER_MTIMEH_REG 0x4
 #define TIMER_MTIMECMP_REG 0x8
@@ -16,4 +18,4 @@ uint64_t get_elapsed_time();
 void timer_enable(uint64_t time_base);
 void timer_disable();
 
-#endif // TIMER_H__
+#endif  // TIMER_H__

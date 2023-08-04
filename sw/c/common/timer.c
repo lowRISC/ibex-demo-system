@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "timer.h"
+
 #include "demo_system.h"
 #include "dev_access.h"
-#include "timer.h"
 
 volatile uint64_t time_elapsed;
 uint64_t time_increment;
@@ -28,9 +29,7 @@ void simple_timer_handler(void) {
   time_elapsed++;
 }
 
-void timer_init(void) {
-  install_exception_handler(7, &simple_timer_handler);
-}
+void timer_init(void) { install_exception_handler(7, &simple_timer_handler); }
 
 uint64_t timer_read() {
   uint32_t current_timeh;
@@ -38,7 +37,7 @@ uint64_t timer_read() {
   // check if time overflowed while reading and try again
   do {
     current_timeh = DEV_READ(TIMER_BASE + TIMER_MTIMEH_REG);
-    current_time = DEV_READ(TIMER_BASE + TIMER_MTIME_REG);
+    current_time  = DEV_READ(TIMER_BASE + TIMER_MTIME_REG);
   } while (current_timeh != DEV_READ(TIMER_BASE + TIMER_MTIMEH_REG));
   uint64_t final_time = ((uint64_t)current_timeh << 32) | current_time;
   return final_time;
@@ -47,7 +46,7 @@ uint64_t timer_read() {
 uint64_t get_elapsed_time(void) { return time_elapsed; }
 
 void timer_enable(uint64_t time_base) {
-  time_elapsed = 0;
+  time_elapsed   = 0;
   time_increment = time_base;
   // Set timer values
   increment_timecmp(time_base);
