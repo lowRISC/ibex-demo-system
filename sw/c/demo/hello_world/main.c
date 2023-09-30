@@ -23,12 +23,10 @@ void test_uart_rx_irq_handler(void) {
 
 void test_uart_tx_irq_handler(void) {
     int i;
-    /*
     do
     {
       for(i=0; i < 100; i++){};
-    } while (uart_status(DEFAULT_UART));
-    */  
+    } while (uart_status(DEFAULT_UART) & UART_STATUS_TX_NEAR_FULL);  
 }
 
 int main(void) {

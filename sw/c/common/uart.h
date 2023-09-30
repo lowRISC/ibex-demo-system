@@ -41,6 +41,9 @@ typedef void* uart_t;
 #define UART_TX_EN 0x02
 
 void uart_enable_rx_int(void);
+
+void uart_enable_tx_int(void);
+
 int uart_in(uart_t uart);
 void uart_out(uart_t uart, char c);
 
