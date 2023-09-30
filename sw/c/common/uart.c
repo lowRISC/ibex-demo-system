@@ -3,7 +3,12 @@
 #include "demo_system.h"
 
 void uart_enable_rx_int(void) {
-  enable_interrupts(UART_IRQ);
+  enable_interrupts(UART_RX_IRQ);
+  set_global_interrupt_enable(1);
+}
+
+void uart_enable_tx_int(void) {
+  enable_interrupts(UART_TX_IRQ);
   set_global_interrupt_enable(1);
 }
 
@@ -36,4 +41,8 @@ void uart_disable(uart_t uart) {
 void uart_setup(uart_t uart, char parameters) {
 
   DEV_WRITE(uart + UART_PARAMETERS_REG, parameters);
+}
+
+int uart_status(uart_t uart) {
+  return DEV_READ(DEFAULT_UART + UART_STATUS_REG);
 }

@@ -1,4 +1,5 @@
 `include "uart.vh"
+
 module uart_top #(
     parameter CLOCK_FREQUENCY = 50_000_000,
     parameter RX_FIFO_DEPTH = 128,
@@ -19,7 +20,7 @@ module uart_top #(
     output wire [31:0] uart_rdata_o,// data bus
     output wire uart_req_gnt_o,     // request granted to core (IBEX LSU)
     output wire uart_rvalid_o,      // request valid to core (IBEX LSU)
-    output wire uart_irq_o,         // interrupt request (CSR)
+    output wire [1:0] uart_irq_o,   // interrupt request (CSR)
     output wire uart_err_o          // error to core (IBEX LSU)
 );
 
@@ -55,6 +56,8 @@ wire rx_fq_we;                  // rx FIFO write enable
 wire [8:0] rx_fq_data_out;      // rx FIFO data output
 wire rx_fq_full;                // rx FIFO is full flag
 wire rx_fq_empty;               // rx FIFO is empty flag
+wire rx_fq_near_full;           // rx FIFO is almost full
+wire rx_fq_near_empty;               // rx FIFO is almost empty
 
 wire tx_rdy;            // ready flag
 reg tx_en;              // enable register of tx module
@@ -66,6 +69,8 @@ wire tx_fq_we;                  // tx FIFO queue write enable
 wire [8:0] tx_fq_data_out;      // tx FIFO data output (to transmit)
 wire tx_fq_full;                // tx FIFO is full flag
 wire tx_fq_empty;               // tx FIFO is empty flag
+wire tx_fq_near_full;           // tx FIFO is almost full
+wire tx_fq_near_empty;          // tx FIFO is almost empty
 
 reg [31:0] rx_tick_counter;
 reg rx_clk_en;
@@ -98,14 +103,16 @@ sync_fifo #(
     .WIDTH(9),                    // width of data bus
     .DEPTH(RX_FIFO_DEPTH)         // depth of FIFO buffer
 ) rx_sync_fifo (
-    .clk_i(clk_i),                // input clock    
-    .rst_ni(rst_ni),              // reset signal
-    .wdata_i(rx_data),            // input data
-    .we_i(rx_fq_we),              // write enable signal
-    .re_i(rx_fq_re),              // read enable signal
-    .rdata_o(rx_fq_data_out),     // output data
-    .full_o(rx_fq_full),          // full flag
-    .empty_o(rx_fq_empty)         // empty flag
+    .clk_i(clk_i),                  // input clock    
+    .rst_ni(rst_ni),                // reset signal
+    .wdata_i(rx_data),              // input data
+    .we_i(rx_fq_we),                // write enable signal
+    .re_i(rx_fq_re),                // read enable signal
+    .rdata_o(rx_fq_data_out),       // output data
+    .full_o(rx_fq_full),            // full flag
+    .empty_o(rx_fq_empty),          // empty flag
+    .near_full_o(rx_fq_near_full),  // near full flag
+    .near_empty_o(rx_fq_near_empty) // near empty flag
 );
 `else
 // Asynchronous FIFO queue for rx module
@@ -121,7 +128,9 @@ async_fifo #(
     .re_i(rx_fq_re),
     .rdata_o(rx_fq_data_out),
     .full_o(rx_fq_full),
-    .empty_o(rx_fq_empty)
+    .empty_o(rx_fq_empty),
+    .near_full_o(rx_fq_near_full),
+    .near_empty_o(rx_fq_near_empty)
 );
 `endif
 
@@ -149,17 +158,19 @@ uart_tx tx0 (
 `ifndef ASYNC
 // Synchronous FIFO queue for tx module
 sync_fifo #(
-    .WIDTH(9),                    // width of data bus
-    .DEPTH(TX_FIFO_DEPTH)         // depth of FIFO buffer
+    .WIDTH(9),                      // width of data bus
+    .DEPTH(TX_FIFO_DEPTH)           // depth of FIFO buffer
 ) tx_sync_fifo (
-    .clk_i(clk_i),                // input clock
-    .rst_ni(rst_ni),              // reset signal
-    .wdata_i(uart_wdata_i[8:0]),  // input data
-    .we_i(tx_fq_we),              // write enable signal
-    .re_i(tx_fq_re),              // read enable signal
-    .rdata_o(tx_fq_data_out),     // output data
-    .full_o(tx_fq_full),          // full flag
-    .empty_o(tx_fq_empty)         // empty flag
+    .clk_i(clk_i),                  // input clock
+    .rst_ni(rst_ni),                // reset signal
+    .wdata_i(uart_wdata_i[8:0]),    // input data
+    .we_i(tx_fq_we),                // write enable signal
+    .re_i(tx_fq_re),                // read enable signal
+    .rdata_o(tx_fq_data_out),       // output data
+    .full_o(tx_fq_full),            // full flag
+    .empty_o(tx_fq_empty),          // empty flag
+    .near_full_o(tx_fq_near_full),  // near full flag
+    .near_empty_o(tx_fq_near_empty) // near emtpy flag
 );
 `else
 // Asynchronous FIFO queue for tx module
@@ -175,7 +186,9 @@ async_fifo #(
     .re_i(tx_fq_re),
     .rdata_o(tx_fq_data_out),
     .full_o(tx_fq_full),
-    .empty_o(tx_fq_empty)
+    .empty_o(tx_fq_empty),
+    .near_full_o(rx_fq_near_full),
+    .near_empty_o(rx_fq_near_empty)
 );
 `endif
 
@@ -187,7 +200,7 @@ assign tx_fq_re = tx_rdy & tx_en & tx_clk_en;
 assign rx_fq_we = rx_rdy & ~rx_err & rx_clk_en;
 assign rx_fq_re = (opcode == OP_READ_UART_DATA) & rx_en;
 
-assign uart_irq_o = ~rx_fq_empty;
+assign uart_irq_o = {tx_fq_near_full, ~rx_fq_empty};
 
 always
 `ifndef ASYNC
@@ -254,26 +267,30 @@ always @(*) begin
 end
 
 always @(*) begin
-    uart_err_d = 1'b0;
     uart_rvalid_d = 1'b1;
     case(opcode)
     OP_WRITE_UART_PARAMETERS : begin
         uart_rdata_d <= 32'b0;
+        uart_err_d = 1'b0;
     end
     OP_READ_UART_DATA : begin
         uart_rdata_d <= {23'b0, rx_fq_data_out};
+        uart_err_d = rx_fq_empty;
     end
     OP_WRITE_UART_DATA : begin
         uart_rdata_d <= 32'b0;
+        uart_err_d <= tx_fq_full;
     end
     OP_READ_UART_STATE : begin
-        uart_rdata_d <= {30'b0, tx_fq_full, rx_fq_empty};
+        uart_rdata_d <= {28'b0, tx_fq_near_full, rx_fq_near_empty, tx_fq_full, rx_fq_empty};
+        uart_err_d = 1'b0;
     end
     OP_WRITE_UART_EN : begin
-        uart_rdata_d <= 32'b0;
+        uart_rdata_d <= 32'b0;        
     end
     default : begin
         uart_rdata_d <= 32'b0;
+        uart_err_d = 1'b0;
     end
     endcase
 end
@@ -332,5 +349,6 @@ end
 assign uart_rdata_o = uart_rdata_q;
 assign uart_rvalid_o = uart_rvalid_q;
 assign uart_err_o = uart_err_q;
+assign uart_req_gnt_o = 1'b1;
 
 endmodule

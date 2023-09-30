@@ -11,8 +11,12 @@
 #include "uart.h"
 #include "gpio.h"
 
-#define UART_IRQ_NUM 16
-#define UART_IRQ (1 << UART_IRQ_NUM)
+#define UART_RX_IRQ_NUM 16
+#define UART_RX_IRQ (1 << UART_RX_IRQ_NUM)
+
+#define UART_TX_IRQ_NUM 17
+#define UART_TX_IRQ (1 << UART_TX_IRQ_NUM)
+
 #define DEFAULT_UART UART_FROM_BASE_ADDR(UART0_BASE)
 
 #define GPIO_OUT GPIO_FROM_BASE_ADDR(GPIO_BASE + GPIO_OUT_REG)

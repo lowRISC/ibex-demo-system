@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module uart_rx (
     input wire clk_i,
     input wire clk_en_i,

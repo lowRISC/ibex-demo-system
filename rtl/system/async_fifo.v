@@ -1,6 +1,5 @@
 `include "synchronizer.v"
 `timescale 1ns/1ps
-
 module async_fifo #(
     parameter WIDTH = 32,      // width of data bus
     parameter DEPTH = 16       // depth of FIFO buffer
@@ -13,7 +12,9 @@ module async_fifo #(
     input wire re_i,
     output wire [WIDTH-1:0] rdata_o,
     output wire full_o,
-    output wire empty_o
+    output wire empty_o,
+    output wire near_full_o,
+    output wire near_empty_o
 );
 
 localparam ADDR_BITS = $clog2(DEPTH);   // address width for buffer
@@ -43,7 +44,7 @@ assign r_ptr_gray = r_ptr ^ (r_ptr >> 1);
 assign w_ptr_next_gray = w_ptr_next ^ (w_ptr_next >> 1);
 assign r_ptr_next_gray = r_ptr_next ^ (r_ptr_next >> 1);
 
-ff2_sync #(
+sync_reg #(
     .WIDTH(ADDR_BITS+1)
 ) sync_w2r_w_ptr (
     .clk_i(rclk_i),
@@ -52,7 +53,7 @@ ff2_sync #(
     .rdata_o(w_ptr_sync_gray)
 );
 
-ff2_sync #(
+sync_reg #(
     .WIDTH(ADDR_BITS+1)
 ) sync_r2w_r_ptr (
     .clk_i(wclk_i),
@@ -74,24 +75,27 @@ end
 
 always @(posedge wclk_i, negedge rst_ni)
     if(~rst_ni)
-        w_ptr <= 0;
+        w_ptr <= {ADDR_BITS+1{1'b0}};
     else
         w_ptr <= w_ptr_next;
 
-always @(posedge wclk_i) begin : write
+always @(posedge wclk_i, negedge rst_ni) begin : write
     if(we_i & ~full_o)
         mem[w_addr] <= wdata_i;
 end
 
 always @(posedge rclk_i, negedge rst_ni) begin : read
     if(~rst_ni)
-        r_ptr <= 0;
+        r_ptr <= {ADDR_BITS+1{1'b0}};
     else
         r_ptr <= r_ptr_next;
 end
 
 assign full_o = w_ptr == {~r_ptr_sync_bin[ADDR_BITS], r_ptr_sync_bin[ADDR_BITS-1:0]};
 assign empty_o = r_ptr == w_ptr_sync_bin;
-assign rdata_o = mem[r_addr];
+assign rdata_o = (empty_o)? {WIDTH{1'b0}} : mem[r_addr];
+
+assign near_full_o = 1'b0;
+assign near_empty_o = 1'b0;
 
 endmodule

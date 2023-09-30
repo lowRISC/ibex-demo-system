@@ -9,8 +9,10 @@
 #define UART_ENABLE_REG     0x0C
 #define UART_PARAMETERS_REG 0x10
 
-#define UART_STATUS_RX_EMPTY 1
-#define UART_STATUS_TX_FULL 2
+#define UART_STATUS_RX_EMPTY 0x01
+#define UART_STATUS_TX_FULL 0x02
+#define UART_STATUS_RX_NEAR_EMPTY 0x04
+#define UART_STATUS_TX_NEAR_FULL 0x08
 
 #define UART_EOF -1
 
@@ -45,5 +47,7 @@ void uart_out(uart_t uart, char c);
 void uart_enable(uart_t uart, char en);
 void uart_disable(uart_t uart);
 void uart_setup(uart_t uart, char parameters);
+
+int uart_status(uart_t uart);
 
 #endif

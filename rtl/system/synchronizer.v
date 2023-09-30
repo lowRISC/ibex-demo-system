@@ -3,8 +3,7 @@
 * for async fifo queue
 */
 `timescale 1ns/1ps
-
-module ff2_sync #(
+module sync_reg #(
     parameter WIDTH = 32
 ) (
     input wire clk_i,

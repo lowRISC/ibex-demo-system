@@ -88,7 +88,7 @@ module ibex_demo_system #(
 
   // interrupts
   logic timer_irq;
-  logic uart_irq;
+  logic [1:0] uart_irq;
 
   // host and device signals
   logic           host_req      [NrHosts];
@@ -268,7 +268,7 @@ module ibex_demo_system #(
     .irq_software_i(1'b0),
     .irq_timer_i   (timer_irq),
     .irq_external_i(1'b0),
-    .irq_fast_i    ({14'b0, uart_irq}),
+    .irq_fast_i    ({13'b0, uart_irq}),
     .irq_nm_i      (1'b0),
 
     .scramble_key_valid_i('0),
@@ -349,23 +349,25 @@ module ibex_demo_system #(
     .pwm_o
   );
 
-  uart #(
-    .ClockFrequency ( 50_000_000 )
+  uart_top #(
+    .CLOCK_FREQUENCY (50_000_000),
+    .RX_FIFO_DEPTH (16),
+    .TX_FIFO_DEPTH (16)
   ) u_uart (
-    .clk_i          (clk_sys_i),
-    .rst_ni         (rst_sys_ni),
-
-    .device_req_i   (device_req[Uart]),
-    .device_addr_i  (device_addr[Uart]),
-    .device_we_i    (device_we[Uart]),
-    .device_be_i    (device_be[Uart]),
-    .device_wdata_i (device_wdata[Uart]),
-    .device_rvalid_o(device_rvalid[Uart]),
-    .device_rdata_o (device_rdata[Uart]),
-
-    .uart_rx_i,
-    .uart_irq_o     (uart_irq),
-    .uart_tx_o
+      .clk_i(clk_sys_i),                    // clock
+      .rst_ni(rst_sys_ni),                  // reset not
+      .we(device_we[Uart]),                 // write enable
+      .be(device_be[Uart]),                 // byte enable
+      .uart_wdata_i(device_wdata[Uart]),    // data bus
+      .addr_i(device_addr[Uart]),           // addr bus
+      .uart_req_i(device_req[Uart]),        // request from core (IBEX LSU)
+      .uart_rx_i(uart_rx_i),                // rx line
+      .uart_tx_o(uart_tx_o),                // tx line
+      .uart_rdata_o(device_rdata[Uart]),    // data bus
+      .uart_req_gnt_o(),                    // request granted to core (IBEX LSU)
+      .uart_rvalid_o(device_rvalid[Uart]),  // request valid to core (IBEX LSU)
+      .uart_irq_o(uart_irq),                // interrupt request (CSR)
+      .uart_err_o()                         // error to core (IBEX LSU)
   );
 
   spi_top #(

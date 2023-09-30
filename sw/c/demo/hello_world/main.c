@@ -11,17 +11,32 @@
 
 #define USE_GPIO_SHIFT_REG 0
 
-void test_uart_irq_handler(void) __attribute__((interrupt));
+void test_uart_rx_irq_handler(void) __attribute__((interrupt));
+void test_uart_tx_irq_handler(void) __attribute__((interrupt));
 
-void test_uart_irq_handler(void) {
+
+void test_uart_rx_irq_handler(void) {
     unsigned char u;
     u = getchar();
     putchar(u);
 }
 
+void test_uart_tx_irq_handler(void) {
+    int i;
+    /*
+    do
+    {
+      for(i=0; i < 100; i++){};
+    } while (uart_status(DEFAULT_UART));
+    */  
+}
+
 int main(void) {
-  install_exception_handler(UART_IRQ_NUM, &test_uart_irq_handler);
+  install_exception_handler(UART_RX_IRQ_NUM, &test_uart_rx_irq_handler);
+  install_exception_handler(UART_TX_IRQ_NUM, &test_uart_tx_irq_handler);
   uart_enable_rx_int();
+  uart_enable_tx_int();
+
   
   uart_enable(DEFAULT_UART, UART_RX_EN | UART_TX_EN);
   uart_setup(DEFAULT_UART, DATA_SIZE_8 | PARITY_NONE | STOP_BITS_ONE | BAUD_RATE_115200);
