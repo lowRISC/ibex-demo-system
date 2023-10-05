@@ -22,7 +22,7 @@ void test_uart_rx_irq_handler(void) {
 }
 
 void test_uart_tx_irq_handler(void) {
-    int i;
+    volatile int i;
     do
     {
       for(i=0; i < 100; i++){};
