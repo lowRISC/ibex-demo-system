@@ -38,14 +38,15 @@ There are instructions for building the container for either Docker/Podman locat
 
 **Linux/MacOS**
 
-A container image may be provided to you on a USB stick. You can load the containerfile by running :
+A container image may be provided to you in the form of a tarball.
+You can load the containerfile by running:
 ```bash
 sudo docker load < ibex_demo_image.tar
 # OR
 podman load < ibex_demo_image.tar
 ```
 
-If you already have a container file, you can start the container by running :
+If you already have a container file, you can start the container by running:
 ```bash
 sudo docker run -it --rm \
   -p 6080:6080 \
@@ -65,14 +66,15 @@ podman unshare chown 0:0 -R .
 ```
 To access the container once running, go to [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html).
 
-If you want to program the FPGA from the container, lets find out which bus and device our Arty is on:
+If you want to program the FPGA from the container, let's find out which bus and device the Arty is on:
 ```bash
 $ lsusb
 ...
 Bus 00X Device 00Y: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
 ...
 ```
-Where X and Y are numbers. Please note down what X and Y is for you (this will change if you unplug and replug your FPGA).
+Where X and Y are numbers.
+Please note down what X and Y is for you (this will change if you unplug and replug your FPGA).
 
 Then run Docker with the following parameters:
 ```bash
@@ -94,7 +96,7 @@ cd "C:\Program Files\Docker\Docker"
 .\DockerCli.exe -SwitchLinuxEngine
 ```
 
-Go to the folder on the USB named "Docker Images" and run:
+In case you have a tarball of the docker image, run:
 ```powershell
 docker load -i ibex_demo_image.tar
 ```
@@ -103,7 +105,6 @@ Go to the folder where you have decompressed the demo system repository:
 ```powershell
 docker run -it --rm -p 6080:6080 -p 3333:3333 -v %cd%:/home/dev/demo:Z ibex
 ```
-
 
 ## Add udev rules for our device
 For both the container and the native setups you will need to add user device permissions for our FPGA board.
@@ -192,14 +193,14 @@ exit
 
 ```
 
-Run the following to reload the rules...
+Run the following to reload the rules:
 
 ```bash
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 ```
 
-Add user to plugdev group.
+Add user to plugdev group:
 ```bash
 sudo usermod -a $USER -G plugdev
 ```
@@ -373,7 +374,7 @@ sed -i -- "s|sha256\s=\s\".*\";|sha256 = \"$VIVADO_BUNDLED_HASH\";|g" dependenci
 To install python dependencies use pip, you may wish to do this inside a virtual
 environment to avoid disturbing you current python setup (note it uses a lowRISC
 fork of edalize and FuseSoC so if you already use these a virtual environment is
-recommended)
+recommended):
 
 ```bash
 # Setup python venv
@@ -388,8 +389,8 @@ You may need to run the last command twice if you get the following error:
 `ERROR: Failed building wheel for fusesoc`
 
 
+## Building Software
 
-## Building Software 
 ### C stack
 
 First the software must be built.
@@ -403,6 +404,7 @@ cmake ..
 make
 popd
 ```
+
 ### Rust stack
 
 ```sh
@@ -424,6 +426,7 @@ repository root run:
 ```
 fusesoc --cores-root=. run --target=sim --tool=verilator --setup --build lowrisc:ibex:demo_system
 ```
+
 ## Running the Simulator
 
 Having built the simulator and software, to simulate using Verilator we can use the following commands.
@@ -470,6 +473,7 @@ Divide Wait:                0
 ```
 
 ## Building FPGA bitstream
+
 FuseSoC handles the FPGA build. Vivado tools must be setup beforehand. From the
 repository root:
 
@@ -490,9 +494,8 @@ make -C ./build/lowrisc_ibex_demo_system_0/synth-vivado/ pgm
 
 ## Loading an application to the programmed FPGA
 
-The util/load_demo_system.sh script can be used to load and run an application. You
-can choose to immediately run it or begin halted, allowing you to attach a
-debugger.
+The `util/load_demo_system.sh` script can be used to load and run an application.
+You can choose to immediately run it or begin halted, allowing you to attach a debugger.
 
 ```bash
 # Run demo
@@ -513,20 +516,19 @@ screen /dev/ttyUSB1 115200
 If you see an immediate `[screen is terminating]`, it may mean that you need super user rights.
 In this case, you may try using `sudo`.
 
-To exit from the `screen` command, you should press control and a together, then release these two keys and press d.
+To exit from the `screen` command, you should press control and a together, then release these two keys and press `d`.
 
 ## Debugging an application
 
-Either load an application and halt (see above) or start a new OpenOCD instance
+Either load an application and halt (see above) or start a new OpenOCD instance:
 
 ```
 openocd -f util/arty-a7-openocd-cfg.tcl
 ```
 
-Then run GDB against the running binary and connect to localhost:3333 as a
-remote target
+Then run GDB against the running binary and connect to `localhost:3333` as a remote target:
 
-```
+```bash
 riscv32-unknown-elf-gdb ./sw/c/build/demo/hello_world/demo
 
 (gdb) target extended-remote localhost:3333
