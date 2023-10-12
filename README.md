@@ -7,8 +7,9 @@ This an example RISC-V SoC targeting the Arty-A7 FPGA board. It comprises the
 following features:
 
 * RISC-V debug support (using the [PULP RISC-V Debug Module](https://github.com/pulp-platform/riscv-dbg))
-* A UART
-* GPIO (output only for now)
+* UART
+* GPIO
+* PWM
 * Timer
 * SPI
 * A basic peripheral to write ASCII output to a file and halt simulation from software
