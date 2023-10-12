@@ -1,6 +1,6 @@
 # Ibex Demo System
 
-![Ibex demo system block diagram](doc/IbexDemoSystemBlockDiagram.png "Ibex Demo System Block Diagram")
+![Ibex demo system block diagram](doc/IbexDemoSystemBlockDiagram.png "Ibex demo system block diagram with in the center an Ibex processor connected by a memory bus to the RAM, GPIO, SPI, UART and debug module. Switches, buttons and LEDs are connected to the GPIO. The LCD is driven by SPI. The UART is used for a serial console. Finally, the debug module is used to drive the JTAG.")
 
 This an example RISC-V SoC targeting the Arty-A7 FPGA board. It comprises the
 [lowRISC Ibex core](https://www.github.com/lowrisc/ibex) along with the
@@ -16,7 +16,7 @@ following features:
 Debug can be used via a USB connection to the Arty-A7 board. No external JTAG
 probe is required.
 
-![Arty A7 FPGA showing the Mandelbrot set](doc/ArtyA7WithMandelbrot.png "Arty A7 FPGA with Mandelbrot")
+![Arty A7 FPGA showing the Mandelbrot set](doc/ArtyA7WithMandelbrot.png "Arty A7 FPGA with a Mandelbrot fractal on the LCD screen.")
 
 ## Software Requirements
 
