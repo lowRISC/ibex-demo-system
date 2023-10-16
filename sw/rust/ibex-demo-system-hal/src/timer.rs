@@ -105,7 +105,9 @@ impl<U: Deref<Target = pac::timer0::RegisterBlock>> timer::CountDown for CountDo
     }
 
     fn wait(&mut self) -> nb::Result<(), void::Void> {
-        let Some(timeout) = self.timeout else { panic!("Countdown not started"); };
+        let Some(timeout) = self.timeout else {
+            panic!("Countdown not started");
+        };
 
         if self.timer.get_counter() < timeout {
             return Err(nb::Error::WouldBlock);
