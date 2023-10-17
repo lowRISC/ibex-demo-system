@@ -4,6 +4,7 @@
 
 # Individual Python packages
 anytree
+hjson
 mako
 pyyaml
 wheel
