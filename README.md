@@ -516,7 +516,7 @@ screen /dev/ttyUSB1 115200
 If you see an immediate `[screen is terminating]`, it may mean that you need super user rights.
 In this case, you may try using `sudo`.
 
-To exit from the `screen` command, you should press control and a together, then release these two keys and press `d`.
+To exit from the `screen` command, you should press control and `a` together, then release these two keys and press the `d` key alone.
 
 ## Debugging an application
 
