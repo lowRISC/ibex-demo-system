@@ -110,22 +110,22 @@
             helpstr=$(cat <<'EOF'
 
             Build ibex software :
-                mkdir sw/build && pushd sw/build && cmake ../ && make && popd
+                mkdir sw/c/build && pushd sw/c/build && cmake ../ && make && popd
             Build ibex simulation verilator model :
                 fusesoc --cores-root=. run --target=sim --tool=verilator --setup --build lowrisc:ibex:demo_system
             Run ibex simulator verilator model :
                 ./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system -t \
-                  --meminit=ram,sw/build/demo/hello_world/demo
+                  --meminit=ram,sw/c/build/demo/hello_world/demo
             Build ibex-demo-system FPGA bitstream for Arty-A7 :
                 fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:demo_system
             Program Arty-A7 FPGA with bitstream :
                 openFPGALoader -b arty_a7_35t build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.bit
             Load ibex software to the programmed FPGA :
-                ./util/load_demo_system.sh run ./sw/build/demo/lcd_st7735/lcd_st7735
+                ./util/load_demo_system.sh run ./sw/c/build/demo/lcd_st7735/lcd_st7735
             Start an OpenOCD instance, connected to the Arty-A7 ibex
                 openocd -f util/arty-a7-openocd-cfg.tcl
             Connect gdb to a running program on the FPGA (In a different terminal to the OpenOCD instance):
-                riscv32-unknown-elf-gdb -ex "target extended-remote localhost:3333" ./sw/build/demo/hello_world/demo
+                riscv32-unknown-elf-gdb -ex "target extended-remote localhost:3333" ./sw/c/build/demo/hello_world/demo
 
             To leave the environment:
                 exit
