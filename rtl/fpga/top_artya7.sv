@@ -11,7 +11,7 @@ module top_artya7 (
   input  [ 3:0]       BTN,
   output [ 3:0]       LED,
   output [11:0]       RGB_LED,
-  output [3:0]        DISP_CTRL,
+  output [ 3:0]       DISP_CTRL,
   input               UART_RX,
   output              UART_TX,
   input               SPI_RX,
