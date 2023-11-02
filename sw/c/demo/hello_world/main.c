@@ -33,8 +33,8 @@ int main(void) {
 
   uint64_t last_elapsed_time = get_elapsed_time();
 
-  // Reset green LEDs to off
-  set_outputs(GPIO_OUT, 0x0);
+  // Reset green LEDs to having just one on
+  set_outputs(GPIO_OUT, 0x10); // Bottom 4 bits are LCD control as you can see in top_artya7.sv
 
   // PWM variables
   uint32_t counter    = UINT8_MAX;
@@ -64,12 +64,17 @@ int main(void) {
       // Re-enable interrupts with output complete
       set_global_interrupt_enable(1);
 
-      // Cycling through green LEDs when BTN0 is pressed
+      // Cycling through green LEDs
       if (USE_GPIO_SHIFT_REG) {
+        // Feed value of BTN0 into the shift register
         set_outputs(GPIO_OUT_SHIFT, in_val);
       } else {
+        // Cycle through LEDs unless BTN0 is pressed
         uint32_t out_val = read_gpio(GPIO_OUT);
-        out_val          = ((out_val << 1) & GPIO_OUT_MASK) | (in_val & 0x1);
+        out_val = (out_val << 1) & GPIO_LED_MASK;
+        if ((in_val & 0x1) || (out_val == 0)) {
+          out_val = 0x10;
+        }
         set_outputs(GPIO_OUT, out_val);
       }
 

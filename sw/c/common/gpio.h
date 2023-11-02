@@ -12,7 +12,8 @@
 #define GPIO_IN_DBNC_REG 0x8
 #define GPIO_OUT_SHIFT_REG 0xC
 
-#define GPIO_OUT_MASK 0xF  // Support 4-bit output
+#define GPIO_OUT_MASK 0xFF  // Support 8-bit output
+#define GPIO_LED_MASK 0xF0  // Top 4 bits are green LEDs
 
 typedef void* gpio_t;
 
