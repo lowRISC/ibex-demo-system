@@ -2,7 +2,7 @@
   description = "ibex simple_system dependencies";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
     lowrisc_fusesoc_src = { url = "github:lowRISC/fusesoc?ref=ot-0.2"; flake = false; };
     lowrisc_edalize_src = { url = "github:lowRISC/edalize?ref=ot-0.2"; flake = false; };
   };
