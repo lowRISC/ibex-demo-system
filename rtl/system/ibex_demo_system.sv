@@ -101,7 +101,7 @@ module ibex_demo_system #(
   logic [31:0]    host_rdata    [NrHosts];
   logic           host_err      [NrHosts];
 
-  // devices (slaves)
+  // devices
   logic           device_req    [NrDevices];
   logic [31:0]    device_addr   [NrDevices];
   logic           device_we     [NrDevices];
@@ -123,13 +123,13 @@ module ibex_demo_system #(
   logic [31:0] mem_instr_rdata;
   logic        dbg_instr_req;
 
-  logic        dbg_slave_req;
-  logic [31:0] dbg_slave_addr;
-  logic        dbg_slave_we;
-  logic [ 3:0] dbg_slave_be;
-  logic [31:0] dbg_slave_wdata;
-  logic        dbg_slave_rvalid;
-  logic [31:0] dbg_slave_rdata;
+  logic        dbg_device_req;
+  logic [31:0] dbg_device_addr;
+  logic        dbg_device_we;
+  logic [ 3:0] dbg_device_be;
+  logic [31:0] dbg_device_wdata;
+  logic        dbg_device_rvalid;
+  logic [31:0] dbg_device_rdata;
 
   // Internally generated resets cause IMPERFECTSCH warnings
   /* verilator lint_off IMPERFECTSCH */
@@ -220,7 +220,7 @@ module ibex_demo_system #(
     end
   end
 
-  assign core_instr_rdata = core_instr_sel_dbg ? dbg_slave_rdata : mem_instr_rdata;
+  assign core_instr_rdata = core_instr_sel_dbg ? dbg_device_rdata : mem_instr_rdata;
 
   assign rst_core_n = rst_sys_ni & ~ndmreset_req;
 
@@ -426,19 +426,19 @@ module ibex_demo_system #(
     .timer_intr_o  (timer_irq)
   );
 
-  assign dbg_slave_req         = device_req[DbgDev] | dbg_instr_req;
-  assign dbg_slave_we          = device_req[DbgDev] & device_we[DbgDev];
-  assign dbg_slave_addr        = device_req[DbgDev] ? device_addr[DbgDev] : core_instr_addr;
-  assign dbg_slave_be          = device_be[DbgDev];
-  assign dbg_slave_wdata       = device_wdata[DbgDev];
-  assign device_rvalid[DbgDev] = dbg_slave_rvalid;
-  assign device_rdata[DbgDev]  = dbg_slave_rdata;
+  assign dbg_device_req        = device_req[DbgDev] | dbg_instr_req;
+  assign dbg_device_we         = device_req[DbgDev] & device_we[DbgDev];
+  assign dbg_device_addr       = device_req[DbgDev] ? device_addr[DbgDev] : core_instr_addr;
+  assign dbg_device_be         = device_be[DbgDev];
+  assign dbg_device_wdata      = device_wdata[DbgDev];
+  assign device_rvalid[DbgDev] = dbg_device_rvalid;
+  assign device_rdata[DbgDev]  = dbg_device_rdata;
 
   always @(posedge clk_sys_i or negedge rst_sys_ni) begin
     if (!rst_sys_ni) begin
-      dbg_slave_rvalid <= 1'b0;
+      dbg_device_rvalid <= 1'b0;
     end else begin
-      dbg_slave_rvalid <= device_req[DbgDev];
+      dbg_device_rvalid <= device_req[DbgDev];
     end
   end
 
@@ -455,22 +455,22 @@ module ibex_demo_system #(
       .unavailable_i     (1'b0),
 
       // bus device with debug memory (for execution-based debug)
-      .slave_req_i       (dbg_slave_req),
-      .slave_we_i        (dbg_slave_we),
-      .slave_addr_i      (dbg_slave_addr),
-      .slave_be_i        (dbg_slave_be),
-      .slave_wdata_i     (dbg_slave_wdata),
-      .slave_rdata_o     (dbg_slave_rdata),
+      .device_req_i      (dbg_device_req),
+      .device_we_i       (dbg_device_we),
+      .device_addr_i     (dbg_device_addr),
+      .device_be_i       (dbg_device_be),
+      .device_wdata_i    (dbg_device_wdata),
+      .device_rdata_o    (dbg_device_rdata),
 
       // bus host (for system bus accesses, SBA)
-      .master_req_o      (host_req[DbgHost]),
-      .master_add_o      (host_addr[DbgHost]),
-      .master_we_o       (host_we[DbgHost]),
-      .master_wdata_o    (host_wdata[DbgHost]),
-      .master_be_o       (host_be[DbgHost]),
-      .master_gnt_i      (host_gnt[DbgHost]),
-      .master_r_valid_i  (host_rvalid[DbgHost]),
-      .master_r_rdata_i  (host_rdata[DbgHost])
+      .host_req_o        (host_req[DbgHost]),
+      .host_add_o        (host_addr[DbgHost]),
+      .host_we_o         (host_we[DbgHost]),
+      .host_wdata_o      (host_wdata[DbgHost]),
+      .host_be_o         (host_be[DbgHost]),
+      .host_gnt_i        (host_gnt[DbgHost]),
+      .host_r_valid_i    (host_rvalid[DbgHost]),
+      .host_r_rdata_i    (host_rdata[DbgHost])
     );
   end else begin
     assign dm_debug_req = 1'b0;

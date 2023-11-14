@@ -28,22 +28,22 @@ module dm_top #(
                                             // (e.g.: power down)
 
   // bus device with debug memory, for an execution based technique
-  input  logic                  slave_req_i,
-  input  logic                  slave_we_i,
-  input  logic [BusWidth-1:0]   slave_addr_i,
-  input  logic [BusWidth/8-1:0] slave_be_i,
-  input  logic [BusWidth-1:0]   slave_wdata_i,
-  output logic [BusWidth-1:0]   slave_rdata_o,
+  input  logic                  device_req_i,
+  input  logic                  device_we_i,
+  input  logic [BusWidth-1:0]   device_addr_i,
+  input  logic [BusWidth/8-1:0] device_be_i,
+  input  logic [BusWidth-1:0]   device_wdata_i,
+  output logic [BusWidth-1:0]   device_rdata_o,
 
   // bus host, for system bus accesses
-  output logic                  master_req_o,
-  output logic [BusWidth-1:0]   master_add_o,
-  output logic                  master_we_o,
-  output logic [BusWidth-1:0]   master_wdata_o,
-  output logic [BusWidth/8-1:0] master_be_o,
-  input  logic                  master_gnt_i,
-  input  logic                  master_r_valid_i,
-  input  logic [BusWidth-1:0]   master_r_rdata_i
+  output logic                  host_req_o,
+  output logic [BusWidth-1:0]   host_add_o,
+  output logic                  host_we_o,
+  output logic [BusWidth-1:0]   host_wdata_o,
+  output logic [BusWidth/8-1:0] host_be_o,
+  input  logic                  host_gnt_i,
+  input  logic                  host_r_valid_i,
+  input  logic [BusWidth-1:0]   host_r_rdata_i
 );
 
   `ASSERT_INIT(paramCheckNrHarts, NrHarts > 0)
@@ -164,14 +164,14 @@ module dm_top #(
   ) i_dm_sba (
     .clk_i                   ( clk_i                 ),
     .rst_ni                  ( rst_ni                ),
-    .master_req_o            ( master_req_o          ),
-    .master_add_o            ( master_add_o          ),
-    .master_we_o             ( master_we_o           ),
-    .master_wdata_o          ( master_wdata_o        ),
-    .master_be_o             ( master_be_o           ),
-    .master_gnt_i            ( master_gnt_i          ),
-    .master_r_valid_i        ( master_r_valid_i      ),
-    .master_r_rdata_i        ( master_r_rdata_i      ),
+    .master_req_o            ( host_req_o            ),
+    .master_add_o            ( host_add_o            ),
+    .master_we_o             ( host_we_o             ),
+    .master_wdata_o          ( host_wdata_o          ),
+    .master_be_o             ( host_be_o             ),
+    .master_gnt_i            ( host_gnt_i            ),
+    .master_r_valid_i        ( host_r_valid_i        ),
+    .master_r_rdata_i        ( host_r_rdata_i        ),
     .dmactive_i              ( dmactive_o            ),
     .sbaddress_i             ( sbaddress_csrs_sba    ),
     .sbaddress_o             ( sbaddress_sba_csrs    ),
@@ -220,12 +220,12 @@ module dm_top #(
     .data_i                  ( data_csrs_mem         ),
     .data_o                  ( data_mem_csrs         ),
     .data_valid_o            ( data_valid            ),
-    .req_i                   ( slave_req_i           ),
-    .we_i                    ( slave_we_i            ),
-    .addr_i                  ( slave_addr_i          ),
-    .wdata_i                 ( slave_wdata_i         ),
-    .be_i                    ( slave_be_i            ),
-    .rdata_o                 ( slave_rdata_o         )
+    .req_i                   ( device_req_i          ),
+    .we_i                    ( device_we_i           ),
+    .addr_i                  ( device_addr_i         ),
+    .wdata_i                 ( device_wdata_i        ),
+    .be_i                    ( device_be_i           ),
+    .rdata_o                 ( device_rdata_o        )
   );
 
   // Bound-in DPI module replaces the TAP
