@@ -36,7 +36,7 @@ module gpio #(
   logic                gp_i_dbnc_rd_en_d, gp_i_dbnc_rd_en_q;
 
   // instantiate debouncers for all GP inputs
-  for (genvar i = 0; i < GpiWidth; i++) begin
+  for (genvar i = 0; i < GpiWidth; i++) begin : gen_debounce
     debounce #(
       .ClkCount(500)
     ) dbnc (
@@ -66,8 +66,8 @@ module gpio #(
   end
 
   // assign gp_o_d regarding to device_be_i and GpoWidth
-  for (genvar i_byte = 0; i_byte < 4; ++i_byte) begin : g_gp_o_d;
-    if (i_byte * 8 < GpoWidth) begin : g_gp_o_d_inner
+  for (genvar i_byte = 0; i_byte < 4; ++i_byte) begin : gen_gp_o_d;
+    if (i_byte * 8 < GpoWidth) begin : gen_gp_o_d_inner
       localparam int gpo_byte_end = (i_byte + 1) * 8 <= GpoWidth ? (i_byte + 1) * 8 : GpoWidth;
       assign gp_o_d[gpo_byte_end - 1 : i_byte * 8] =
         device_be_i[i_byte] ? device_wdata_i[gpo_byte_end - 1 : i_byte * 8] :
