@@ -115,7 +115,7 @@ module spi_host #(
   generate
     // If CPHA is HIGH, incoming data will be sampled on the falling edge while outgoing
     // data will get shifted out on the rising edge.
-    if (CPHA) begin
+    if (CPHA) begin : gen_cpha
       always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
           current_byte_q  <= '0;
@@ -136,7 +136,7 @@ module spi_host #(
       end
     // If CPHA is LOW, incoming data will be sampled on the rising edge while outgoing
     // data will get shifted out on the falling edge.
-    end else begin
+    end else begin : gen_no_cpha
       always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
           current_byte_q  <= '0;
