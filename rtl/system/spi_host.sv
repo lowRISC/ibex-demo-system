@@ -4,9 +4,9 @@
 
 module spi_host #(
   parameter int unsigned ClockFrequency = 50_000_000,
-  parameter int unsigned BaudRate = 12_500_000,
-  parameter bit CPOL = 0,
-  parameter bit CPHA = 0
+  parameter int unsigned BaudRate       = 12_500_000,
+  parameter bit CPOL                    = 0,
+  parameter bit CPHA                    = 0
 )(
     input clk_i,
     input rst_ni,
