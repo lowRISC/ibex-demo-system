@@ -10,15 +10,15 @@
 // - UART for serial communication.
 // - Timer.
 // - Debug module.
-// - SPI for driving LCD screen
+// - SPI for driving LCD screen.
 module ibex_demo_system #(
   parameter int GpiWidth     = 8,
   parameter int GpoWidth     = 16,
   parameter int PwmWidth     = 12,
   parameter     SRAMInitFile = ""
 ) (
-  input logic                 clk_sys_i,
-  input logic                 rst_sys_ni,
+  input  logic clk_sys_i,
+  input  logic rst_sys_ni,
 
   input  logic [GpiWidth-1:0] gp_i,
   output logic [GpoWidth-1:0] gp_o,
@@ -37,8 +37,8 @@ module ibex_demo_system #(
   localparam logic [31:0] GPIO_START    = 32'h80000000;
   localparam logic [31:0] GPIO_MASK     = ~(GPIO_SIZE-1);
 
-  localparam logic [31:0] DEBUG_START   = 32'h1a110000;
   localparam logic [31:0] DEBUG_SIZE    = 64 * 1024; // 64 KiB
+  localparam logic [31:0] DEBUG_START   = 32'h1a110000;
   localparam logic [31:0] DEBUG_MASK    = ~(DEBUG_SIZE-1);
 
   localparam logic [31:0] UART_SIZE     =  4 * 1024; //  4 KiB
@@ -54,15 +54,15 @@ module ibex_demo_system #(
   localparam logic [31:0] PWM_MASK      = ~(PWM_SIZE-1);
   localparam int PwmCtrSize = 8;
 
-  parameter logic [31:0] SPI_SIZE       = 1 * 1024; // 1kB
+  parameter logic [31:0] SPI_SIZE       =  1 * 1024; //  1 KiB
   parameter logic [31:0] SPI_START      = 32'h80004000;
   parameter logic [31:0] SPI_MASK       = ~(SPI_SIZE-1);
 
-  parameter logic [31:0] SIM_CTRL_SIZE  = 1 * 1024; // 1kB
+  parameter logic [31:0] SIM_CTRL_SIZE  =  1 * 1024; //  1 KiB
   parameter logic [31:0] SIM_CTRL_START = 32'h20000;
   parameter logic [31:0] SIM_CTRL_MASK  = ~(SIM_CTRL_SIZE-1);
 
-  // debug functionality is optional
+  // Debug functionality is optional.
   localparam bit DBG = 1;
   localparam int unsigned DbgHwBreakNum = (DBG == 1) ?    2 :    0;
   localparam bit          DbgTriggerEn  = (DBG == 1) ? 1'b1 : 1'b0;
@@ -84,34 +84,34 @@ module ibex_demo_system #(
   } bus_device_e;
 
   localparam int NrDevices = DBG ? 8 : 7;
-  localparam int NrHosts = DBG ? 2 : 1;
+  localparam int NrHosts   = DBG ? 2 : 1;
 
-  // interrupts
+  // Interrupts.
   logic timer_irq;
   logic uart_irq;
 
-  // host and device signals
-  logic           host_req      [NrHosts];
-  logic           host_gnt      [NrHosts];
-  logic [31:0]    host_addr     [NrHosts];
-  logic           host_we       [NrHosts];
-  logic [ 3:0]    host_be       [NrHosts];
-  logic [31:0]    host_wdata    [NrHosts];
-  logic           host_rvalid   [NrHosts];
-  logic [31:0]    host_rdata    [NrHosts];
-  logic           host_err      [NrHosts];
+  // Host signals.
+  logic        host_req      [NrHosts];
+  logic        host_gnt      [NrHosts];
+  logic [31:0] host_addr     [NrHosts];
+  logic        host_we       [NrHosts];
+  logic [ 3:0] host_be       [NrHosts];
+  logic [31:0] host_wdata    [NrHosts];
+  logic        host_rvalid   [NrHosts];
+  logic [31:0] host_rdata    [NrHosts];
+  logic        host_err      [NrHosts];
 
-  // devices
-  logic           device_req    [NrDevices];
-  logic [31:0]    device_addr   [NrDevices];
-  logic           device_we     [NrDevices];
-  logic [ 3:0]    device_be     [NrDevices];
-  logic [31:0]    device_wdata  [NrDevices];
-  logic           device_rvalid [NrDevices];
-  logic [31:0]    device_rdata  [NrDevices];
-  logic           device_err    [NrDevices];
+  // Device signals.
+  logic        device_req    [NrDevices];
+  logic [31:0] device_addr   [NrDevices];
+  logic        device_we     [NrDevices];
+  logic [ 3:0] device_be     [NrDevices];
+  logic [31:0] device_wdata  [NrDevices];
+  logic        device_rvalid [NrDevices];
+  logic [31:0] device_rdata  [NrDevices];
+  logic        device_err    [NrDevices];
 
-  // Instruction fetch signals
+  // Instruction fetch signals.
   logic        core_instr_req;
   logic        core_instr_gnt;
   logic        core_instr_rvalid;
@@ -133,11 +133,11 @@ module ibex_demo_system #(
 
   // Internally generated resets cause IMPERFECTSCH warnings
   /* verilator lint_off IMPERFECTSCH */
-  logic        rst_core_n;
-  logic        ndmreset_req;
-  logic        dm_debug_req;
+  logic rst_core_n;
+  logic ndmreset_req;
+  logic dm_debug_req;
 
-  // Device address mapping
+  // Device address mapping.
   logic [31:0] cfg_device_addr_base [NrDevices];
   logic [31:0] cfg_device_addr_mask [NrDevices];
 
@@ -162,7 +162,7 @@ module ibex_demo_system #(
     assign device_err[DbgDev] = 1'b0;
   end
 
-  // Tie-off unused error signals
+  // Tie-off unused error signals.
   assign device_err[Ram]     = 1'b0;
   assign device_err[Gpio]    = 1'b0;
   assign device_err[Pwm]     = 1'b0;
@@ -176,27 +176,27 @@ module ibex_demo_system #(
     .DataWidth    ( 32        ),
     .AddressWidth ( 32        )
   ) u_bus (
-    .clk_i               (clk_sys_i),
-    .rst_ni              (rst_sys_ni),
+    .clk_i (clk_sys_i),
+    .rst_ni(rst_sys_ni),
 
-    .host_req_i          (host_req     ),
-    .host_gnt_o          (host_gnt     ),
-    .host_addr_i         (host_addr    ),
-    .host_we_i           (host_we      ),
-    .host_be_i           (host_be      ),
-    .host_wdata_i        (host_wdata   ),
-    .host_rvalid_o       (host_rvalid  ),
-    .host_rdata_o        (host_rdata   ),
-    .host_err_o          (host_err     ),
+    .host_req_i   (host_req     ),
+    .host_gnt_o   (host_gnt     ),
+    .host_addr_i  (host_addr    ),
+    .host_we_i    (host_we      ),
+    .host_be_i    (host_be      ),
+    .host_wdata_i (host_wdata   ),
+    .host_rvalid_o(host_rvalid  ),
+    .host_rdata_o (host_rdata   ),
+    .host_err_o   (host_err     ),
 
-    .device_req_o        (device_req   ),
-    .device_addr_o       (device_addr  ),
-    .device_we_o         (device_we    ),
-    .device_be_o         (device_be    ),
-    .device_wdata_o      (device_wdata ),
-    .device_rvalid_i     (device_rvalid),
-    .device_rdata_i      (device_rdata ),
-    .device_err_i        (device_err   ),
+    .device_req_o   (device_req   ),
+    .device_addr_o  (device_addr  ),
+    .device_we_o    (device_we    ),
+    .device_be_o    (device_be    ),
+    .device_wdata_o (device_wdata ),
+    .device_rvalid_i(device_rvalid),
+    .device_rdata_i (device_rdata ),
+    .device_err_i   (device_err   ),
 
     .cfg_device_addr_base,
     .cfg_device_addr_mask
@@ -241,8 +241,8 @@ module ibex_demo_system #(
     .scan_rst_ni(1'b1),
     .ram_cfg_i  ('b0),
 
-    .hart_id_i(32'b0),
-    // First instruction executed is at 0x0 + 0x80
+    .hart_id_i  (32'b0),
+    // First instruction executed is at 0x0 + 0x80.
     .boot_addr_i(32'h00100000),
 
     .instr_req_o       (core_instr_req),
@@ -291,32 +291,32 @@ module ibex_demo_system #(
       .Depth       ( MEM_SIZE / 4 ),
       .MemInitFile ( SRAMInitFile )
   ) u_ram (
-    .clk_i       (clk_sys_i),
-    .rst_ni      (rst_sys_ni),
+    .clk_i (clk_sys_i),
+    .rst_ni(rst_sys_ni),
 
-    .a_req_i     (device_req[Ram]),
-    .a_we_i      (device_we[Ram]),
-    .a_be_i      (device_be[Ram]),
-    .a_addr_i    (device_addr[Ram]),
-    .a_wdata_i   (device_wdata[Ram]),
-    .a_rvalid_o  (device_rvalid[Ram]),
-    .a_rdata_o   (device_rdata[Ram]),
+    .a_req_i   (device_req[Ram]),
+    .a_we_i    (device_we[Ram]),
+    .a_be_i    (device_be[Ram]),
+    .a_addr_i  (device_addr[Ram]),
+    .a_wdata_i (device_wdata[Ram]),
+    .a_rvalid_o(device_rvalid[Ram]),
+    .a_rdata_o (device_rdata[Ram]),
 
-    .b_req_i     (mem_instr_req),
-    .b_we_i      (1'b0),
-    .b_be_i      (4'b0),
-    .b_addr_i    (core_instr_addr),
-    .b_wdata_i   (32'b0),
-    .b_rvalid_o  (),
-    .b_rdata_o   (mem_instr_rdata)
+    .b_req_i   (mem_instr_req),
+    .b_we_i    (1'b0),
+    .b_be_i    (4'b0),
+    .b_addr_i  (core_instr_addr),
+    .b_wdata_i (32'b0),
+    .b_rvalid_o(),
+    .b_rdata_o (mem_instr_rdata)
   );
 
   gpio #(
     .GpiWidth ( GpiWidth ),
     .GpoWidth ( GpoWidth )
   ) u_gpio (
-    .clk_i          (clk_sys_i),
-    .rst_ni         (rst_sys_ni),
+    .clk_i (clk_sys_i),
+    .rst_ni(rst_sys_ni),
 
     .device_req_i   (device_req[Gpio]),
     .device_addr_i  (device_addr[Gpio]),
@@ -331,12 +331,12 @@ module ibex_demo_system #(
   );
 
   pwm_wrapper #(
-    .PwmWidth   ( PwmWidth   ),
-    .PwmCtrSize ( PwmCtrSize ),
-    .BusWidth   ( 32         )
+    .PwmWidth     ( PwmWidth   ),
+    .PwmCtrSize   ( PwmCtrSize ),
+    .BusAddrWidth ( 32         )
   ) u_pwm (
-    .clk_i          (clk_sys_i),
-    .rst_ni         (rst_sys_ni),
+    .clk_i (clk_sys_i),
+    .rst_ni(rst_sys_ni),
 
     .device_req_i   (device_req[Pwm]),
     .device_addr_i  (device_addr[Pwm]),
@@ -352,8 +352,8 @@ module ibex_demo_system #(
   uart #(
     .ClockFrequency ( 50_000_000 )
   ) u_uart (
-    .clk_i          (clk_sys_i),
-    .rst_ni         (rst_sys_ni),
+    .clk_i (clk_sys_i),
+    .rst_ni(rst_sys_ni),
 
     .device_req_i   (device_req[Uart]),
     .device_addr_i  (device_addr[Uart]),
@@ -369,9 +369,9 @@ module ibex_demo_system #(
   );
 
   spi_top #(
-    .ClockFrequency(50_000_000),
-    .CPOL(0),
-    .CPHA(1)
+    .ClockFrequency ( 50_000_000 ),
+    .CPOL           ( 0          ),
+    .CPHA           ( 1          )
   ) u_spi (
     .clk_i (clk_sys_i),
     .rst_ni(rst_sys_ni),
@@ -384,27 +384,27 @@ module ibex_demo_system #(
     .device_rvalid_o(device_rvalid[Spi]),
     .device_rdata_o (device_rdata[Spi]),
 
-    .spi_rx_i(spi_rx_i), // Data received from SPI device
-    .spi_tx_o(spi_tx_o), // Data transmitted to SPI device
-    .sck_o(spi_sck_o), // Serial clock pin
+    .spi_rx_i(spi_rx_i), // Data received from SPI device.
+    .spi_tx_o(spi_tx_o), // Data transmitted to SPI device.
+    .sck_o   (spi_sck_o), // Serial clock pin.
 
-    .byte_data_o() // unused
+    .byte_data_o() // Unused.
   );
 
   `ifdef VERILATOR
     simulator_ctrl #(
-      .LogName("ibex_demo_system.log")
+      .LogName ( "ibex_demo_system.log" )
     ) u_simulator_ctrl (
-      .clk_i     (clk_sys_i),
-      .rst_ni    (rst_sys_ni),
+      .clk_i (clk_sys_i),
+      .rst_ni(rst_sys_ni),
 
-      .req_i     (device_req[SimCtrl]),
-      .we_i      (device_we[SimCtrl]),
-      .be_i      (device_be[SimCtrl]),
-      .addr_i    (device_addr[SimCtrl]),
-      .wdata_i   (device_wdata[SimCtrl]),
-      .rvalid_o  (device_rvalid[SimCtrl]),
-      .rdata_o   (device_rdata[SimCtrl])
+      .req_i   (device_req[SimCtrl]),
+      .we_i    (device_we[SimCtrl]),
+      .be_i    (device_be[SimCtrl]),
+      .addr_i  (device_addr[SimCtrl]),
+      .wdata_i (device_wdata[SimCtrl]),
+      .rvalid_o(device_rvalid[SimCtrl]),
+      .rdata_o (device_rdata[SimCtrl])
     );
   `endif
 
@@ -412,8 +412,8 @@ module ibex_demo_system #(
     .DataWidth    ( 32 ),
     .AddressWidth ( 32 )
   ) u_timer (
-    .clk_i         (clk_sys_i),
-    .rst_ni        (rst_sys_ni),
+    .clk_i (clk_sys_i),
+    .rst_ni(rst_sys_ni),
 
     .timer_req_i   (device_req[Timer]),
     .timer_we_i    (device_we[Timer]),
@@ -446,31 +446,31 @@ module ibex_demo_system #(
     dm_top #(
       .NrHarts ( 1 )
     ) u_dm_top (
-      .clk_i             (clk_sys_i),
-      .rst_ni            (rst_sys_ni),
-      .testmode_i        (1'b0),
-      .ndmreset_o        (ndmreset_req),
-      .dmactive_o        (),
-      .debug_req_o       (dm_debug_req),
-      .unavailable_i     (1'b0),
+      .clk_i        (clk_sys_i),
+      .rst_ni       (rst_sys_ni),
+      .testmode_i   (1'b0),
+      .ndmreset_o   (ndmreset_req),
+      .dmactive_o   (),
+      .debug_req_o  (dm_debug_req),
+      .unavailable_i(1'b0),
 
-      // bus device with debug memory (for execution-based debug)
-      .device_req_i      (dbg_device_req),
-      .device_we_i       (dbg_device_we),
-      .device_addr_i     (dbg_device_addr),
-      .device_be_i       (dbg_device_be),
-      .device_wdata_i    (dbg_device_wdata),
-      .device_rdata_o    (dbg_device_rdata),
+      // Bus device with debug memory (for execution-based debug).
+      .device_req_i  (dbg_device_req),
+      .device_we_i   (dbg_device_we),
+      .device_addr_i (dbg_device_addr),
+      .device_be_i   (dbg_device_be),
+      .device_wdata_i(dbg_device_wdata),
+      .device_rdata_o(dbg_device_rdata),
 
-      // bus host (for system bus accesses, SBA)
-      .host_req_o        (host_req[DbgHost]),
-      .host_add_o        (host_addr[DbgHost]),
-      .host_we_o         (host_we[DbgHost]),
-      .host_wdata_o      (host_wdata[DbgHost]),
-      .host_be_o         (host_be[DbgHost]),
-      .host_gnt_i        (host_gnt[DbgHost]),
-      .host_r_valid_i    (host_rvalid[DbgHost]),
-      .host_r_rdata_i    (host_rdata[DbgHost])
+      // Bus host (for system bus accesses, SBA).
+      .host_req_o    (host_req[DbgHost]),
+      .host_add_o    (host_addr[DbgHost]),
+      .host_we_o     (host_we[DbgHost]),
+      .host_wdata_o  (host_wdata[DbgHost]),
+      .host_be_o     (host_be[DbgHost]),
+      .host_gnt_i    (host_gnt[DbgHost]),
+      .host_r_valid_i(host_rvalid[DbgHost]),
+      .host_r_rdata_i(host_rdata[DbgHost])
     );
   end else begin : gen_no_dm
     assign dm_debug_req = 1'b0;

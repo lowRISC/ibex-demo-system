@@ -5,14 +5,14 @@
 module pwm #(
   parameter int CtrSize = 8
 ) (
-  input  logic               clk_i,
-  input  logic               rst_ni,
+  input  logic clk_i,
+  input  logic rst_ni,
 
   // To produce an always-on signal, you will need to make pulse_width_i > max_counter_i.
   input  logic [CtrSize-1:0] pulse_width_i,
   input  logic [CtrSize-1:0] max_counter_i,
 
-  output logic               modulated_o
+  output logic modulated_o
 );
   logic [CtrSize-1:0] counter;
 

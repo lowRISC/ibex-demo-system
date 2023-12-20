@@ -4,28 +4,29 @@
 
 // This wrapper instantiates a series of PWMs and distributes requests from the device bus.
 module pwm_wrapper #(
-  parameter int PwmWidth   = 12,
-  parameter int PwmCtrSize = 8,
-  parameter int BusWidth   = 32
+  parameter int PwmWidth     = 12,
+  parameter int PwmCtrSize   = 8,
+  parameter int BusAddrWidth = 32,
+  parameter int BusDataWidth = 32
 ) (
-  input  logic                clk_i,
-  input  logic                rst_ni,
+  input  logic clk_i,
+  input  logic rst_ni,
 
   // IO for device bus.
-  input  logic                device_req_i,
-  input  logic [BusWidth-1:0] device_addr_i,
-  input  logic                device_we_i,
-  input  logic [         3:0] device_be_i,
-  input  logic [BusWidth-1:0] device_wdata_i,
-  output logic                device_rvalid_o,
-  output logic [BusWidth-1:0] device_rdata_o,
+  input  logic                    device_req_i,
+  input  logic [BusAddrWidth-1:0] device_addr_i,
+  input  logic                    device_we_i,
+  input  logic [3:0]              device_be_i,
+  input  logic [BusDataWidth-1:0] device_wdata_i,
+  output logic                    device_rvalid_o,
+  output logic [BusDataWidth-1:0] device_rdata_o,
 
   // Collected output of all PWMs.
   output logic [PwmWidth-1:0] pwm_o
 );
 
   localparam int unsigned AddrWidth = 10;
-  localparam int unsigned PwmIdxOffset = $clog2(BusWidth / 8) + 1;
+  localparam int unsigned PwmIdxOffset = $clog2(BusAddrWidth / 8) + 1;
   localparam int unsigned PwmIdxWidth = AddrWidth - PwmIdxOffset;
 
   // Generate PwmWidth number of PWMs.

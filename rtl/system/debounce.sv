@@ -6,11 +6,14 @@
 // from the debounced output. If the input remains in that state for a certain
 // number of cycles (ClkCount) it is deemed stable and becomes the debounced
 // output. If the input changes (i.e. it is bouncing) we reset the counter.
+
+typedef int unsigned count_t;
+
 module debounce #(
-    parameter int unsigned ClkCount = 500
+    parameter count_t ClkCount = 500
 ) (
-    input logic clk_i,
-    input logic rst_ni,
+    input  logic clk_i,
+    input  logic rst_ni,
 
     input  logic btn_i,
     output logic btn_o
@@ -31,11 +34,9 @@ module debounce #(
     end
   end
 
-  /* verilator lint_off WIDTH */
-  assign btn_d = (cnt_q >= ClkCount) ? btn_i : btn_q;
+  assign btn_d = (count_t'(cnt_q) >= ClkCount) ? btn_i : btn_q;
   // Clear counter if button input equals stored value or if maximum counter value is reached,
   // otherwise increment counter.
-  /* verilator lint_off WIDTH */
-  assign cnt_d = (btn_i == btn_q || cnt_q >= ClkCount) ? '0 : cnt_q + 1;
+  assign cnt_d = (btn_i == btn_q || count_t'(cnt_q) >= ClkCount) ? '0 : cnt_q + 1;
 
 endmodule
