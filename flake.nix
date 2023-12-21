@@ -6,6 +6,7 @@
 
     nixpkgs.follows = "lowrisc-nix/nixpkgs";
     flake-utils.follows = "lowrisc-nix/flake-utils";
+    poetry2nix.follows = "lowrisc-nix/poetry2nix";
 
     deps = {
       url = "path:./dependencies";
@@ -29,20 +30,20 @@
           # Add extra packages we might need
           # Currently this contains spike
           deps.overlay_pkgs
-          # Add all the python packages we need that aren't in nixpkgs
-          # (See the ./dependencies folder for more info)
-          (final: prev: {
-            python3 = prev.python3.override {
-              packageOverrides = deps.overlay_python;
-            };
-          })
         ];
       };
 
-      pythonEnv = pkgs.python3.withPackages (
-        ps:
-          with ps; [pip fusesoc edalize pyyaml Mako]
-      );
+      pythonEnv = let
+        poetry2nix = inputs.poetry2nix.lib.mkPoetry2Nix {inherit pkgs;};
+        poetryOverrides = lowrisc-nix.lib.poetryOverrides {inherit pkgs;};
+      in
+        poetry2nix.mkPoetryEnv {
+          projectDir = ./.;
+          overrides = [
+            poetryOverrides
+            poetry2nix.defaultPoetryOverrides
+          ];
+        };
 
       # This is the final list of dependencies we need to build the project.
       project_deps =
@@ -71,6 +72,9 @@
           libelf
           zlib
           # vivado
+
+          # Poetry tool not required, add for convience in case update is needed
+          poetry
         ]);
     in {
       devShells.default = pkgs.mkShell {
@@ -79,19 +83,6 @@
         shellHook = ''
           # FIXME This works on Ubuntu, may not on other distros. FIXME
           export LOCALE_ARCHIVE=/usr/lib/locale/locale-archive
-
-          # HACK fixup some paths to use our sandboxed python environment
-          # Currently, fusesoc tries to invoke the program 'python3' from the
-          # PATH, which when running under a nix python environment, resolves
-          # to the raw python binary, not wrapped and not including the
-          # environment's packages. Hence, the first time an import is evaluated
-          # we will error out.
-          sed -i -- \
-            's|interpreter:.*|interpreter: ${pythonEnv}/bin/python3|g' \
-            vendor/lowrisc_ibex/vendor/lowrisc_ip/dv/tools/ralgen/ralgen.core
-          sed -i -- \
-            's|interpreter:.*|interpreter: ${pythonEnv}/bin/python3|g' \
-            vendor/lowrisc_ibex/vendor/lowrisc_ip/ip/prim/primgen.core
 
           export PS1='labenv(HiPEAC) (ibex-demo-system) \$ '
 

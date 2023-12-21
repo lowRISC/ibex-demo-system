@@ -3,37 +3,16 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
-    lowrisc_fusesoc_src = {
-      url = "github:lowRISC/fusesoc?ref=ot-0.2";
-      flake = false;
-    };
-    lowrisc_edalize_src = {
-      url = "github:lowRISC/edalize?ref=ot-0.2";
-      flake = false;
-    };
   };
 
   outputs = {
     self,
     nixpkgs,
-    lowrisc_fusesoc_src,
-    lowrisc_edalize_src,
   }: let
     system = "x86_64-linux";
     pkgs = import nixpkgs {
       inherit system;
       config = {allowUnfree = true;};
-    };
-
-    lowRISC_python_overrides = pfinal: pprev: {
-      fusesoc = pprev.fusesoc.overridePythonAttrs (oldAttrs: {
-        version = "0.3.3.dev";
-        src = lowrisc_fusesoc_src;
-      });
-      edalize = pprev.edalize.overridePythonAttrs (oldAttrs: {
-        version = "0.3.3.dev";
-        src = lowrisc_edalize_src;
-      });
     };
 
     lowRISC_spike_override = final: prev: {
@@ -102,10 +81,6 @@
       (final: prev: {
         inherit vivado;
       })
-    ];
-    overlay_python = pkgs.lib.composeManyExtensions [
-      (import ./python-overlay.nix)
-      lowRISC_python_overrides
     ];
   };
 }
