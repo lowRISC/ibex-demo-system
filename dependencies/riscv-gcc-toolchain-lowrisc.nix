@@ -1,10 +1,13 @@
-{ pkgs, lib, stdenv,
-  fetchzip, zlib, ncurses5,
+{
+  pkgs,
+  lib,
+  stdenv,
+  fetchzip,
+  zlib,
+  ncurses5,
 }:
-
 # Used for reference...
 # https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/compilers/gcc-arm-embedded/10/default.nix
-
 stdenv.mkDerivation rec {
   name = "riscv-gcc-toolchain";
   version = "20220210-1";
@@ -26,7 +29,7 @@ stdenv.mkDerivation rec {
     find $out -type f ! -name ".o" | while read f; do
       patchelf "$f" > /dev/null 2>&1                                                             || continue
       patchelf --set-interpreter $(cat ${stdenv.cc}/nix-support/dynamic-linker) "$f"             || true
-      patchelf --set-rpath ${lib.makeLibraryPath [ "$out" stdenv.cc.cc ncurses5 ]} "$f" || true
+      patchelf --set-rpath ${lib.makeLibraryPath ["$out" stdenv.cc.cc ncurses5]} "$f" || true
     done
   '';
 }
