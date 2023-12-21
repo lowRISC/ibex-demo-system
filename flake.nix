@@ -2,8 +2,11 @@
   description = "Environment for synthesizing and simulating the ibex-demo-system.";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
-    flake-utils.url = "github:numtide/flake-utils";
+    lowrisc-nix.url = "github:lowRISC/lowrisc-nix";
+
+    nixpkgs.follows = "lowrisc-nix/nixpkgs";
+    flake-utils.follows = "lowrisc-nix/flake-utils";
+
     deps = {
       url = "path:./dependencies";
       inputs.nixpkgs.follows = "nixpkgs";
