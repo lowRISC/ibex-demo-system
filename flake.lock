@@ -42,11 +42,11 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1704383370,
-        "narHash": "sha256-r1g68fd//ylpOodTU1eTq3AY9AIlXl2x6SMKFNQb/YQ=",
+        "lastModified": 1704974373,
+        "narHash": "sha256-VFUAGHki3ml2AgHplx5GV6lH4zFaETYuLLvIvyXM6t0=",
         "owner": "lowRISC",
         "repo": "lowrisc-nix",
-        "rev": "09e6009e25a2d1b75c1b2612cad083275b876b3d",
+        "rev": "b1408676451386a567aad93cd94133aa01105f50",
         "type": "github"
       },
       "original": {

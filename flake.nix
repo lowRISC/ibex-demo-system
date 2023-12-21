@@ -30,6 +30,9 @@
           # Add extra packages we might need
           # Currently this contains spike
           deps.overlay_pkgs
+          (final: prev: {
+            inherit (lowrisc-nix.packages.${system}) lowrisc-toolchain-gcc-rv32imcb;
+          })
         ];
       };
 
@@ -45,6 +48,14 @@
           ];
         };
     in {
+      legacyPackages.sw = let
+        rules = import ./rules {inherit pkgs;};
+        common = pkgs.callPackage sw/c/common {inherit rules;};
+        demo = pkgs.callPackage sw/c/demo {inherit rules common;};
+      in {
+        inherit common demo;
+      };
+
       devShells.default = pkgs.mkShellNoCC {
         name = "labenv";
         buildInputs = with pkgs; [
