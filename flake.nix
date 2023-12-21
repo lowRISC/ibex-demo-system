@@ -13,33 +13,37 @@
     };
   };
 
-  outputs = all@{ self, nixpkgs, flake-utils, deps, ... }:
-
-    (flake-utils.lib.eachDefaultSystem (system:
-      let
+  outputs = all @ {
+    self,
+    nixpkgs,
+    flake-utils,
+    deps,
+    ...
+  }:
+    (
+      flake-utils.lib.eachDefaultSystem (system: let
         pkgs = import nixpkgs {
           inherit system;
-          config = { allowUnfree = true; };
-          overlays =
-            [ # Add extra packages we might need
-              # Currently this contains the lowrisc riscv-toolchain, and spike
-              deps.overlay_pkgs
-              # Add all the python packages we need that aren't in nixpkgs
-              # (See the ./dependencies folder for more info)
-              (final: prev: {
-                python3 = prev.python3.override {
-                  packageOverrides = deps.overlay_python;
-                };
-              })
-              # Add some missing dependencies to nixpkgs#verilator
-              (final: prev: {
-                verilator = prev.verilator.overrideAttrs ( oldAttrs : {
-                  propagatedBuildInputs = [ final.zlib final.libelf ];
-                });
-              })
-            ];
+          config = {allowUnfree = true;};
+          overlays = [
+            # Add extra packages we might need
+            # Currently this contains the lowrisc riscv-toolchain, and spike
+            deps.overlay_pkgs
+            # Add all the python packages we need that aren't in nixpkgs
+            # (See the ./dependencies folder for more info)
+            (final: prev: {
+              python3 = prev.python3.override {
+                packageOverrides = deps.overlay_python;
+              };
+            })
+            # Add some missing dependencies to nixpkgs#verilator
+            (final: prev: {
+              verilator = prev.verilator.overrideAttrs (oldAttrs: {
+                propagatedBuildInputs = [final.zlib final.libelf];
+              });
+            })
+          ];
         };
-
 
         # Currently we don't build the riscv-toolchain from src, we use a github release
         # (See ./dependencies/riscv-gcc-toolchain-lowrisc.nix)
@@ -50,35 +54,39 @@
         #     riscv-arch = "rv32imc";
         #   };
 
-        pythonEnv = pkgs.python3.withPackages(ps:
-          with ps; [ pip fusesoc edalize pyyaml Mako ]
+        pythonEnv = pkgs.python3.withPackages (
+          ps:
+            with ps; [pip fusesoc edalize pyyaml Mako]
         );
 
         # This is the final list of dependencies we need to build the project.
-        project_deps = [
-          pythonEnv
-        ] ++ (with pkgs; [
-          cmake
-          openocd
-          screen
-          verilator
-          riscv-gcc-toolchain-lowrisc
-          gtkwave
-          srecord
-          openfpgaloader
-          # vivado
-        ]);
-
+        project_deps =
+          [
+            pythonEnv
+          ]
+          ++ (with pkgs; [
+            cmake
+            openocd
+            screen
+            verilator
+            riscv-gcc-toolchain-lowrisc
+            gtkwave
+            srecord
+            openfpgaloader
+            # vivado
+          ]);
       in {
         packages.dockertest = pkgs.dockerTools.buildImage {
           name = "hello-docker";
           copyToRoot = pkgs.buildEnv {
             name = "image-root";
-            paths = [ pkgs.coreutils
-                      pkgs.sl ];
+            paths = [
+              pkgs.coreutils
+              pkgs.sl
+            ];
           };
           config = {
-            Cmd = [ "${pkgs.sl}/bin/sl" ];
+            Cmd = ["${pkgs.sl}/bin/sl"];
           };
         };
         devShells.default = pkgs.mkShell {
@@ -143,19 +151,20 @@
             echo
           '';
         };
+        formatter = pkgs.alejandra;
       })
-    ) // {
+    )
+    // {
+      overlay = final: prev: {};
+      overlays = {exampleOverlay = self.overlay;};
 
-      overlay = final: prev: { };
-      overlays = { exampleOverlay = self.overlay; };
+      # Utilized by `nix run .#<name>`
+      # apps.x86_64-linux.hello = {
+      #   type = "app";
+      #   program = c-hello.packages.x86_64-linux.hello;
+      # };
 
-    # Utilized by `nix run .#<name>`
-    # apps.x86_64-linux.hello = {
-    #   type = "app";
-    #   program = c-hello.packages.x86_64-linux.hello;
-    # };
-
-    # Utilized by `nix run . -- <args?>`
-    # defaultApp.x86_64-linux = self.apps.x86_64-linux.hello;
-  };
+      # Utilized by `nix run . -- <args?>`
+      # defaultApp.x86_64-linux = self.apps.x86_64-linux.hello;
+    };
 }

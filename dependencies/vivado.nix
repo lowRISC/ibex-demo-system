@@ -1,25 +1,29 @@
-{ stdenv, lib, breakpointHook
-, fetchurl, patchelf, makeWrapper
-, vivado-src
-, coreutils
-, procps
-, zlib
-, ncurses5
-, libxcrypt
-, libuuid
-, libSM
-, libICE
-, libX11
-, libXrender
-, libxcb
-, libXext
-, libXtst
-, libXi
-, glib
-, gtk2
-, freetype
+{
+  stdenv,
+  lib,
+  breakpointHook,
+  fetchurl,
+  patchelf,
+  makeWrapper,
+  vivado-src,
+  coreutils,
+  procps,
+  zlib,
+  ncurses5,
+  libxcrypt,
+  libuuid,
+  libSM,
+  libICE,
+  libX11,
+  libXrender,
+  libxcb,
+  libXext,
+  libXtst,
+  libXi,
+  glib,
+  gtk2,
+  freetype,
 }:
-
 stdenv.mkDerivation rec {
   pname = "vivado";
   version = "2022.2";
@@ -44,9 +48,21 @@ stdenv.mkDerivation rec {
 
   libPath = lib.makeLibraryPath [
     stdenv.cc.cc
-    ncurses5 zlib libxcrypt
-    libuuid libSM libICE libX11 libXrender libxcb libXext libXtst libXi
-    glib gtk2 freetype
+    ncurses5
+    zlib
+    libxcrypt
+    libuuid
+    libSM
+    libICE
+    libX11
+    libXrender
+    libxcb
+    libXext
+    libXtst
+    libXi
+    glib
+    gtk2
+    freetype
   ];
 
   installPhase = ''
@@ -83,7 +99,6 @@ stdenv.mkDerivation rec {
         echo ''${line}
     done
   '';
-
 
   preFixup = ''
     echo "Patch installed scripts"
@@ -123,4 +138,3 @@ stdenv.mkDerivation rec {
     license = licenses.unfree;
   };
 }
-

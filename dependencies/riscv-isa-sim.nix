@@ -1,7 +1,9 @@
-{ lib, stdenv, fetchFromGitHub,
-  dtc
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  dtc,
 }:
-
 stdenv.mkDerivation rec {
   name = "spike";
   pname = "riscv-isa-sim";
@@ -16,17 +18,17 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
   # buildInputs = [ ];
-  nativeBuildInputs = [ dtc ];
-  configureFlags = [ "--enable-commitlog" "--enable-misaligned" ];
+  nativeBuildInputs = [dtc];
+  configureFlags = ["--enable-commitlog" "--enable-misaligned"];
 
   doCheck = false;
   dontInstall = false;
 
   meta = with lib; {
     description = "Riscv golden-reference simulator Spike";
-    homepage    = "https://github.com/riscv-software-src/riscv-isa-sim";
-    license     = with licenses; [];
-    platforms   = platforms.unix;
+    homepage = "https://github.com/riscv-software-src/riscv-isa-sim";
+    license = with licenses; [];
+    platforms = platforms.unix;
     maintainers = with maintainers; [];
   };
 }

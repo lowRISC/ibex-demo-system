@@ -1,4 +1,8 @@
-{ lib, buildPythonPackage, fetchPypi }:
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+}:
 buildPythonPackage rec {
   pname = "zipfile2";
   version = "0.0.12";
