@@ -478,6 +478,13 @@ module ibex_demo_system #(
   end
 
   `ifdef VERILATOR
+
+    export "DPI-C" function mhpmcounter_num;
+
+    function automatic int unsigned mhpmcounter_num();
+      return u_top.u_ibex_core.cs_registers_i.MHPMCounterNum;
+    endfunction
+
     export "DPI-C" function mhpmcounter_get;
 
     function automatic longint unsigned mhpmcounter_get(int index);
