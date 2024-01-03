@@ -44,13 +44,18 @@
             poetry2nix.defaultPoetryOverrides
           ];
         };
-
-      # This is the final list of dependencies we need to build the project.
-      project_deps =
-        [
+    in {
+      devShells.default = pkgs.mkShellNoCC {
+        name = "labenv";
+        buildInputs = with pkgs; [
+          # Needed in DPI code
+          libelf
+          # Needed when running verilator with FST support
+          zlib
+        ];
+        nativeBuildInputs = with pkgs; [
           pythonEnv
-        ]
-        ++ (with pkgs; [
+
           cmake
           openocd
           screen
@@ -69,17 +74,14 @@
           gtkwave
           srecord
           openfpgaloader
-          libelf
-          zlib
           # vivado
 
           # Poetry tool not required, add for convience in case update is needed
           poetry
-        ]);
-    in {
-      devShells.default = pkgs.mkShell {
-        name = "labenv";
-        buildInputs = project_deps;
+
+          # By default mkShell adds non-interactive bash to PATH
+          bashInteractive
+        ];
         shellHook = ''
           # FIXME This works on Ubuntu, may not on other distros. FIXME
           export LOCALE_ARCHIVE=/usr/lib/locale/locale-archive
