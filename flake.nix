@@ -86,16 +86,19 @@
           # FIXME This works on Ubuntu, may not on other distros. FIXME
           export LOCALE_ARCHIVE=/usr/lib/locale/locale-archive
 
-          export PS1='labenv(HiPEAC) (ibex-demo-system) \$ '
+          if [ -z "$DIRENV_IN_ENVRC" ]; then
+            export PS1='labenv(HiPEAC) (ibex-demo-system) \$ '
 
-          echo
-          echo
-          cat ./data/lowrisc.art
+            echo
+            echo
+            cat ./data/lowrisc.art
+          fi
+
           echo "---------------------------------------------------"
           echo "Welcome to the 'ibex-demo-system' nix environment!"
           echo "---------------------------------------------------"
 
-          helpstr=$(cat <<'EOF'
+          helpme(){ cat <<'EOF'
 
           Build ibex software :
               mkdir sw/c/build && pushd sw/c/build && cmake ../ && make && popd
@@ -115,17 +118,24 @@
           Connect gdb to a running program on the FPGA (In a different terminal to the OpenOCD instance):
               riscv32-unknown-elf-gdb -ex "target extended-remote localhost:3333" ./sw/c/build/demo/hello_world/demo
 
+          EOF
+
+            if [ -z "$DIRENV_IN_ENVRC" ]; then
+              cat <<'EOF'
           To leave the environment:
               exit
 
           EOF
-          )
-          helpme(){ echo "$helpstr"; }
+            fi
+          }
+
           helpme
 
-          echo
-          echo "Run 'helpme' in your shell to see this message again."
-          echo
+          if [ -z "$DIRENV_IN_ENVRC" ]; then
+            echo
+            echo "Run 'helpme' in your shell to see this message again."
+            echo
+          fi
         '';
       };
       formatter = pkgs.alejandra;
