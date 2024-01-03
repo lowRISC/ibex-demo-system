@@ -9,5 +9,10 @@
   upstream: {
     url: "https://github.com/lowRISC/ibex.git",
     rev: "master",
-  }
+  },
+
+  exclude_from_upstream: [
+    // GitHub CI configuration
+    '.github',
+  ]
 }
