@@ -8,7 +8,7 @@
 {
   upstream:
   {
-    url: https://github.com/google/riscv-dv
-    rev: 68ab8230c52ec66b393c04394aef4d6082ee53b4
+    url: https://github.com/chipsalliance/riscv-dv
+    rev: 71666ebacd69266b1abb7cdbad5e1897ce5884e6
   }
 }
