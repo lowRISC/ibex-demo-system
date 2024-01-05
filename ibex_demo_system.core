@@ -33,6 +33,15 @@ filesets:
       - rtl/fpga/top_cw312a35.sv
     file_type: systemVerilogSource
 
+  files_sonata:
+    depend:
+      - lowrisc:ibex:rv_timer
+      - lowrisc:ibex:fpga_xilinx_shared
+    files:
+      - rtl/fpga/top_sonata.sv
+      - rtl/fpga/clkgen_sonata.sv
+    file_type: systemVerilogSource
+
   files_verilator:
     depend:
       - lowrisc:ibex:sim_shared
@@ -60,7 +69,10 @@ filesets:
       - data/pins_cw312a35.xdc
     file_type: xdc
 
-
+  files_constraints_sonata:
+    files:
+      - data/pins_sonata.xdc
+    file_type: xdc
 
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
@@ -131,6 +143,19 @@ targets:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
     flags:
       use_bscane_tap: true
+  synth_sonata:
+    <<: *default_target
+    default_tool: vivado
+    filesets_append:
+      - files_sonata
+      - files_constraints_sonata
+    toplevel: top_sonata
+    tools:
+      vivado:
+        part: "xc7a50tcsg324-1"
+    parameters:
+      - SRAMInitFile
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
 
   sim:
     <<: *default_target
