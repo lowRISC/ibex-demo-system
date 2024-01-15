@@ -3,8 +3,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-if [ $# -ne 2 ]; then
-  echo "Usage $0 run|halt elf_file"
+if [ $# -ne 2 ] && [ $# -ne 3 ]; then
+  echo "Usage $0 run|halt elf_file [tcl_file]"
   exit 1
 fi
 
@@ -18,15 +18,24 @@ if [ $1 != "halt" ] && [ $1 != "run" ]; then
   exit 1
 fi
 
+SCRIPT_DIR="$(dirname "$(readlink -e "$0")")"
+TCL_FILE=$SCRIPT_DIR/arty-a7-openocd-cfg.tcl
+
+if [ $# -eq 3 ]; then
+  if [ ! -f $3 ]; then
+    echo "$3 does not exist"
+    exit 1
+  fi
+  TCL_FILE=$3
+fi
+
 EXIT_CMD=''
 
 if [ $1 = "run" ]; then
   EXIT_CMD='-c "exit"'
 fi
 
-SCRIPT_DIR="$(dirname "$(readlink -e "$0")")"
-
-openocd -f $SCRIPT_DIR/arty-a7-openocd-cfg.tcl -c "load_image $2 0x0" \
+openocd -f $TCL_FILE -c "load_image $2 0x0" \
  -c "verify_image $2 0x0" \
  -c "echo \"Doing reset\"" \
  -c "reset $1" \
