@@ -481,6 +481,9 @@ repository root:
 fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:demo_system
 ```
 
+The default board is the Arty A7, but you can also use different synthesis targets.
+For example, to use the Sonata board change the target to `synth_sonata`.
+
 ## Programming FPGA
 
 To program the FPGA, either use FuseSoC again
@@ -490,6 +493,15 @@ fusesoc --cores-root=. run --target=synth --run lowrisc:ibex:demo_system
 
 # If the above does not work, try executing the programming operation manually with..
 make -C ./build/lowrisc_ibex_demo_system_0/synth-vivado/ pgm
+```
+
+You can also use [OpenFPGALoader](https://github.com/trabucayre/openFPGALoader), here are some example commands:
+```
+# Programming the Arty A7
+./openFPGALoader -b arty_a7_35t build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.bit
+
+# Programming the Sonata board
+./openFPGALoader -c ft4232 build/lowrisc_ibex_demo_system_0/synth_sonata-vivado/lowrisc_ibex_demo_system_0.bit
 ```
 
 ## Loading an application to the programmed FPGA
@@ -504,6 +516,9 @@ You can choose to immediately run it or begin halted, allowing you to attach a d
 
 # Load demo and start halted awaiting a debugger
 ./util/load_demo_system.sh halt ./sw/c/build/demo/hello_world/demo
+
+# Run demo on the Sonata board
+./util/load_demo_system.sh run ./sw/c/build/demo/hello_world/demo ./util/sonata-openocd-cfg.tcl
 ```
 
 To view terminal output use screen:
