@@ -12,6 +12,7 @@ members = [
     "demo/lcd_hal",
     "demo/pwm_hal",
 ]
+resolver = "2"
 
 [profile.release]
 debug = true

@@ -7,9 +7,6 @@ target = "riscv32imc-unknown-none-elf"
 
 [target.riscv32imc-unknown-none-elf]
 runner = "../../util/load_demo_system.sh run"
-rustflags = [
-  "-C", "link-arg=-T../common/link.ld",
-]
 
 [unstable]
 build-std = ["core"]
