@@ -6,6 +6,8 @@
 name = "lcd_hal"
 version = "0.1.0"
 edition = "2021"
+# This build script configures the linker script to use.
+build = "../../build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
