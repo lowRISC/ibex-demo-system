@@ -7,11 +7,6 @@
     nixpkgs.follows = "lowrisc-nix/nixpkgs";
     flake-utils.follows = "lowrisc-nix/flake-utils";
     poetry2nix.follows = "lowrisc-nix/poetry2nix";
-
-    deps = {
-      url = "path:./dependencies";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = inputs @ {
@@ -19,18 +14,11 @@
     lowrisc-nix,
     nixpkgs,
     flake-utils,
-    deps,
     ...
   }: let
     all_system_outputs = flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {
         inherit system;
-        config = {allowUnfree = true;};
-        overlays = [
-          # Add extra packages we might need
-          # Currently this contains spike
-          deps.overlay_pkgs
-        ];
       };
 
       pythonEnv = let
@@ -53,35 +41,32 @@
           # Needed when running verilator with FST support
           zlib
         ];
-        nativeBuildInputs = with pkgs; [
-          pythonEnv
+        nativeBuildInputs =
+          [
+            pythonEnv
+          ]
+          ++ (with pkgs; [
+            cmake
+            openocd
+            screen
+            verilator
+            # Needed to compile verilator generated files
+            gcc
 
-          cmake
-          openocd
-          screen
-          verilator
+            gtkwave
+            srecord
+            openfpgaloader
 
-          # Currently we don't build the riscv-toolchain from src, we use a github release
-          # See https://github.com/lowRISC/lowrisc-nix/blob/main/pkgs/lowrisc-toolchain-gcc-rv32imcb.nix
+            # Poetry tool not required, add for convience in case update is needed
+            poetry
 
-          # riscv-toolchain (built from src) # BROKEN
-          # riscv-gcc-toolchain-lowrisc-src = pkgs.callPackage \
-          #   ./dependencies/riscv_gcc.nix {
-          #     riscv-arch = "rv32imc";
-          #   };
-          lowrisc-nix.packages.${system}.lowrisc-toolchain-gcc-rv32imcb
-
-          gtkwave
-          srecord
-          openfpgaloader
-          # vivado
-
-          # Poetry tool not required, add for convience in case update is needed
-          poetry
-
-          # By default mkShell adds non-interactive bash to PATH
-          bashInteractive
-        ];
+            # By default mkShell adds non-interactive bash to PATH
+            bashInteractive
+          ])
+          ++ (with lowrisc-nix.packages.${system}; [
+            spike-ibex-cosim
+            lowrisc-toolchain-gcc-rv32imcb
+          ]);
         shellHook = ''
           # FIXME This works on Ubuntu, may not on other distros. FIXME
           export LOCALE_ARCHIVE=/usr/lib/locale/locale-archive
