@@ -49,7 +49,10 @@ filesets:
       - lowrisc:dv_verilator:memutil_verilator
       - lowrisc:dv_verilator:simutil_verilator
       - lowrisc:dv_verilator:ibex_pcounts
+      - lowrisc:dv_dpi_c:uartdpi:0.1
+      - lowrisc:dv_dpi_sv:uartdpi:0.1
     files:
+      - dv/verilator/top_verilator.sv: { file_type: systemVerilogSource }
       - dv/verilator/ibex_demo_system.cc: { file_type: cppSource }
       - dv/verilator/ibex_demo_system.h:  { file_type: cppSource, is_include_file: true}
       - dv/verilator/ibex_demo_system_main.cc: { file_type: cppSource }
@@ -163,7 +166,7 @@ targets:
     default_tool: verilator
     filesets_append:
       - files_verilator
-    toplevel: ibex_demo_system
+    toplevel: top_verilator
     tools:
       verilator:
         mode: cc
@@ -175,7 +178,7 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
-          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_demo_system"'
+          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=top_verilator"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - "-Wall"
           - "-Wwarn-IMPERFECTSCH"
