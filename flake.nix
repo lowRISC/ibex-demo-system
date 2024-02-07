@@ -49,7 +49,6 @@
             cmake
             openocd
             screen
-            verilator
             # Needed to compile verilator generated files
             gcc
 
@@ -66,6 +65,7 @@
           ++ (with lowrisc-nix.packages.${system}; [
             spike-ibex-cosim
             lowrisc-toolchain-gcc-rv32imcb
+            verilator_ot
           ]);
         shellHook = ''
           # FIXME This works on Ubuntu, may not on other distros. FIXME
