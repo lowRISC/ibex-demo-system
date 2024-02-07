@@ -16,5 +16,7 @@
         {from: "hw/ip/prim_xilinx",    to: "ip/prim_xilinx"},
 
         {from: "hw/lint",              to: "lint"},
+
+        {from: "hw/dv/dpi/uartdpi",    to: "dv/dpi/uartdpi"},
     ]
 }
