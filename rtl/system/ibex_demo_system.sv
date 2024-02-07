@@ -12,10 +12,13 @@
 // - Debug module.
 // - SPI for driving LCD screen.
 module ibex_demo_system #(
-  parameter int GpiWidth     = 8,
-  parameter int GpoWidth     = 16,
-  parameter int PwmWidth     = 12,
-  parameter     SRAMInitFile = ""
+  parameter int                 GpiWidth       = 8,
+  parameter int                 GpoWidth       = 16,
+  parameter int                 PwmWidth       = 12,
+  parameter int unsigned        ClockFrequency = 50_000_000,
+  parameter int unsigned        BaudRate       = 115_200,
+  parameter ibex_pkg::regfile_e RegFile        = ibex_pkg::RegFileFPGA,
+  parameter                     SRAMInitFile   = ""
 ) (
   input  logic clk_sys_i,
   input  logic rst_sys_ni,
@@ -231,7 +234,7 @@ module ibex_demo_system #(
   assign rst_core_n = rst_sys_ni & ~ndmreset_req;
 
   ibex_top #(
-    .RegFile         ( ibex_pkg::RegFileFPGA                   ),
+    .RegFile         ( RegFile                                 ),
     .MHPMCounterNum  ( 10                                      ),
     .RV32M           ( ibex_pkg::RV32MFast                     ),
     .RV32B           ( ibex_pkg::RV32BNone                     ),
@@ -356,7 +359,8 @@ module ibex_demo_system #(
   );
 
   uart #(
-    .ClockFrequency ( 50_000_000 )
+    .ClockFrequency ( ClockFrequency ),
+    .BaudRate       ( BaudRate       )
   ) u_uart (
     .clk_i (clk_sys_i),
     .rst_ni(rst_sys_ni),
@@ -375,7 +379,7 @@ module ibex_demo_system #(
   );
 
   spi_top #(
-    .ClockFrequency ( 50_000_000 ),
+    .ClockFrequency ( ClockFrequency ),
     .CPOL           ( 0          ),
     .CPHA           ( 1          )
   ) u_spi (

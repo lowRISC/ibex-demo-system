@@ -13,7 +13,7 @@ class DemoSystem {
 
 
  protected:
-  ibex_demo_system _top;
+  top_verilator _top;
   VerilatorMemUtil _memutil;
   MemArea _ram;
 
