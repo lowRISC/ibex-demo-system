@@ -423,7 +423,7 @@ in `ibex_demo_system.core`
 The Demo System simulator binary can be built via FuseSoC. From the Ibex
 repository root run:
 
-```
+```sh
 fusesoc --cores-root=. run --target=sim --tool=verilator --setup --build lowrisc:ibex:demo_system
 ```
 
@@ -435,14 +435,13 @@ built as described above. Use `./sw/c/build/demo/hello_world/demo` to run the `d
 binary.
 
 Run from the repository root run:
-```
+```sh
 # For example :
-./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system \
+./build/lowrisc_ibex_demo_system_0/sim-verilator/Vtop_verilator \
   --meminit=ram,./sw/c/build/demo/hello_world/demo
 
 # You need to substitute the <sw_elf_file> for a binary we have build above.
-./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system [-t] --meminit=ram,<sw_elf_file>
-
+./build/lowrisc_ibex_demo_system_0/sim-verilator/Vtop_verilator [-t] --meminit=ram,<sw_elf_file>
 ```
 
 Pass `-t` to get an FST trace of execution that can be viewed with

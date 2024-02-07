@@ -90,7 +90,7 @@
           Build ibex simulation verilator model :
               fusesoc --cores-root=. run --target=sim --tool=verilator --setup --build lowrisc:ibex:demo_system
           Run ibex simulator verilator model :
-              ./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system -t \
+              ./build/lowrisc_ibex_demo_system_0/sim-verilator/Vtop_verilator -t \
                 --meminit=ram,sw/c/build/demo/hello_world/demo
           Build ibex-demo-system FPGA bitstream for Arty-A7 :
               fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:demo_system
