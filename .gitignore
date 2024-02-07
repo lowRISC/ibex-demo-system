@@ -1,4 +1,7 @@
 build/
 .venv/
+__pycache__/
 target/
 *.fst
+*.log
+*.csv
