@@ -3,12 +3,11 @@
 ## SPDX-License-Identifier: Apache-2.0
 
 ## Clocks
-create_clock -period 40.000 -name mainclk -waveform {0.000 20.000} [get_ports main_clk]
-create_clock -period 100.000 -name tck -waveform {0.000 50.000} [get_ports tck_i]
+create_clock -period 40.000 -name main_clk -waveform {0.000 20.000} [get_ports main_clk]
+create_clock -period 100.000 -name tck_i -waveform {0.000 50.000} [get_ports tck_i]
 
 ## Reset
-set_property PACKAGE_PIN R11 [get_ports {nrst_btn}]
-set_property IOSTANDARD LVCMOS33 [get_ports {nrst_btn}]
+set_property -dict { PACKAGE_PIN R11 IOSTANDARD LVCMOS33 } [get_ports {nrst_btn}]
 
 ## General purpose LEDs
 set_property -dict { PACKAGE_PIN B13 IOSTANDARD LVCMOS33 } [get_ports {led_user[0]}];
