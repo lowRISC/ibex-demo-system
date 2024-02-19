@@ -40,6 +40,7 @@ filesets:
     files:
       - rtl/fpga/top_sonata.sv
       - rtl/fpga/clkgen_sonata.sv
+      - rtl/fpga/rst_ctrl.sv
     file_type: systemVerilogSource
 
   files_verilator:
