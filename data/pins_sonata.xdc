@@ -19,11 +19,14 @@ set_property -dict { PACKAGE_PIN A11 IOSTANDARD LVCMOS33 } [get_ports {led_user[
 set_property -dict { PACKAGE_PIN F13 IOSTANDARD LVCMOS33 } [get_ports {led_user[6]}];
 set_property -dict { PACKAGE_PIN F14 IOSTANDARD LVCMOS33 } [get_ports {led_user[7]}];
 
-## JTAG test
-set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS33 } [get_ports tck_i];
+## User JTAG (marked as USR_JTAG on schematic)
 set_property -dict { PACKAGE_PIN G17 IOSTANDARD LVCMOS33 } [get_ports td_i];
 set_property -dict { PACKAGE_PIN J14 IOSTANDARD LVCMOS33 } [get_ports td_o];
 set_property -dict { PACKAGE_PIN H15 IOSTANDARD LVCMOS33 } [get_ports tms_i];
+## PCB revision 0.3 and above
+set_property -dict { PACKAGE_PIN E15 IOSTANDARD LVCMOS33 } [get_ports tck_i];
+## PCB revision 0.2 and below
+# set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS33 } [get_ports tck_i];
 
 ## Switch and button input
 set_property -dict { PACKAGE_PIN D12 IOSTANDARD LVCMOS33 } [get_ports {user_sw[0]}];
