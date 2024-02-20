@@ -22,12 +22,7 @@ filesets:
       - rtl/system/spi_top.sv
     file_type: systemVerilogSource
 
-  files_lint_verilator:
-    files:
-      - lint/verilator_waiver.vlt: {file_type: vlt}
-
 targets:
   default:
     filesets:
-      - tool_verilator ? (files_lint_verilator)
       - files_rtl_demo_system
