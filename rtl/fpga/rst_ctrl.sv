@@ -60,18 +60,23 @@ module rst_ctrl #(
   always_comb begin
     reset_counter_d = reset_counter_q;
 
-    // The output is driven when the counter is between the value of phase
-    // 0 and phase 1. When a press on the reset button is detected, we can
-    // reset the counter value and make sure that the reset pulse is the same
-    // length as when we reset the system at startup.
+    // Ignore the reset button whilst in phase 0 (indicating we've just had power on and we're doing
+    // the PoR or a new reset is happening due to the PLL loosing lock.
     if (rst_btn_debounce && (reset_counter_q >= ResetPhase0Count)) begin
+      // When the reset button is pushed immediately move to phase 1 causing the reset to be
+      // asserted. We hold at the beginning of phase 1 with an asserted reset, without counting,
+      // until the reset button is released.
       reset_counter_d = ResetPhase0Count;
     end else begin
+      // Only increment reset counter when the reset button isn't pushed and the PLL is locked
       if (pll_locked_i) begin
         if (reset_counter_q < ResetPhase1Count) begin
+          // At the end of phase 1 we're in phase 2 which has unbounded length so stop counting
           reset_counter_d <= reset_counter_d + 1;
         end
       end else begin
+        // Hold reset counter at 0 when PLL isn't locked. When PLL locks we'll proceed through
+        // phase 0/phase 1/phase 2 exactly the same as a PoR.
         reset_counter_d = '0;
       end
     end
@@ -91,10 +96,15 @@ module rst_ctrl #(
     .btn_o(rst_btn_debounce)
   );
 
+  // Set reset output depending upon the phase
   assign rst_n_d = reset_counter_q < ResetPhase0Count ? 1'b1 :
                    reset_counter_q < ResetPhase1Count ? 1'b0 :
                                                         1'b1;
 
+  // Debouncer reset follows the same pattern as the output reset other than for the phase 0 ->
+  // phase 1 transition. This happens one reset counter cycle later so that when the reset button is
+  // pushed the debouncer doesn't get reset as the counter is held at the beginning of phase 1. When
+  // the button is released the counter will start incrementing and reset the debouncer.
   assign debounce_rst_n_d = reset_counter_q <= ResetPhase0Count ? 1'b1 :
                             reset_counter_q <  ResetPhase1Count ? 1'b0 :
                                                                   1'b1;
