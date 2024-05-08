@@ -49,6 +49,7 @@ typedef struct Menu {
  *
  * @param lcd LCD handle.
  * @param menu Menu configuration.
+ * @param selected Index of the selected menu item
  */
-void lcd_show_menu(St7735Context *lcd, Menu_t *menu);
+void lcd_show_menu(St7735Context *lcd, Menu_t *menu, size_t selected);
 #endif
