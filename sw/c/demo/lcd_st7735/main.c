@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "core/lucida_console_10pt.h"
+#include "core/m3x6_16pt.h"
 #include "demo_system.h"
 #include "fractal.h"
 #include "gpio.h"
@@ -11,6 +12,7 @@
 #include "spi.h"
 #include "st7735/lcd_st7735.h"
 #include "timer.h"
+#include "fbcon.h"
 
 // Constants.
 enum {
@@ -170,7 +172,26 @@ boot:
       break;
 
     case 1:
-      lcd_st7735_puts(&lcd, (LCD_Point){.x = 5, .y = 80}, "CoreMark unimplemented");
+      // Switch to a smaller font for the coremark.
+      lcd_st7735_set_font(&lcd, &m3x6_16ptFont);
+
+      fbcon_init(&lcd);
+
+      // Trick to make the coremark appear at bottom.
+      fbcon_putstr("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+
+      // Clean the screen and draw "CoreMark" as title bar.
+      lcd_st7735_clean(&lcd);
+      lcd_st7735_fill_rectangle(
+          &lcd,
+          (LCD_rectangle){.origin = {.x = 0, .y = 0}, .width = lcd.parent.width, .height = lcd.parent.font->height + 2},
+          BGRColorBlue);
+      lcd_st7735_set_font_colors(&lcd, BGRColorBlue, BGRColorWhite);
+      lcd_println(&lcd, "CoreMark", alined_center, (LCD_Point){.x = 0, .y = 1});
+      lcd_st7735_set_font_colors(&lcd, BGRColorWhite, BGRColorBlue);
+
+      int coremark_main();
+      coremark_main();
       break;
   }
 
