@@ -26,11 +26,13 @@ enum {
 };
 
 // Buttons
+// The direction is relative to the screen in landscape orientation.
 typedef enum {
-  BTN0 = 0b0001,
-  BTN1 = 0b0010,
-  BTN2 = 0b0100,
-  BTN3 = 0b1000,
+  BTN_DOWN  = 0b00001,
+  BTN_LEFT  = 0b00010,
+  BTN_CLICK = 0b00100,
+  BTN_RIGHT = 0b01000,
+  BTN_UP    = 0b10000,
 } Buttons_t;
 
 // Local functions declaration.
@@ -38,7 +40,7 @@ static uint32_t spi_write(void *handle, uint8_t *data, size_t len);
 static uint32_t gpio_write(void *handle, bool cs, bool dc);
 static void timer_delay(uint32_t ms);
 static void fractal_test(St7735Context *lcd);
-static Buttons_t scan_buttons(uint32_t timeout, Buttons_t def);
+static Buttons_t scan_buttons(uint32_t timeout);
 
 int main(void) {
   timer_init();
@@ -80,68 +82,140 @@ int main(void) {
   // Draw the splash screen with a RGB 565 bitmap and text in the bottom.
   lcd_st7735_draw_rgb565(&lcd, (LCD_rectangle){.origin = {.x = (160 - 105) / 2, .y = 5}, .width = 105, .height = 80},
                          (uint8_t *)lowrisc_logo_105x80);
+
   lcd_println(&lcd, "Booting...", alined_center, 7);
   timer_delay(1000);
 
-  do {
-    lcd_st7735_clean(&lcd);
+  // Show the main menu.
+  const char *items[] = {
+      "0. Fractal",
+      "1. CoreMark",
+  };
+  Menu_t main_menu = {
+      .title          = "Main menu",
+      .color          = BGRColorBlue,
+      .selected_color = BGRColorRed,
+      .background     = BGRColorWhite,
+      .items_count    = sizeof(items) / sizeof(items[0]),
+      .items          = items,
+  };
 
-    // Show the main menu.
-    const char *items[] = {
-        "0. Fractal",
-        "1. Custom",
-    };
-    Menu_t main_menu = {
-        .title          = "Main menu",
-        .color          = BGRColorBlue,
-        .selected_color = BGRColorRed,
-        .background     = BGRColorWhite,
-        .items_count    = sizeof(items) / sizeof(items[0]),
-        .items          = items,
-    };
-    lcd_show_menu(&lcd, &main_menu);
-    lcd_st7735_puts(&lcd, (LCD_Point){.x = 5, .y = 106}, "Defaulting to item");
-    lcd_st7735_puts(&lcd, (LCD_Point){.x = 5, .y = 118}, "0 after 3 seconds");
+  bool repaint    = true;
+  size_t selected = 0;
+  char line_buffer[21];
 
-    switch (scan_buttons(3000, BTN0)) {
-      case BTN0:
-        // Run the fractal examples.
-        fractal_test(&lcd);
+  // Boot countdown when no button is pressed. Value 0 indicates the countdown is dismissed.
+  int boot_countdown_sec = 3;
+
+menu:
+  while (1) {
+    if (repaint) {
+      repaint = false;
+      lcd_st7735_clean(&lcd);
+      lcd_show_menu(&lcd, &main_menu, selected);
+
+      if (boot_countdown_sec != 0) {
+        lcd_st7735_puts(&lcd, (LCD_Point){.x = 8, .y = 102}, "Defaulting to item");
+        strcpy(line_buffer, "0 after 0 seconds");
+        line_buffer[strlen("0 after ")] += boot_countdown_sec;
+        lcd_st7735_puts(&lcd, (LCD_Point){.x = 12, .y = 115}, line_buffer);
+      }
+    }
+
+    switch (scan_buttons(1000)) {
+      case BTN_UP:
+        if (selected > 0) {
+          selected--;
+        } else {
+          selected = main_menu.items_count - 1;
+        }
+        repaint            = true;
+        boot_countdown_sec = 0;
         break;
-      case BTN1:
-        lcd_st7735_puts(&lcd, (LCD_Point){.x = 5, .y = 80}, "Button 1 pressed");
-        timer_delay(1000);
+      case BTN_DOWN:
+        if (selected < main_menu.items_count - 1) {
+          selected++;
+        } else {
+          selected = 0;
+        }
+        repaint            = true;
+        boot_countdown_sec = 0;
         break;
-      case BTN2:
-        break;
-      case BTN3:
-        break;
+      // Left/right buttons currently don't do anything.
+      case BTN_LEFT:
+      case BTN_RIGHT:
+        continue;
+
+      case BTN_CLICK:
+        goto boot;
+
       default:
+        if (boot_countdown_sec == 0) {
+          continue;
+        }
+
+        if (--boot_countdown_sec == 0) {
+          goto boot;
+        }
+
+        repaint = true;
         break;
     }
-  } while (1);
+  };
+
+boot:
+  switch (selected) {
+    case 0:
+      fractal_test(&lcd);
+      break;
+
+    case 1:
+      lcd_st7735_puts(&lcd, (LCD_Point){.x = 5, .y = 80}, "CoreMark unimplemented");
+      break;
+  }
+
+  // Wait until navigation button is clicked.
+  while (scan_buttons(1000) != BTN_CLICK)
+    ;
+
+  // Return to the main menu.
+  repaint = true;
+  goto menu;
+
+  return 0;
 }
 
-static Buttons_t scan_buttons(uint32_t timeout, Buttons_t def) {
-  do {
-    // Sample buttons (debounced).
-    const uint32_t in_val = read_gpio(GPIO_IN_DBNC) & 0xf;
+static Buttons_t scan_buttons(uint32_t timeout) {
+  while (true) {
+    // Sample navigation buttons (debounced).
+    uint32_t in_val = read_gpio(GPIO_IN_DBNC) & 0x1f;
     if (in_val == 0) {
       // No button pressed, so delay for 20ms and then try again, unless the timeout is reached.
       const uint32_t poll_delay = 20;
       timer_delay(poll_delay);
       if (timeout < poll_delay) {
-        // Timeout reached, return default button.
-        return def;
+        // Timeout reached, return 0.
+        return 0;
       } else {
         // Timeout not reached yet, decrease it and try again.
         timeout -= poll_delay;
       }
-    } else {
-      // Some button pressed, return the sampled value.
-      return (Buttons_t)in_val;
+      continue;
     }
-  } while (1);
+
+    // Some button pressed.
+    // Find the most significant bit set.
+    in_val |= in_val >> 1;
+    in_val |= in_val >> 2;
+    in_val |= in_val >> 4;
+    in_val = (in_val >> 1) + 1;
+
+    // Wait until the button is released to avoid an event being triggered multiple times.
+    while (read_gpio(GPIO_IN_DBNC) & in_val)
+      ;
+
+    return in_val;
+  }
 }
 
 static void fractal_test(St7735Context *lcd) {

@@ -7,9 +7,8 @@
 #include "st7735/lcd_st7735.h"
 #include "string.h"
 
-void lcd_show_menu(St7735Context *lcd, Menu_t *menu) {
+void lcd_show_menu(St7735Context *lcd, Menu_t *menu, size_t selected) {
   size_t line     = 0;
-  size_t selected = 1;
   // Clean the screen.
   lcd_st7735_fill_rectangle(
       lcd, (LCD_rectangle){.origin = {.x = 0, .y = 0}, .width = lcd->parent.width, .height = lcd->parent.font->height},
@@ -25,7 +24,8 @@ void lcd_show_menu(St7735Context *lcd, Menu_t *menu) {
     lcd_println(lcd, menu->items[i], alined_left, line++);
   }
 
-  // Drow a boarder around the selected item.
+  // Draw a boarder around the selected item.
+  // Increment `selected` to skip the title bar.
   selected++;
   lcd_st7735_draw_horizontal_line(
       lcd, (LCD_Line){{.x = 0, .y = lcd->parent.font->height * selected}, lcd->parent.width}, menu->selected_color);
