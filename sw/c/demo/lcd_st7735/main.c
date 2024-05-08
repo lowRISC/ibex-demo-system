@@ -50,7 +50,7 @@ int main(void) {
 
   // Init spi driver.
   spi_t spi;
-  spi_init(&spi, DEFAULT_SPI, SpiSpeedHz);
+  spi_init(&spi, LCD_SPI, SpiSpeedHz);
 
   // Reset LCD.
   set_output_bit(GPIO_OUT, LcdRstPin, 0x0);
@@ -152,13 +152,9 @@ static void fractal_test(St7735Context *lcd) {
 }
 
 static uint32_t spi_write(void *handle, uint8_t *data, size_t len) {
-  const uint32_t data_sent = len;
-  while (len--) {
-    spi_send_byte_blocking(handle, *data++);
-  }
-  while ((spi_get_status(handle) & spi_status_fifo_empty) != spi_status_fifo_empty)
-    ;
-  return data_sent;
+  spi_tx(handle, data, len);
+  spi_wait_idle(handle);
+  return len;
 }
 
 static uint32_t gpio_write(void *handle, bool cs, bool dc) {

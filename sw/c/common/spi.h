@@ -30,4 +30,7 @@ void spi_init(spi_t *spi, spi_reg_t reg, uint32_t speed);
 void spi_send_byte_blocking(spi_t *spi, char c);
 spi_status_t spi_get_status(spi_t *spi);
 
+void spi_wait_idle(spi_t *spi);
+void spi_tx(spi_t *spi, const uint8_t *data, uint32_t len);
+
 #endif  // SPI_H__
