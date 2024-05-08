@@ -20,3 +20,14 @@ void spi_send_byte_blocking(spi_t *spi, char c) {
 }
 
 spi_status_t spi_get_status(spi_t *spi) { return (spi_status_t)DEV_READ(spi->reg + SPI_STATUS_REG); }
+
+void spi_wait_idle(spi_t *spi) {
+  while ((spi_get_status(spi) & spi_status_fifo_empty) != spi_status_fifo_empty);
+}
+
+void spi_tx(spi_t *spi, const uint8_t *data, uint32_t len) {
+  spi_wait_idle(spi);
+  while (len--) {
+    spi_send_byte_blocking(spi, *data++);
+  }
+}
