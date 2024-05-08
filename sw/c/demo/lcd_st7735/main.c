@@ -83,7 +83,7 @@ int main(void) {
   lcd_st7735_draw_rgb565(&lcd, (LCD_rectangle){.origin = {.x = (160 - 105) / 2, .y = 5}, .width = 105, .height = 80},
                          (uint8_t *)lowrisc_logo_105x80);
 
-  lcd_println(&lcd, "Booting...", alined_center, 7);
+  lcd_println(&lcd, "Booting...", alined_center, (LCD_Point){.x = 0, .y = 100});
   timer_delay(1000);
 
   // Show the main menu.
