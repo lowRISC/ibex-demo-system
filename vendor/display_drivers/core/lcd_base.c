@@ -16,7 +16,7 @@ Result LCD_Init(LCD_Context *ctx, LCD_Interface *interface, uint32_t width, uint
 
 inline uint16_t LCD_rgb24_to_bgr565(uint32_t rgb) {
   uint8_t b = (rgb >> 16) & 0xFF, g = (rgb >> 8) & 0xFF, r = rgb & 0xFF;
-  uint16_t color = ((b & 0xF8) << 8) | ((g & 0xFC) << 3) | (r >> 3);
+  uint16_t color = (uint16_t)(((b & 0xF8) << 8) | ((g & 0xFC) << 3) | (r >> 3));
   return ENDIANESS_TO_HALF_WORD(color);
 }
 
@@ -28,8 +28,8 @@ inline uint16_t LCD_rgb565_to_bgr565(const uint8_t rgb[2]) {
   // |                half word                       |
   // |b  b  b  b  b  g  g  g  g  g  g  r  r  r  r  r  |5f0d
   // |15          11                5              0  |
-  uint8_t b = (rgb[1] >> 3), g = (rgb[1] & 0x7) << 3 | rgb[0] >> 5, r = rgb[0] & 0x1F;
-  uint16_t color = b | g << 5 | r << 11;
+  uint8_t b = (uint8_t)(rgb[1] >> 3), g = (uint8_t)((rgb[1] & 0x7) << 3 | rgb[0] >> 5), r = (uint8_t)(rgb[0] & 0x1F);
+  uint16_t color = (uint16_t)(b | g << 5 | r << 11);
   return ENDIANESS_TO_HALF_WORD(color);
 }
 

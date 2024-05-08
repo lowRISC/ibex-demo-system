@@ -10,4 +10,8 @@
     url: "https://github.com/engdoreis/display_drivers.git",
     rev: "main",
   }
+
+  exclude_from_upstream: [
+    "tools",
+  ]
 }
