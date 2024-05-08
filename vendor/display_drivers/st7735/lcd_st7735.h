@@ -6,6 +6,8 @@
 #ifndef DISPLAY_DRIVERS_ST7735_ST7735_H_
 #define DISPLAY_DRIVERS_ST7735_ST7735_H_
 
+#include <stdint.h>
+
 #include "../core/font.h"
 #include "../core/lcd_base.h"
 #include "lcd_st7735_cmds.h"
@@ -16,6 +18,8 @@
  */
 typedef struct stSt7735Context {
   LCD_Context parent; /*!< Base context*/
+  uint32_t rgb_background;
+  uint32_t rgb_foreground;
 } St7735Context;
 
 /**
@@ -166,6 +170,8 @@ inline Result lcd_st7735_set_font(St7735Context *ctx, const Font *font) { return
  * @return Result of the operation.
  */
 inline Result lcd_st7735_set_font_colors(St7735Context *ctx, uint32_t background_color, uint32_t foreground_color) {
+  ctx->rgb_background = background_color;
+  ctx->rgb_foreground = foreground_color;
   return LCD_set_font_colors(&ctx->parent, LCD_rgb24_to_bgr565(background_color),
                              LCD_rgb24_to_bgr565(foreground_color));
 }
