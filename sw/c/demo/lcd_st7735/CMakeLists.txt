@@ -7,7 +7,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/../../../../vendor/display_drivers/st7735/lcd_st7735
 )
 
 # add_executable(lcd_st7735 main.c)
-add_executable(lcd_st7735 main.c lcd.c fractal_fixed.c fractal_float.c fractal_palette.c)
+add_executable(lcd_st7735 main.c lcd.c fractal_fixed.c fractal_float.c fractal_palette.c fbcon.c)
 
 # pull in core dependencies and additional i2c hardware support
 target_link_libraries(lcd_st7735 common lcd_st7735_lib)
