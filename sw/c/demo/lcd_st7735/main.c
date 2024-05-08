@@ -239,7 +239,7 @@ static uint32_t gpio_write(void *handle, bool cs, bool dc) {
 
 static void timer_delay(uint32_t ms) {
   // Configure timer to trigger every 1 ms
-  timer_enable(50000);
+  timer_enable(SYSCLK_FREQ / 1000);
   uint32_t timeout = get_elapsed_time() + ms;
   while (get_elapsed_time() < timeout) {
     asm volatile("wfi");
