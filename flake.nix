@@ -61,6 +61,9 @@
 
             # By default mkShell adds non-interactive bash to PATH
             bashInteractive
+            rustup
+            cargo-binutils
+            minicom
           ])
           ++ (with lowrisc-nix.packages.${system}; [
             spike-ibex-cosim
