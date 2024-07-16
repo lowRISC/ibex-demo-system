@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use core::ops::Deref;
-use embedded_hal::PwmPin;
 use ibex_demo_system_pac as pac;
 
 pub struct Pwm<P: Deref<Target = pac::pwm0::RegisterBlock>> {
@@ -31,26 +30,20 @@ impl<P: Deref<Target = pac::pwm0::RegisterBlock>> Pwm<P> {
     }
 }
 
-impl<P: Deref<Target = pac::pwm0::RegisterBlock>> PwmPin for Pwm<P> {
-    type Duty = u32;
+impl<P: Deref<Target = pac::pwm0::RegisterBlock>> embedded_hal::pwm::ErrorType for Pwm<P> {
+    type Error = crate::utils::Error;
+}
 
-    // Required methods
-    fn disable(&mut self) {}
-
-    fn enable(&mut self) {}
-
-    fn get_duty(&self) -> Self::Duty {
-        self.device.width.read().bits()
+impl<P: Deref<Target = pac::pwm0::RegisterBlock>> embedded_hal::pwm::SetDutyCycle for Pwm<P> {
+    fn max_duty_cycle(&self) -> u16 {
+        self.get_period() as u16
     }
 
-    fn get_max_duty(&self) -> Self::Duty {
-        self.get_period()
-    }
-
-    fn set_duty(&mut self, duty: Self::Duty) {
+    fn set_duty_cycle(&mut self, duty: u16) -> Result<(), Self::Error> {
         self.device.width.write(|w| {
-            w.value().variant(duty);
+            w.value().variant(duty as u32);
             w
         });
+        Ok(())
     }
 }

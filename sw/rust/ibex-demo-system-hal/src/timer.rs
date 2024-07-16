@@ -1,5 +1,4 @@
 use core::ops::Deref;
-use embedded_hal::timer;
 use fugit::{Hertz, NanosDurationU64};
 use ibex_demo_system_pac as pac;
 
@@ -88,6 +87,25 @@ impl<T: Deref<Target = pac::timer0::RegisterBlock>> Timer<T> {
             w.value().variant((value) as u32);
             w
         });
+    }
+}
+
+/// The timer trait has been removed on the release 1.0.0 of the embedded hal.
+/// So, this a temporary copy of the delete traits as suggested [here](https://github.com/rust-embedded/embedded-hal/issues/357).
+pub mod timer {
+    use nb;
+    use void::Void;
+
+    pub trait CountDown {
+        type Time;
+        fn start<T>(&mut self, count: T)
+        where
+            T: Into<Self::Time>;
+        fn wait(&mut self) -> nb::Result<(), Void>;
+    }
+    pub trait Cancel: CountDown {
+        type Error;
+        fn cancel(&mut self) -> Result<(), Self::Error>;
     }
 }
 

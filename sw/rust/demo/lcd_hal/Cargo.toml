@@ -13,11 +13,11 @@ build = "../../build.rs"
 
 [dependencies]
 embedded-graphics = "0.8.0"
-st7735-lcd = "0.9.0"
+st7735-lcd = "0.10.0"
 panic-halt = "0.2.0"
-riscv = {version = "0.10.1", features = ["critical-section-single-hart"]}
-riscv-rt = "0.11.0"
+riscv = {version = "0.11.1", features = ["critical-section-single-hart"]}
+riscv-rt = "0.12.2"
 ibex-demo-system-hal = {path = "../../ibex-demo-system-hal"}
-embedded-hal = "0.2.7"
+embedded-hal = "1.0.0"
 tinybmp = "0.5.0"
 

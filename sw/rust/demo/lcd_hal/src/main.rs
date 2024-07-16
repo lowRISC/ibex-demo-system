@@ -6,6 +6,7 @@
 #![no_std]
 
 extern crate panic_halt as _;
+use core::fmt::Write;
 
 use riscv::delay::McycleDelay;
 use riscv_rt::entry;
@@ -23,8 +24,7 @@ use st7735_lcd::Orientation;
 
 use crate::hal::{pac, GpioExt};
 
-use embedded_hal;
-use embedded_hal::{blocking::delay::DelayMs, digital::v2::OutputPin};
+use embedded_hal::{self, delay::DelayNs, digital::OutputPin};
 
 use ibex_demo_system_hal as hal;
 
