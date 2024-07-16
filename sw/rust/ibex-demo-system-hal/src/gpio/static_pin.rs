@@ -6,7 +6,8 @@ use super::dyn_pin::DynPin;
 use super::pin;
 use super::pin::{DisabledState, InputState, OutputState, Pin};
 use core::marker::PhantomData;
-use embedded_hal::digital::v2::{InputPin, OutputPin, PinState};
+
+use embedded_hal::digital::{ErrorType, InputPin, OutputPin, PinState};
 
 pub struct StaticPin<const P: char, const N: u8, S = DisabledState> {
     _mode: PhantomData<S>,
@@ -105,8 +106,11 @@ impl<const P: char, const N: u8> StaticPin<P, N, InputState> {
     }
 }
 
-impl<const P: char, const N: u8> OutputPin for StaticPin<P, N, OutputState> {
+impl<const P: char, const N: u8, T> ErrorType for StaticPin<P, N, T> {
     type Error = crate::utils::Error;
+}
+
+impl<const P: char, const N: u8> OutputPin for StaticPin<P, N, OutputState> {
     fn set_low(&mut self) -> Result<(), Self::Error> {
         self.set_value(false);
         Ok(())
@@ -127,12 +131,13 @@ impl<const P: char, const N: u8> OutputPin for StaticPin<P, N, OutputState> {
 }
 
 impl<const P: char, const N: u8> InputPin for StaticPin<P, N, InputState> {
+    #[cfg(feature = "embedded-hal-0-2")]
     type Error = crate::utils::Error;
-    fn is_high(&self) -> Result<bool, Self::Error> {
+    fn is_high(&mut self) -> Result<bool, Self::Error> {
         Ok(self.get_value())
     }
 
-    fn is_low(&self) -> Result<bool, Self::Error> {
+    fn is_low(&mut self) -> Result<bool, Self::Error> {
         Ok(!self.get_value())
     }
 }

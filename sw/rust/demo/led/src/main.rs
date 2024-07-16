@@ -8,7 +8,7 @@
 extern crate panic_halt as _;
 
 use core::fmt::{self, Write};
-use embedded_hal::blocking::delay::DelayMs;
+use embedded_hal::delay::DelayNs;
 use ibex_demo_system_pac::Peripherals;
 use riscv::delay::McycleDelay;
 use riscv_rt::entry;
@@ -42,7 +42,7 @@ fn main() -> ! {
             }
         }
         gpio_value = in_val;
-        delay.delay_ms(50u16);
+        delay.delay_ms(50u32);
     }
 }
 

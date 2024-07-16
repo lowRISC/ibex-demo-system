@@ -8,26 +8,26 @@
 extern crate panic_halt as _;
 
 use core::fmt::Write;
-use embedded_hal::blocking::delay::DelayMs;
+use embedded_hal::delay::DelayNs;
 use riscv::delay::McycleDelay;
 use riscv_rt::entry;
 
 use embedded_hal;
-use embedded_hal::digital::v2::{InputPin, OutputPin};
+use embedded_hal::digital::{InputPin, OutputPin};
 use hal::{pac, ErasePin, GpioExt};
 use ibex_demo_system_hal as hal;
 
 const CPU_CLOCK_HZ: u32 = 50_000_000;
 
 struct BtnLedMap<'a, S> {
-    btn: &'a dyn InputPin<Error = hal::utils::Error>,
+    btn: &'a mut dyn InputPin<Error = hal::utils::Error>,
     led: hal::gpio::DynPin<S>,
     prev_val: bool,
 }
 
 impl<'a, S> BtnLedMap<'a, S> {
     fn new(
-        btn: &'a dyn InputPin<Error = hal::utils::Error>,
+        btn: &'a mut dyn InputPin<Error = hal::utils::Error>,
         led: hal::gpio::DynPin<S>,
         prev_val: bool,
     ) -> Self {
@@ -43,10 +43,10 @@ fn main() -> ! {
     let mut uart = hal::serial::Serial::new(p.UART0);
 
     let pins = p.GPIOA.pins();
-    let btn0 = pins.pin0.into_input();
-    let btn1 = pins.pin1.into_input();
-    let btn2 = pins.pin2.into_input();
-    let btn3 = pins.pin3.into_input();
+    let mut btn0 = pins.pin0.into_input();
+    let mut btn1 = pins.pin1.into_input();
+    let mut btn2 = pins.pin2.into_input();
+    let mut btn3 = pins.pin3.into_input();
 
     // Dynamic pins are convenient because they have the same type, but there's a run time cost.
     let led0 = pins.pin4.into_dynamic().into_output();
@@ -55,10 +55,10 @@ fn main() -> ! {
     let led3 = pins.pin7.into_dynamic().into_output();
 
     let mut map = [
-        BtnLedMap::new(&btn0, led0, false),
-        BtnLedMap::new(&btn1, led1, false),
-        BtnLedMap::new(&btn2, led2, false),
-        BtnLedMap::new(&btn3, led3, false),
+        BtnLedMap::new(&mut btn0, led0, false),
+        BtnLedMap::new(&mut btn1, led1, false),
+        BtnLedMap::new(&mut btn2, led2, false),
+        BtnLedMap::new(&mut btn3, led3, false),
     ];
 
     let _ = writeln!(uart, "Hello Ibex Rusty System!!");
@@ -78,6 +78,6 @@ fn main() -> ! {
                 }
             }
         }
-        delay.delay_ms(50u16);
+        delay.delay_ms(50);
     }
 }

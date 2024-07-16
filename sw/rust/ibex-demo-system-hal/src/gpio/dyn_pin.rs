@@ -4,7 +4,8 @@
 
 use super::pin::{DisabledState, InputState, OutputState, Pin};
 use core::marker::PhantomData;
-use embedded_hal::digital::v2::{InputPin, OutputPin, PinState};
+
+use embedded_hal::digital::{ErrorType, InputPin, OutputPin, PinState};
 
 pub struct DynPin<S = DisabledState> {
     port: char,
@@ -54,8 +55,11 @@ impl DynPin<InputState> {
     }
 }
 
-impl OutputPin for DynPin<OutputState> {
+impl<T> ErrorType for DynPin<T> {
     type Error = crate::utils::Error;
+}
+
+impl OutputPin for DynPin<OutputState> {
     fn set_low(&mut self) -> Result<(), Self::Error> {
         self.set_value(false);
         Ok(())
@@ -76,12 +80,11 @@ impl OutputPin for DynPin<OutputState> {
 }
 
 impl InputPin for DynPin<InputState> {
-    type Error = crate::utils::Error;
-    fn is_high(&self) -> Result<bool, Self::Error> {
+    fn is_high(&mut self) -> Result<bool, Self::Error> {
         Ok(self.get_value())
     }
 
-    fn is_low(&self) -> Result<bool, Self::Error> {
+    fn is_low(&mut self) -> Result<bool, Self::Error> {
         Ok(!self.get_value())
     }
 }

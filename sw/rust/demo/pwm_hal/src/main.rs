@@ -7,12 +7,11 @@
 
 extern crate panic_halt as _;
 
+use crate::hal::timer::timer::CountDown;
 use core::iter;
-use embedded_hal::timer::CountDown;
 use riscv_rt::entry;
 
-use embedded_hal;
-use embedded_hal::PwmPin;
+use embedded_hal::pwm::SetDutyCycle;
 
 use crate::hal::pac;
 use fugit::{ExtU32, RateExtU32};
@@ -34,29 +33,28 @@ trait SetColor {
 
 impl<R, G, B> RgbLed<R, G, B>
 where
-    R: PwmPin<Duty = u32>,
-    G: PwmPin<Duty = u32>,
-    B: PwmPin<Duty = u32>,
+    R: SetDutyCycle,
+    G: SetDutyCycle,
+    B: SetDutyCycle,
 {
     fn new(mut b: B, mut g: G, mut r: R) -> Self {
-        b.enable();
-        g.enable();
-        r.enable();
+        b.set_duty_cycle_percent(0).unwrap();
+        g.set_duty_cycle_percent(0).unwrap();
+        r.set_duty_cycle_percent(0).unwrap();
         Self { r, g, b }
     }
 }
 
 impl<R, G, B> SetColor for RgbLed<R, G, B>
 where
-    R: PwmPin<Duty = u32>,
-    G: PwmPin<Duty = u32>,
-    B: PwmPin<Duty = u32>,
+    R: SetDutyCycle,
+    G: SetDutyCycle,
+    B: SetDutyCycle,
 {
     fn set_color(&mut self, color: leds::RGB8) {
-        let max = self.r.get_max_duty();
-        self.r.set_duty(color.r as u32 * max / u8::MAX as u32);
-        self.g.set_duty(color.g as u32 * max / u8::MAX as u32);
-        self.b.set_duty(color.b as u32 * max / u8::MAX as u32);
+        self.r.set_duty_cycle_percent(color.r).unwrap();
+        self.g.set_duty_cycle_percent(color.g).unwrap();
+        self.b.set_duty_cycle_percent(color.b).unwrap();
     }
 }
 
