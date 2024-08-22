@@ -5,6 +5,9 @@
 [build]
 target = "riscv32imc-unknown-none-elf"
 
+# Enable supported bitmanip extension features.
+rustflags = ["-Ctarget-feature=+zba,+zbb,+zbc,+zbs"]
+
 [target.riscv32imc-unknown-none-elf]
 runner = "../../util/load_demo_system.sh run"
 
