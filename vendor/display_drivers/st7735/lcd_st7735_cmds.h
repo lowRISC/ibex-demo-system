@@ -8,7 +8,7 @@
 //     ----> https://www.adafruit.com/product/2088
 //   as well as Adafruit raw 1.8" TFT display
 //     ----> http://www.adafruit.com/products/618
- 
+
 // Check out the links above for our tutorials and wiring diagrams.
 // These displays use SPI to communicate, 4 or 5 pins are required to
 // interface (RST is optional).
@@ -20,7 +20,11 @@
 // Written by Limor Fried/Ladyada for Adafruit Industries.
 // MIT license, all text above must be included in any redistribution.
 
-// Recent Arduino IDE releases include the Library Manager for easy installation. Otherwise, to download, click the DOWNLOAD ZIP button, uncompress and rename the uncompressed folder Adafruit_ST7735. Confirm that the Adafruit_ST7735 folder contains Adafruit_ST7735.cpp, Adafruit_ST7735.h and related source files. Place the Adafruit_ST7735 library folder your ArduinoSketchFolder/Libraries/ folder. You may need to create the Libraries subfolder if its your first library. Restart the IDE.
+// Recent Arduino IDE releases include the Library Manager for easy installation. Otherwise, to download, click the
+// DOWNLOAD ZIP button, uncompress and rename the uncompressed folder Adafruit_ST7735. Confirm that the Adafruit_ST7735
+// folder contains Adafruit_ST7735.cpp, Adafruit_ST7735.h and related source files. Place the Adafruit_ST7735 library
+// folder your ArduinoSketchFolder/Libraries/ folder. You may need to create the Libraries subfolder if its your first
+// library. Restart the IDE.
 
 // Also requires the Adafruit_GFX library for Arduino.
 
@@ -68,13 +72,13 @@ typedef enum {
 } ST7735_Cmd;
 
 typedef enum {
-  ST77_MADCTL_MX  = 0x01 << 7, //Column Address Order
-  ST77_MADCTL_MV  = 0x01 << 6, //Row/Column Exchange 
-  ST77_MADCTL_MY  = 0x01 << 5, //Row Address Order
+  ST77_MADCTL_MX  = 0x01 << 7,  // Column Address Order
+  ST77_MADCTL_MV  = 0x01 << 6,  // Row/Column Exchange
+  ST77_MADCTL_MY  = 0x01 << 5,  // Row Address Order
   ST77_MADCTL_ML  = 0x01 << 4,
   ST77_MADCTL_RGB = 0x01 << 3,
   ST77_MADCTL_MH  = 0x01 << 2
-}ST77_MADCTL_Bits;
+} ST77_MADCTL_Bits;
 
 // Color definitions
 typedef enum {
