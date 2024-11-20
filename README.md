@@ -30,6 +30,7 @@ probe is required.
 * openocd (version 0.11.0 or above)
 * screen
 * srecord
+* verilator (version 5.024-1 or above)
 
 ## Container Guide
 
