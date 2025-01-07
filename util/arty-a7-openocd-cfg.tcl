@@ -30,7 +30,7 @@ riscv set_ir dmi 0x23
 
 adapter speed 10000
 
-riscv set_prefer_sba on
+riscv set_mem_access sysbus
 gdb_report_data_abort enable
 gdb_report_register_access_error enable
 gdb_breakpoint_override hard
