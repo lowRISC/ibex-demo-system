@@ -71,8 +71,8 @@ module ibex_demo_system #(
   parameter logic [31:0] SIM_CTRL_START = 32'h20000;
   parameter logic [31:0] SIM_CTRL_MASK  = ~(SIM_CTRL_SIZE-1);
 
-  localparam logic [31:0] PLIC_SIZE     = 4 * 1024; // 4 KiB
-  localparam logic [31:0] PLIC_START    = 32'h80005000;
+  localparam logic [31:0] PLIC_SIZE     = 64 * 1024; // 64 KiB
+  localparam logic [31:0] PLIC_START    = 32'h8010000;
   localparam logic [31:0] PLIC_MASK     = ~(PLIC_SIZE-1);
 
   // Debug functionality is optional.
@@ -285,7 +285,7 @@ module ibex_demo_system #(
     .irq_software_i(1'b0),
     .irq_timer_i   (timer_irq),
     .irq_external_i(irq_external),
-    .irq_fast_i    (1'b0),
+    .irq_fast_i    (15'b0),
     .irq_nm_i      (1'b0),
 
     .scramble_key_valid_i('0),
@@ -502,6 +502,11 @@ module ibex_demo_system #(
     assign ndmreset_req = 1'b0;
   end
 
+  // Interrupt signals
+  logic [31:0] irq_sources;
+  logic [31:0] irq_pending;
+  logic irq_external;
+
   assign irq_sources = {
       16'b0,              // Reserved
       15'b0,              // Reserved
@@ -550,3 +555,4 @@ module ibex_demo_system #(
     endfunction
   `endif
 endmodule
+

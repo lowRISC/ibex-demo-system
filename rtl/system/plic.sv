@@ -150,4 +150,4 @@ module plic #(
 
     assign rdata_o = reg_rdata;
 
-endmodule 
+endmodule
