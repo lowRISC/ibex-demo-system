@@ -6,9 +6,16 @@
 
 #include "demo_system.h"
 #include "dev_access.h"
+#include "plic.h"
 
 void uart_enable_rx_int(void) {
-  enable_interrupts(UART_IRQ);
+  // Set UART interrupt priority (e.g., priority 2)
+  plic_set_priority(PLIC_SOURCE_UART0, 2);
+  
+  // Enable UART interrupt in PLIC
+  plic_enable_interrupt(PLIC_SOURCE_UART0);
+  
+  // Enable global interrupts
   set_global_interrupt_enable(1);
 }
 
