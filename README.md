@@ -27,7 +27,7 @@ probe is required.
   (For example: `lowrisc-toolchain-rv32imcb-20220524-1.tar.xz`)
 * cmake
 * python3 - Additional python dependencies in python-requirements.txt installed with pip
-* openocd (version 0.11.0 or above)
+* openocd (version 0.12.0 or above)
 * screen
 * srecord
 
