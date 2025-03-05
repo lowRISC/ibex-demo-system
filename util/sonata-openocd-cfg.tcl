@@ -5,9 +5,10 @@
 adapter driver ftdi
 transport select jtag
 
-ftdi_vid_pid 0x0403 0x6011
-ftdi_channel 1
-ftdi_layout_init 0x0088 0x008b
+ftdi vid_pid 0x0403 0x6011
+ftdi channel 1
+ftdi layout_init 0x0088 0x008b
+
 reset_config none
 
 # Configure JTAG chain and the target processor
