@@ -8,22 +8,31 @@
 #include "gpio.h"
 #include "pwm.h"
 #include "timer.h"
+#include "plic.h"
 
 #define USE_GPIO_SHIFT_REG 0
 
 void test_uart_irq_handler(void) __attribute__((interrupt));
 
 void test_uart_irq_handler(void) {
-  int uart_in_char;
-
-  while ((uart_in_char = uart_in(DEFAULT_UART)) != -1) {
-    uart_out(DEFAULT_UART, uart_in_char);
-    uart_out(DEFAULT_UART, '\r');
-    uart_out(DEFAULT_UART, '\n');
+  uint32_t source = plic_claim_interrupt();
+  
+  if (source == PLIC_SOURCE_UART0) {
+    int uart_in_char;
+    while ((uart_in_char = uart_in(DEFAULT_UART)) != -1) {
+      uart_out(DEFAULT_UART, uart_in_char);
+      uart_out(DEFAULT_UART, '\r');
+      uart_out(DEFAULT_UART, '\n');
+    }
+    plic_complete_interrupt(source);
   }
 }
 
 int main(void) {
+  // Initialize PLIC
+  plic_init();
+  
+  // Install exception handlers
   install_exception_handler(UART_IRQ_NUM, &test_uart_irq_handler);
   uart_enable_rx_int();
 
