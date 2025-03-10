@@ -24,7 +24,9 @@
 
 #define NUM_PWM_MODULES 12
 
-#define DEFAULT_SPI SPI_FROM_BASE_ADDR(SPI0_BASE)
+#define LCD_SPI SPI_FROM_BASE_ADDR(SPI0_BASE)
+
+#define SYSCLK_FREQ 50000000
 
 /**
  * Writes character to default UART. Signature matches c stdlib function
