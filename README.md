@@ -2,7 +2,7 @@
 
 ![Ibex demo system block diagram](doc/IbexDemoSystemBlockDiagram.png "Ibex demo system block diagram with in the center an Ibex processor connected by a memory bus to the RAM, GPIO, SPI, UART and debug module. Switches, buttons and LEDs are connected to the GPIO. The LCD is driven by SPI. The UART is used for a serial console. Finally, the debug module is used to drive the JTAG.")
 
-This an example RISC-V SoC targeting the Arty-A7 FPGA board. It comprises the
+This an example RISC-V SoC originally targeting the Arty-A7 FPGA board. It comprises the
 [lowRISC Ibex core](https://www.github.com/lowrisc/ibex) along with the
 following features:
 
@@ -14,7 +14,14 @@ following features:
 * SPI
 * A basic peripheral to write ASCII output to a file and halt simulation from software
 
-Debug can be used via a USB connection to the Arty-A7 board. No external JTAG
+Support has been added for several additional FPGA development boards:
+* Arty S7-25 and S7-50
+* Nexys A7-100T
+* Sonata
+* RealDigital Blackboard
+* RealDigital Boolean
+
+Debug can be used via a USB connection to the board. No external JTAG
 probe is required.
 
 ![Arty A7 FPGA showing the Mandelbrot set](doc/ArtyA7WithMandelbrot.png "Arty A7 FPGA with a Mandelbrot fractal on the LCD screen.")
@@ -121,6 +128,19 @@ ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idPro
 
 # Future Technology Devices International, Ltd FT232 Serial (UART) IC
 ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666"
+EOF
+
+exit
+```
+
+RealDigital Boolean and Blackboard
+```bash
+
+sudo su
+cat <<EOF > /etc/udev/rules.d/90-realdigital.rules
+# Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
+# used on RealDigital boards
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{manufacturer}=="Xilinx", MODE="0666"
 EOF
 
 exit
@@ -480,8 +500,17 @@ repository root:
 fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:demo_system
 ```
 
-The default board is the Arty A7, but you can also use different synthesis targets.
-For example, to use the Sonata board change the target to `synth_sonata`.
+The default board is the Arty A7, but you can also use different synthesis targets for supported boards.
+Currently supported targets:
+
+| Board | Target |
+| -------- | ------- |
+| Arty S7-25 | `synth_artys7-25` |
+| Arty S7-50 | `synth_artys7-50` |
+| Nexys A7-100T | `synth_nexysa7` |
+| Sonata | `synth_sonata` |
+| Blackboard | `synth_blackboard` |
+| Boolean | `synth_boolean` |
 
 ## Programming FPGA
 
@@ -490,9 +519,11 @@ To program the FPGA, either use FuseSoC again
 ```
 fusesoc --cores-root=. run --target=synth --run lowrisc:ibex:demo_system
 
-# If the above does not work, try executing the programming operation manually with..
+# If the above does not work, try executing the programming operation manually with:
 make -C ./build/lowrisc_ibex_demo_system_0/synth-vivado/ pgm
 ```
+
+Replace `synth` in the fuseoc or make invocation with the appropriate target if you are use an alternative board.
 
 You can also use [OpenFPGALoader](https://github.com/trabucayre/openFPGALoader), here are some example commands:
 ```
@@ -501,6 +532,12 @@ You can also use [OpenFPGALoader](https://github.com/trabucayre/openFPGALoader),
 
 # Programming the Sonata board
 ./openFPGALoader -c ft4232 build/lowrisc_ibex_demo_system_0/synth_sonata-vivado/lowrisc_ibex_demo_system_0.bit
+
+# Programming the Blackboard board
+./openFPGALoader -c ft4232 build/lowrisc_ibex_demo_system_0/synth_blackboard-vivado/lowrisc_ibex_demo_system_0.bit
+
+# Programming the Boolean board
+./openFPGALoader -c ft4232 build/lowrisc_ibex_demo_system_0/synth_boolean-vivado/lowrisc_ibex_demo_system_0.bit
 ```
 
 ## Loading an application to the programmed FPGA
@@ -518,6 +555,12 @@ You can choose to immediately run it or begin halted, allowing you to attach a d
 
 # Run demo on the Sonata board
 ./util/load_demo_system.sh run ./sw/c/build/demo/hello_world/demo ./util/sonata-openocd-cfg.tcl
+
+# Run demo on the Blackboard board
+./util/load_demo_system.sh run ./sw/c/build/demo/hello_world/demo ./util/boolean-openocd-cfg.tcl
+
+# Run demo on the Boolean board
+./util/load_demo_system.sh run ./sw/c/build/demo/hello_world/demo ./util/boolean-openocd-cfg.tcl
 ```
 
 To view terminal output use screen:
@@ -548,3 +591,12 @@ riscv32-unknown-elf-gdb ./sw/c/build/demo/hello_world/demo
 
 (gdb) target extended-remote localhost:3333
 ```
+
+## Board-specific notes
+
+### Realdigital Blackboard
+
+The Blackboard uses a Zynq 7000 series SoC and the serial is routed to the PS rather than the PL.
+While it could be possible to access the serial through the PS using AXI, the current implementation maps serial to the PMODC header.
+
+The mapping follows the [Pmod Interface Type 3 (UART) pinout](https://digilent.com/reference/_media/reference/pmod/pmod-interface-specification-1_3_1.pdf) for the Digilent Pmod USBUART interface ([Digilent 410-212](https://digilent.com/shop/pmod-usbuart-usb-to-uart-interface/)), but any 3.3V USB-UART interface can be used.
