@@ -512,6 +512,8 @@ Currently supported targets:
 | Blackboard | `synth_blackboard` |
 | Boolean | `synth_boolean` |
 
+__Note:__ The version of FuseSoC installed when setting up the native Python environment does not support the tags used to control which JTAG tap is used in the build process. The default behaviour is to build using the Bscane tap as this is what is needed to make most FPGA boards work. Some platforms (notably Sonata) use the JTAG tap instead, and you will need to modify `pulp_riscv_dbg.core` if you are using a version of FuseSoC that doesn't support tags.
+
 ## Programming FPGA
 
 To program the FPGA, either use FuseSoC again
