@@ -166,8 +166,6 @@ targets:
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-    flags:
-      use_bscane_tap: true
   synth_cw305:
     <<: *default_target
     default_tool: vivado
@@ -182,8 +180,6 @@ targets:
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-    flags:
-      use_bscane_tap: true
   synth_cw312a35:
     <<: *default_target
     default_tool: vivado
@@ -197,8 +193,6 @@ targets:
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-    flags:
-      use_bscane_tap: true
   synth_blackboard:
     <<: *default_target
     default_tool: vivado
@@ -212,8 +206,6 @@ targets:
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-    flags:
-      use_bscane_tap: true
   synth_boolean:
     <<: *default_target
     default_tool: vivado
@@ -227,8 +219,6 @@ targets:
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-    flags:
-      use_bscane_tap: true
   synth_nexysa7:
     <<: *default_target
     default_tool: vivado
@@ -242,8 +232,6 @@ targets:
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-    flags:
-      use_bscane_tap: true
   synth_artys7-25:
     <<: *default_target
     default_tool: vivado
@@ -257,8 +245,6 @@ targets:
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-    flags:
-      use_bscane_tap: true
   synth_artys7-50:
     <<: *default_target
     default_tool: vivado
@@ -272,8 +258,6 @@ targets:
     parameters:
       - SRAMInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-    flags:
-      use_bscane_tap: true
   synth_sonata:
     <<: *default_target
     default_tool: vivado
