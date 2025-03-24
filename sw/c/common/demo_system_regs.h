@@ -19,4 +19,21 @@
 #define SIM_CTRL_OUT 0x0
 #define SIM_CTRL_CTRL 0x8
 
+// Add PLIC definitions
+#define PLIC_BASE               0x80005000
+
+// PLIC Register offsets
+#define PLIC_PRIORITY_BASE      0x000000
+#define PLIC_PENDING_BASE       0x001000
+#define PLIC_ENABLE_BASE        0x002000
+#define PLIC_THRESHOLD_BASE     0x200000
+#define PLIC_CLAIM_BASE         0x200004
+
+// PLIC configuration
+#define PLIC_MAX_PRIORITY       7
+#define PLIC_PRIORITY_MASK      0x7
+
+// Source IDs
+#define PLIC_SOURCE_UART0       0
+
 #endif
