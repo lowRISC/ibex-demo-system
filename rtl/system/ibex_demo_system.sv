@@ -71,6 +71,10 @@ module ibex_demo_system #(
   parameter logic [31:0] SIM_CTRL_START = 32'h20000;
   parameter logic [31:0] SIM_CTRL_MASK  = ~(SIM_CTRL_SIZE-1);
 
+  localparam logic [31:0] PLIC_SIZE     = 64 * 1024; // 64 KiB
+  localparam logic [31:0] PLIC_START    = 32'h80005000;
+  localparam logic [31:0] PLIC_MASK     = ~(PLIC_SIZE-1);
+
   // Debug functionality is optional.
   localparam bit DBG = 1;
   localparam int unsigned DbgHwBreakNum = (DBG == 1) ?    2 :    0;
@@ -89,10 +93,11 @@ module ibex_demo_system #(
     Timer,
     Spi,
     SimCtrl,
+    Plic,
     DbgDev
   } bus_device_e;
 
-  localparam int NrDevices = DBG ? 8 : 7;
+  localparam int NrDevices = DBG ? 9 : 8;
   localparam int NrHosts   = DBG ? 2 : 1;
 
   // Interrupts.
@@ -164,6 +169,8 @@ module ibex_demo_system #(
   assign cfg_device_addr_mask[Spi]     = SPI_MASK;
   assign cfg_device_addr_base[SimCtrl] = SIM_CTRL_START;
   assign cfg_device_addr_mask[SimCtrl] = SIM_CTRL_MASK;
+  assign cfg_device_addr_base[Plic]    = PLIC_START;
+  assign cfg_device_addr_mask[Plic]    = PLIC_MASK;
 
   if (DBG) begin : g_dbg_device_cfg
     assign cfg_device_addr_base[DbgDev] = DEBUG_START;
@@ -178,6 +185,7 @@ module ibex_demo_system #(
   assign device_err[Uart]    = 1'b0;
   assign device_err[Spi]     = 1'b0;
   assign device_err[SimCtrl] = 1'b0;
+  assign device_err[Plic]    = 1'b0;
 
   bus #(
     .NrDevices    ( NrDevices ),
@@ -276,8 +284,8 @@ module ibex_demo_system #(
 
     .irq_software_i(1'b0),
     .irq_timer_i   (timer_irq),
-    .irq_external_i(1'b0),
-    .irq_fast_i    ({14'b0, uart_irq}),
+    .irq_external_i(plic_irq_external),  // Connect PLIC interrupt to external interrupt
+    .irq_fast_i    (15'b0),     // No fast interrupts used
     .irq_nm_i      (1'b0),
 
     .scramble_key_valid_i('0),
@@ -493,6 +501,44 @@ module ibex_demo_system #(
     assign dm_debug_req = 1'b0;
     assign ndmreset_req = 1'b0;
   end
+
+    // Interrupt signals
+  logic [31:0] plic_irq_sources;
+  logic [31:0] plic_irq_pending;
+  logic plic_irq_external;
+
+  assign plic_irq_sources = {
+      16'b0,              // Reserved
+      15'b0,              // Reserved
+      14'b0,              // Reserved
+      uart_irq            // Source 0
+  };
+
+  plic #(
+      .SOURCES     (32),          // Number of interrupt sources
+      .TARGETS     (1),           // Number of interrupt targets (cores)
+      .PRIORITIES  (3),           // Number of priority levels (0-7)
+      .MAX_PENDING (32)           // Maximum number of pending interrupts
+  ) u_plic (
+      .clk_i          (clk_sys_i),
+      .rst_ni         (rst_sys_ni),
+
+      // Bus interface
+      .req_i          (device_req[Plic]),
+      .addr_i         (device_addr[Plic]),
+      .we_i           (device_we[Plic]),
+      .be_i           (device_be[Plic]),
+      .wdata_i        (device_wdata[Plic]),
+      .rvalid_o       (device_rvalid[Plic]),
+      .rdata_o        (device_rdata[Plic]),
+
+      // Interrupt sources
+      .irq_sources_i  (plic_irq_sources),
+      .irq_pending_o  (plic_irq_pending),
+
+      // Interrupt notification to target (core)
+      .irq_o          (plic_irq_external)
+  );
 
   `ifdef VERILATOR
 
