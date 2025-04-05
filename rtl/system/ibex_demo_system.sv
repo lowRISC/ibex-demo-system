@@ -72,7 +72,7 @@ module ibex_demo_system #(
   parameter logic [31:0] SIM_CTRL_MASK  = ~(SIM_CTRL_SIZE-1);
 
   localparam logic [31:0] PLIC_SIZE     = 64 * 1024; // 64 KiB
-  localparam logic [31:0] PLIC_START    = 32'h80005000;
+  localparam logic [31:0] PLIC_START    = 32'h80001000;
   localparam logic [31:0] PLIC_MASK     = ~(PLIC_SIZE-1);
 
   // Debug functionality is optional.

@@ -20,7 +20,7 @@
 #define SIM_CTRL_CTRL 0x8
 
 // Add PLIC definitions
-#define PLIC_BASE               0x80005000
+#define PLIC_BASE               0x80001000
 
 // PLIC Register offsets
 #define PLIC_PRIORITY_BASE      0x000000
