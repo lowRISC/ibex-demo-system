@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -59,7 +59,6 @@ virtual function bit [38:0] rom_encrypt_read32(bit [bus_params_pkg::BUS_AW-1:0] 
     zero_key[i] = '0;
   end
 
-  data_arr = sram_scrambler_pkg::sp_decrypt(data_arr, 39, zero_key);
   for (int i = 0; i < 39; i++) begin
     data[i] = data_arr[i] ^ keystream[i];
   end

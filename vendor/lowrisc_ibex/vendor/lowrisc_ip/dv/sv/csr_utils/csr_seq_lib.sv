@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -88,12 +88,13 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
     end_idx = test_csr_chunk * chunk_size;
     if (end_idx >= all_csrs.size()) end_idx = all_csrs.size() - 1;
 
-    test_csrs = all_csrs[start_idx:end_idx];
     `uvm_info(`gtn, $sformatf("Testing %0d csrs [%0d - %0d] in all supplied models.",
                               test_csrs.size(), start_idx, end_idx), UVM_MEDIUM)
-    foreach (test_csrs[i]) begin
-      `uvm_info(`gtn, $sformatf("Testing CSR %0s, reset: 0x%0x.", test_csrs[i].get_full_name(),
-                                test_csrs[i].get_mirrored_value()), UVM_HIGH)
+    test_csrs.delete();
+    for (int i = start_idx; i <= end_idx; i++) begin
+      test_csrs.push_back(all_csrs[i]);
+      `uvm_info(`gtn, $sformatf("Testing CSR %0s, reset: 0x%0x.", all_csrs[i].get_full_name(),
+                                all_csrs[i].get_mirrored_value()), UVM_HIGH)
     end
     test_csrs.shuffle();
   endfunction
@@ -328,7 +329,19 @@ class csr_bit_bash_seq extends csr_base_seq;
   `uvm_object_new
 
   virtual task body();
+    int unsigned total_count = test_csrs.size();
+    int unsigned done_count = 0;
+
+    `uvm_info(`gtn,
+              $sformatf("Running bit bash sequence for %0d registers", total_count),
+              UVM_MEDIUM)
     foreach (test_csrs[i]) begin
+      done_count++;
+      `uvm_info(`gtn,
+                $sformatf("Verifying register bit bash for %0s (register %0d/%0d)",
+                          test_csrs[i].get_full_name(), done_count, total_count),
+                UVM_MEDIUM)
+
       // check if parent block or register is excluded from write
       if (is_excl(test_csrs[i], CsrExclWrite, CsrBitBashTest) ||
           is_excl(test_csrs[i], CsrExclWriteCheck, CsrBitBashTest)) begin
@@ -336,9 +349,6 @@ class csr_bit_bash_seq extends csr_base_seq;
                                   test_csrs[i].get_full_name()), UVM_MEDIUM)
         continue;
       end
-
-      `uvm_info(`gtn, $sformatf("Verifying register bit bash for %0s",
-                test_csrs[i].get_full_name()), UVM_MEDIUM)
 
       begin
         uvm_reg_field   fields[$];

@@ -95,6 +95,7 @@ module ibex_id_stage #(
   // CSR
   output logic                      csr_access_o,
   output ibex_pkg::csr_op_e         csr_op_o,
+  output ibex_pkg::csr_num_e        csr_addr_o,
   output logic                      csr_op_en_o,
   output logic                      csr_save_if_o,
   output logic                      csr_save_id_o,
@@ -134,6 +135,9 @@ module ibex_id_stage #(
   input  logic                      lsu_load_resp_intg_err_i,
   input  logic                      lsu_store_err_i,
   input  logic                      lsu_store_resp_intg_err_i,
+
+  output logic                      expecting_load_resp_o,
+  output logic                      expecting_store_resp_o,
 
   // Debug Signal
   output logic                      debug_mode_o,
@@ -287,6 +291,7 @@ module ibex_id_stage #(
   logic        data_req_allowed;
 
   // CSR control
+  logic        no_flush_csr_addr;
   logic        csr_pipe_flush;
 
   logic [31:0] alu_operand_a;
@@ -494,6 +499,7 @@ module ibex_id_stage #(
     // CSRs
     .csr_access_o(csr_access_o),
     .csr_op_o    (csr_op_o),
+    .csr_addr_o  (csr_addr_o),
 
     // LSU
     .data_req_o           (lsu_req_dec),
@@ -506,36 +512,20 @@ module ibex_id_stage #(
     .branch_in_dec_o(branch_in_dec)
   );
 
-  /////////////////////////////////
-  // CSR-related pipeline flushes //
-  /////////////////////////////////
-  always_comb begin : csr_pipeline_flushes
-    csr_pipe_flush = 1'b0;
+  // Flush pipe on most CSR modification. Some CSR modifications alter how instructions execute
+  // (e.g. the PMP CSRs) so this ensures all instructions always see the latest architectural state
+  // when entering the fetch stage. This causes some needless flushes but performance impact is
+  // limited. We have a single fetch stage to flush not many stages of a deep pipeline and CSR
+  // instructions are in general rare and not part of performance critical parts of the code.
+  //
+  // No flush is triggered for a small number of specific CSRs. These are ones that have been
+  // specifically identified to be a) likely to be modifed in exception handlers and b) safe to
+  // alter without a flush.
+  assign no_flush_csr_addr = csr_addr_o inside {CSR_MSCRATCH, CSR_MEPC};
 
-    // A pipeline flush is needed to let the controller react after modifying certain CSRs:
-    // - When enabling interrupts, pending IRQs become visible to the controller only during
-    //   the next cycle. If during that cycle the core disables interrupts again, it does not
-    //   see any pending IRQs and consequently does not start to handle interrupts.
-    // - When modifying any PMP CSR, PMP check of the next instruction might get invalidated.
-    //   Hence, a pipeline flush is needed to instantiate another PMP check with the updated CSRs.
-    // - When modifying debug CSRs.
-    if (csr_op_en_o == 1'b1 && (csr_op_o == CSR_OP_WRITE || csr_op_o == CSR_OP_SET)) begin
-      if (csr_num_e'(instr_rdata_i[31:20]) == CSR_MSTATUS ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_MIE     ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_MSECCFG ||
-          // To catch all PMPCFG/PMPADDR registers, get the shared top most 7 bits.
-          instr_rdata_i[31:25] == 7'h1D) begin
-        csr_pipe_flush = 1'b1;
-      end
-    end else if (csr_op_en_o == 1'b1 && csr_op_o != CSR_OP_READ) begin
-      if (csr_num_e'(instr_rdata_i[31:20]) == CSR_DCSR      ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_DPC       ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_DSCRATCH0 ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_DSCRATCH1) begin
-        csr_pipe_flush = 1'b1;
-      end
-    end
-  end
+  assign csr_pipe_flush = (csr_op_en_o == 1)                                         &&
+                          (csr_op_o inside {CSR_OP_WRITE, CSR_OP_SET, CSR_OP_CLEAR}) &&
+                          !no_flush_csr_addr;
 
   ////////////////
   // Controller //
@@ -659,7 +649,7 @@ module ibex_id_stage #(
   assign lsu_sign_ext_o          = lsu_sign_ext;
   assign lsu_wdata_o             = rf_rdata_b_fwd;
   // csr_op_en_o is set when CSR access should actually happen.
-  // csv_access_o is set when CSR access instruction is present and is used to compute whether a CSR
+  // csr_access_o is set when CSR access instruction is present and is used to compute whether a CSR
   // access is illegal. A combinational loop would be created if csr_op_en_o was used along (as
   // asserting it for an illegal csr access would result in a flush that would need to deassert it).
   assign csr_op_en_o             = csr_access_o & instr_executing & instr_id_done_o;
@@ -1016,6 +1006,11 @@ module ibex_id_stage #(
 
     assign perf_dside_wait_o = instr_valid_i & ~instr_kill &
                                (outstanding_memory_access | stall_ld_hz);
+
+    // With writeback stage load/store responses are processed in the writeback stage so the ID/EX
+    // stage is never expecting a load or store response.
+    assign expecting_load_resp_o  = 1'b0;
+    assign expecting_store_resp_o = 1'b0;
   end else begin : gen_no_stall_mem
 
     assign multicycle_done = lsu_req_dec ? lsu_resp_valid_i : ex_valid_i;
@@ -1043,6 +1038,13 @@ module ibex_id_stage #(
 
     assign rf_rd_a_wb_match_o = 1'b0;
     assign rf_rd_b_wb_match_o = 1'b0;
+
+    // First cycle of a load or store is always the request. We're expecting a response the cycles
+    // following. Note if the request isn't immediatly accepted these signals will still assert.
+    // However in this case the LSU won't signal a response as it's still waiting for the grant
+    // (even if the external memory bus signals are glitched to generate a false response).
+    assign expecting_load_resp_o  = instr_valid_i & lsu_req_dec & ~instr_first_cycle & ~lsu_we;
+    assign expecting_store_resp_o = instr_valid_i & lsu_req_dec & ~instr_first_cycle &  lsu_we;
 
     // Unused Writeback stage only IO & wiring
     // Assign inputs and internal wiring to unused signals to satisfy lint checks
@@ -1142,6 +1144,10 @@ module ibex_id_stage #(
   // === as DV environment can produce instructions with Xs in, so must use precise match that
   // includes Xs
   `ASSERT(IbexDuplicateInstrMatch, instr_valid_i |-> instr_rdata_i === instr_rdata_alu_i)
+
+  // Check that when ID stage is ready for next instruction FSM is in FIRST_CYCLE state the
+  // following cycle (when the new instructon may begin executing).
+  `ASSERT(IbexMoveToFirstCycleWhenIdReady, id_in_ready_o |=> id_fsm_q == FIRST_CYCLE)
 
   `ifdef CHECK_MISALIGNED
   `ASSERT(IbexMisalignedMemoryAccess, !lsu_addr_incr_req_i)
