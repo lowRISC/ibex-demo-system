@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -190,5 +190,7 @@ module prim_subreg_shadow
 
   // prim_subreg_shadow does not support multi-bit software access yet
   `ASSERT_NEVER(MubiIsNotYetSupported_A, Mubi)
+  logic unused_mubi;
+  assign unused_mubi = Mubi;
 
 endmodule
