@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,7 +17,7 @@ package prim_trivium_pkg;
   parameter int unsigned MinNfsrWidth = 84;
 
   // These LFSR parameters have been generated with
-  // $ ./util/design/gen-lfsr-seed.py --width 287 --seed 31468618 --prefix "Trivium"
+  // $ ./util/design/gen-lfsr-seed.py --width 288 --seed 31468618 --prefix "Trivium"
   parameter int TriviumLfsrWidth = 288;
   typedef logic [TriviumLfsrWidth-1:0] trivium_lfsr_seed_t;
   parameter trivium_lfsr_seed_t RndCnstTriviumLfsrSeedDefault = {
@@ -87,7 +87,7 @@ package prim_trivium_pkg;
 
   function automatic logic [TriviumStateWidth-1:0] trivium_seed_key_iv(
       logic [KeyIvWidth-1:0] key,
-      logic [KeyIvWidth-1:0] iv,
+      logic [KeyIvWidth-1:0] iv
     );
     logic [TriviumStateWidth-1:0] state;
     //     [287:285] [284:173] [172:93] [92:80] [79:0]
@@ -148,7 +148,7 @@ package prim_trivium_pkg;
 
   function automatic logic [BiviumStateWidth-1:0] bivium_seed_key_iv(
       logic [KeyIvWidth-1:0] key,
-      logic [KeyIvWidth-1:0] iv,
+      logic [KeyIvWidth-1:0] iv
     );
     logic [BiviumStateWidth-1:0] state;
     //   [176:173] [172:93] [92:80] [79:0]

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -36,7 +36,6 @@ package dv_utils_pkg;
 
   // typedef parameterized pins_if for ease of implementation for interrupts and alerts
   typedef virtual pins_if #(NUM_MAX_INTERRUPTS) intr_vif;
-  typedef virtual pins_if #(1)                  devmode_vif;
 
   // interface direction / mode - Host or Device
   typedef enum bit {

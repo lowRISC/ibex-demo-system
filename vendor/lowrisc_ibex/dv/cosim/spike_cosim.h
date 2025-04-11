@@ -22,7 +22,17 @@
 
 class SpikeCosim : public simif_t, public Cosim {
  private:
+  // A sigsegv has been observed when deleting isa_parser_t instances under
+  // Xcelium on CentOS 7. The root cause is unknown so for a workaround simply
+  // use a raw pointer for isa_parser that never gets deleted. This produces a
+  // minor memory leak but it is of little consequence as when SpikeCosim is
+  // being deleted it is the end of simulation and the process will be
+  // terminated shortly anyway.
+#ifdef COSIM_SIGSEGV_WORKAROUND
+  isa_parser_t *isa_parser;
+#else
   std::unique_ptr<isa_parser_t> isa_parser;
+#endif
   std::unique_ptr<processor_t> processor;
   std::unique_ptr<log_file_t> log;
   bus_t bus;
@@ -85,6 +95,8 @@ class SpikeCosim : public simif_t, public Cosim {
 
   void early_interrupt_handle();
 
+  void misaligned_pmp_fixup();
+
   unsigned int insn_cnt;
 
  public:
@@ -113,7 +125,7 @@ class SpikeCosim : public simif_t, public Cosim {
                            uint32_t dut_pc, bool suppress_reg_write);
   bool check_sync_trap(uint32_t write_reg, uint32_t pc,
                        uint32_t initial_spike_pc);
-  void set_mip(uint32_t mip) override;
+  void set_mip(uint32_t pre_mip, uint32_t post_mip) override;
   void set_nmi(bool nmi) override;
   void set_nmi_int(bool nmi_int) override;
   void set_debug_req(bool debug_req) override;

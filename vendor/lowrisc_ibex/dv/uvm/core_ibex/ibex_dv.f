@@ -21,6 +21,8 @@
 ${PRJ_DIR}/dv/uvm/core_ibex/common/prim/prim_pkg.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_assert.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_util_pkg.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_count_pkg.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_count.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_pkg.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_22_16_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_22_16_enc.sv
@@ -32,6 +34,7 @@ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_hamming_39_32_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_hamming_39_32_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_hamming_72_64_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_hamming_72_64_enc.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_mubi_pkg.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_ram_1p_pkg.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_ram_1p_adv.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_ram_1p_scr.sv
@@ -68,7 +71,6 @@ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_72_64_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_check.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_mux.sv
-${LOWRISC_IP_DIR}/ip/prim/rtl/prim_mubi_pkg.sv
 
 // ibex CORE RTL files
 +incdir+${PRJ_DIR}/rtl

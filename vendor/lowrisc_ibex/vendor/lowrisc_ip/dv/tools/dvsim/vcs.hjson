@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
@@ -113,7 +113,7 @@
 
   run_opts:   ["-licqueue",
                "-ucli -do {run_script}",
-               "+ntb_random_seed={seed}",
+               "+ntb_random_seed={svseed}",
                // Disable the display of the SystemVerilog assert and cover statement summary
                // at the end of simulation. This summary is list of assertions that started but
                // did not finish because the simulation terminated, or assertions that did not
@@ -134,7 +134,7 @@
 
   // Individual test specific coverage data - this will be deleted if the test fails
   // so that coverage from failiing tests is not included in the final report.
-  cov_db_test_dir_name: "{run_dir_name}.{seed}"
+  cov_db_test_dir_name: "{run_dir_name}.{svseed}"
   cov_db_test_dir: "{cov_db_dir}/snps/coverage/db/testdata/{cov_db_test_dir_name}"
 
   // Merging coverage.
@@ -147,10 +147,14 @@
                      "-full64",
                      // No need of generating report when merging coverage.
                      "-noreport",
+                     // Parallel merge is slower than serial merge for most
+                     // small blocks, and the corresponding flags are commented
+                     // out. If this becomes problematic and you have a powerful
+                     // machine available, uncomment the three flags below.
                      // Merge results from tests in parallel.
-                     "-parallel",
-                     "-parallel_split 20",
-                     "-parallel_temproot {cov_merge_dir}",
+                     // "-parallel",
+                     // "-parallel_split 20",
+                     // "-parallel_temproot {cov_merge_dir}",
                      "+urg+lic+wait",
                      // Merge same assert instances found in different VDBs.
                      "-merge_across_libs",

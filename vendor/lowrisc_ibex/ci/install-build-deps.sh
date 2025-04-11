@@ -26,7 +26,7 @@ if [ -z "$GITHUB_ACTIONS" ]; then
 fi
 
 case "$ID-$VERSION_ID" in
-  ubuntu-16.04|ubuntu-18.04|ubuntu-20.04)
+  ubuntu-20.04|ubuntu-22.04)
     # Curl must be available to get the repo key below.
     $SUDO_CMD apt-get update
     $SUDO_CMD apt-get install -y curl
@@ -60,14 +60,12 @@ case "$ID-$VERSION_ID" in
     $SUDO_CMD mkdir -p /tools/riscv-isa-sim
     $SUDO_CMD chmod 777 /tools/riscv-isa-sim
     $SUDO_CMD tar -C /tools/riscv-isa-sim -xvzf ibex-cosim-"$IBEX_COSIM_VERSION".tar.gz --strip-components=1
-    echo "##vso[task.prependpath]/tools/riscv-isa-sim/bin"
     echo "/tools/riscv-isa-sim/bin" >> $GITHUB_PATH
 
     wget https://storage.googleapis.com/verilator-builds/verilator-"$VERILATOR_VERSION".tar.gz
     $SUDO_CMD mkdir -p /tools/verilator
     $SUDO_CMD chmod 777 /tools/verilator
     $SUDO_CMD tar -C /tools/verilator -xvzf verilator-"$VERILATOR_VERSION".tar.gz
-    echo "##vso[task.prependpath]/tools/verilator/$VERILATOR_VERSION/bin"
     echo "/tools/verilator/$VERILATOR_VERSION/bin" >> $GITHUB_PATH
     # Python dependencies
     #
@@ -83,10 +81,11 @@ case "$ID-$VERSION_ID" in
     # Install Verible
     mkdir -p build/verible
     cd build/verible
-    curl -Ls -o verible.tar.gz "https://github.com/google/verible/releases/download/$VERIBLE_VERSION/verible-$VERIBLE_VERSION-Ubuntu-$VERSION_ID-$VERSION_CODENAME-x86_64.tar.gz"
-    $SUDO_CMD mkdir -p /tools/verible && $SUDO_CMD chmod 777 /tools/verible
-    tar -C /tools/verible -xf verible.tar.gz --strip-components=1
-    echo "##vso[task.prependpath]/tools/verible/bin"
+    VERIBLE_URL="https://github.com/chipsalliance/verible/releases/download/$VERIBLE_VERSION/verible-$VERIBLE_VERSION-linux-static-x86_64.tar.gz"
+    $SUDO_CMD mkdir -p /tools/verible
+    curl -sSfL "$VERIBLE_URL" | $SUDO_CMD tar -C /tools/verible -xvzf - --strip-components=1
+    # Fixup bin permission which is broken in tarball.
+    $SUDO_CMD chmod 755 /tools/verible/bin
     echo "/tools/verible/bin" >> $GITHUB_PATH
     ;;
 
@@ -101,6 +100,5 @@ TOOLCHAIN_URL="https://github.com/lowRISC/lowrisc-toolchains/releases/download/$
 mkdir -p build/toolchain
 curl -Ls -o build/toolchain/rv32-toolchain.tar.xz "$TOOLCHAIN_URL"
 $SUDO_CMD mkdir -p /tools/riscv && $SUDO_CMD chmod 777 /tools/riscv
-tar -C /tools/riscv -xf build/toolchain/rv32-toolchain.tar.xz --strip-components=1
-echo "##vso[task.prependpath]/tools/riscv/bin"
+$SUDO_CMD tar -C /tools/riscv -xf build/toolchain/rv32-toolchain.tar.xz --strip-components=1
 echo "/tools/riscv/bin" >> $GITHUB_PATH
