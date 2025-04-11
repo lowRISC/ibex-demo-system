@@ -1,4 +1,4 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -473,6 +473,8 @@ class RunTest(Deploy):
         self.index = index
         self.build_seed = sim_cfg.build_seed
         self.seed = RunTest.get_seed()
+        # Systemverilog accepts seeds with a maximum size of 32 bits.
+        self.svseed = int(self.seed) & 0xFFFFFFFF
         self.simulated_time = JobTime()
         super().__init__(sim_cfg)
 
