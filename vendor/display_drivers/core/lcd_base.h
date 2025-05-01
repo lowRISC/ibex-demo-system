@@ -25,7 +25,7 @@
 #define MAX(_A, _B) _A < _B ? _B : _A
 
 typedef enum {
-  LCD_Rotate_0  = 0,
+  LCD_Rotate0 = 0,
   LCD_Rotate90,
   LCD_Rotate180,
   LCD_Rotate270,
@@ -33,7 +33,7 @@ typedef enum {
 
 // TODO: Define error codes.
 typedef struct Result_st {
-  uint32_t code; /*!< */
+  int32_t code; /*!< */
 } Result;
 
 /**

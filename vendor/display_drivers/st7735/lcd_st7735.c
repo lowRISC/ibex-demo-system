@@ -51,16 +51,16 @@ static void run_script(St7735Context *ctx, const uint8_t *addr) {
   }
 }
 
-static void set_address(St7735Context *ctx, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
+static void set_address(St7735Context *ctx, uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) {
   uint32_t coordinate = 0;
 
-  coordinate = x0 << 8 | x1 << 24;
+  coordinate = (uint32_t)(x0 << 8 | x1 << 24);
   write_command(ctx, ST7735_CASET);  // Column addr set
   ctx->parent.interface->gpio_write(ctx->parent.interface->handle, false, true);
   write_buffer(ctx, (uint8_t *)&coordinate, sizeof(coordinate));
   ctx->parent.interface->gpio_write(ctx->parent.interface->handle, true, true);
 
-  coordinate = y0 << 8 | y1 << 24;
+  coordinate = (uint32_t)(y0 << 8 | y1 << 24);
   write_command(ctx, ST7735_RASET);  // Row addr set
   ctx->parent.interface->gpio_write(ctx->parent.interface->handle, false, true);
   write_buffer(ctx, (uint8_t *)&coordinate, sizeof(coordinate));
@@ -78,7 +78,9 @@ static void write_register(St7735Context *ctx, uint8_t addr, uint8_t value) {
 
 Result lcd_st7735_init(St7735Context *ctx, LCD_Interface *interface) {
   LCD_Init(&ctx->parent, interface, 160, 128);
-  int result = 0;
+  lcd_st7735_set_font_colors(ctx, 0xFFFFFF, 0x000000);
+
+  int32_t result = 0;
 
   run_script(ctx, init_script_b);
   run_script(ctx, init_script_r);
@@ -89,10 +91,10 @@ Result lcd_st7735_init(St7735Context *ctx, LCD_Interface *interface) {
 
 Result lcd_st7735_set_orientation(St7735Context *ctx, LCD_Orientation orientation) {
   const static uint8_t st7735_orientation_map[] = {
-      0,
+      ST77_MADCTL_MY | ST77_MADCTL_MV,
       ST77_MADCTL_MX | ST77_MADCTL_MV,
       ST77_MADCTL_MX | ST77_MADCTL_MY,
-      ST77_MADCTL_MY | ST77_MADCTL_MV,
+      0,
   };
 
   write_register(ctx, ST7735_MADCTL, st7735_orientation_map[orientation] | ST77_MADCTL_RGB);
@@ -102,8 +104,7 @@ Result lcd_st7735_set_orientation(St7735Context *ctx, LCD_Orientation orientatio
 Result lcd_st7735_clean(St7735Context *ctx) {
   size_t w, h;
   lcd_st7735_get_resolution(ctx, &h, &w);
-  lcd_st7735_fill_rectangle(ctx, (LCD_rectangle){.origin = {.x = 0, .y = 0}, .width = w, .height = h}, 0xffffff);
-  return (Result){.code = 0};
+  return lcd_st7735_fill_rectangle(ctx, (LCD_rectangle){.origin = {.x = 0, .y = 0}, .width = w, .height = h}, 0xffffff);
 }
 
 Result lcd_st7735_draw_pixel(St7735Context *ctx, LCD_Point pixel, uint32_t color) {
@@ -171,15 +172,15 @@ Result lcd_st7735_fill_rectangle(St7735Context *ctx, LCD_rectangle rectangle, ui
     return (Result){.code = -1};
   }
 
-  uint16_t w = MIN(rectangle.origin.x + rectangle.width, ctx->parent.width) - rectangle.origin.x;
-  uint16_t h = MIN(rectangle.origin.y + rectangle.height, ctx->parent.height) - rectangle.origin.y;
+  uint16_t w = (uint16_t)(MIN(rectangle.origin.x + rectangle.width, ctx->parent.width) - rectangle.origin.x);
+  uint16_t h = (uint16_t)(MIN(rectangle.origin.y + rectangle.height, ctx->parent.height) - rectangle.origin.y);
 
   color = LCD_rgb24_to_bgr565(color);
 
   // Create an array with the pixes for the lines.
   uint16_t row[w];
   for (int i = 0; i < w; ++i) {
-    row[i] = color;
+    row[i] = (uint16_t)color;
   }
 
   set_address(ctx, rectangle.origin.x, rectangle.origin.y, rectangle.origin.x + w - 1, rectangle.origin.y + h - 1);
@@ -203,9 +204,10 @@ Result lcd_st7735_putchar(St7735Context *ctx, LCD_Point origin, char character) 
   const uint8_t *char_bitmap = &font->bitmap_table[char_descriptor->position - 1];
   for (int row = 0; row < font->height; row++) {
     for (int column = 0; column < char_descriptor->width; column++) {
-      uint8_t bit = column % 8;
+      uint8_t bit = (uint8_t)(column % 8);
       char_bitmap += (uint8_t)(bit == 0);
-      buffer[column] = (*char_bitmap & (0x01 << bit)) ? ctx->parent.foreground_color : ctx->parent.background_color;
+      buffer[column] =
+          (uint16_t)((*char_bitmap & (0x01 << bit)) ? ctx->parent.foreground_color : ctx->parent.background_color);
     }
     write_buffer(ctx, (uint8_t *)buffer, sizeof(buffer));
   }
@@ -214,10 +216,10 @@ Result lcd_st7735_putchar(St7735Context *ctx, LCD_Point origin, char character) 
 }
 
 Result lcd_st7735_puts(St7735Context *ctx, LCD_Point pos, const char *text) {
-  int count = 0;
-  int width = ctx->parent.font->descriptor_table[text[0] - ctx->parent.font->startCharacter].width;
+  size_t count   = 0;
 
   while (*text) {
+    uint32_t width = ctx->parent.font->descriptor_table[*text - ctx->parent.font->startCharacter].width;
     if ((pos.x + width) > ctx->parent.width) {
       return (Result){.code = 0};
     }
@@ -230,7 +232,7 @@ Result lcd_st7735_puts(St7735Context *ctx, LCD_Point pos, const char *text) {
     count++;
   }
 
-  return (Result){.code = count};  // number of chars printed
+  return (Result){.code = (int32_t)count};  // number of chars printed
 }
 
 Result lcd_st7735_draw_bgr(St7735Context *ctx, LCD_rectangle rectangle, const uint8_t *bgr) {
@@ -239,7 +241,7 @@ Result lcd_st7735_draw_bgr(St7735Context *ctx, LCD_rectangle rectangle, const ui
 
   ctx->parent.interface->gpio_write(ctx->parent.interface->handle, false, true);
   for (int i = 0; i < rectangle.width * rectangle.height * 3; i += 3) {
-    uint16_t color = LCD_rgb24_to_bgr565(bgr[i] << 16 | bgr[i + 1] << 8 | bgr[i + 2]);
+    uint16_t color = LCD_rgb24_to_bgr565((uint32_t)(bgr[i] << 16 | bgr[i + 1] << 8 | bgr[i + 2]));
     write_buffer(ctx, (uint8_t *)&color, 2);
   }
   ctx->parent.interface->gpio_write(ctx->parent.interface->handle, true, true);

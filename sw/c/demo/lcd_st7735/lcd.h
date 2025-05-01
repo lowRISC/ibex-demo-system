@@ -30,10 +30,9 @@ typedef enum TextAlignment {
  * @param lcd LCD handle.
  * @param str NULL terminated string.
  * @param alignment Text horizontal alignment in the screen.
- * @param line Position line starting at 0. The total number of lines will vary depending on
- *             the font size.
+ * @param pos Position of the line. The x component indicates horizontal padding.
  */
-void lcd_println(St7735Context *lcd, const char *str, TextAlignment_t alignment, int32_t line);
+void lcd_println(St7735Context *lcd, const char *str, TextAlignment_t alignment, LCD_Point pos);
 
 typedef struct Menu {
   const char *title;        // Pointer to a NULL terminated string to be used as the title.
@@ -49,6 +48,7 @@ typedef struct Menu {
  *
  * @param lcd LCD handle.
  * @param menu Menu configuration.
+ * @param selected Index of the selected menu item
  */
-void lcd_show_menu(St7735Context *lcd, Menu_t *menu);
+void lcd_show_menu(St7735Context *lcd, Menu_t *menu, size_t selected);
 #endif
