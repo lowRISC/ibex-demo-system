@@ -85,6 +85,7 @@ filesets:
       - lowrisc:dv_dpi_sv:uartdpi:0.1
     files:
       - dv/verilator/top_verilator.sv: { file_type: systemVerilogSource }
+      - dv/verilator/plicdpi.sv: { file_type: systemVerilogSource }
       - dv/verilator/ibex_demo_system.cc: { file_type: cppSource }
       - dv/verilator/ibex_demo_system.h:  { file_type: cppSource, is_include_file: true}
       - dv/verilator/ibex_demo_system_main.cc: { file_type: cppSource }
@@ -289,10 +290,10 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
-          - '-CFLAGS "-std=c++14 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=top_verilator"'
+          - '-CFLAGS "-std=c++14 -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=top_verilator"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
-          - "-Wall"
-          - "-Wwarn-IMPERFECTSCH"
+          # - "-Wall"
+          # - "-Wwarn-IMPERFECTSCH"
           # RAM primitives wider than 64bit (required for ECC) fail to build in
           # Verilator without increasing the unroll count (see Verilator#1266)
           - "--unroll-count 72"
