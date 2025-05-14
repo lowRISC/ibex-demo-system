@@ -4,7 +4,7 @@
 {
   name: "display_drivers",
   target_dir: "display_drivers",
-  patch_dir: "",
+  patch_dir: "patches/display_drivers",
 
   upstream: {
     url: "https://github.com/engdoreis/display_drivers.git",
