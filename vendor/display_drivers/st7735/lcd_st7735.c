@@ -54,6 +54,12 @@ static void run_script(St7735Context *ctx, const uint8_t *addr) {
 static void set_address(St7735Context *ctx, uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) {
   uint32_t coordinate = 0;
 
+  // Apply offsets
+  x0 += 1;
+  x1 += 1;
+  y0 += 2;
+  y1 += 2;
+
   coordinate = (uint32_t)(x0 << 8 | x1 << 24);
   write_command(ctx, ST7735_CASET);  // Column addr set
   ctx->parent.interface->gpio_write(ctx->parent.interface->handle, false, true);
