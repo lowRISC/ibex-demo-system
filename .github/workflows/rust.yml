@@ -21,7 +21,9 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Linting
-      run: cargo fmt --check
+      run: |
+        rustup component add rustfmt
+        cargo fmt --check
 
     - name: Build
       run: cargo build --verbose --release
