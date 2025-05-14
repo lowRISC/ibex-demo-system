@@ -1,0 +1,24 @@
+diff --git a/st7735/lcd_st7735.c b/st7735/lcd_st7735.c
+index a147030..8d1223e 100644
+--- a/st7735/lcd_st7735.c
++++ b/st7735/lcd_st7735.c
+@@ -54,6 +54,12 @@ static void run_script(St7735Context *ctx, const uint8_t *addr) {
+ static void set_address(St7735Context *ctx, uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) {
+   uint32_t coordinate = 0;
+ 
++  // Apply offsets
++  x0 += 1;
++  x1 += 1;
++  y0 += 2;
++  y1 += 2;
++
+   coordinate = (uint32_t)(x0 << 8 | x1 << 24);
+   write_command(ctx, ST7735_CASET);  // Column addr set
+   ctx->parent.interface->gpio_write(ctx->parent.interface->handle, false, true);
+@@ -286,4 +292,4 @@ extern Result lcd_st7735_set_font_colors(St7735Context *ctx, uint32_t background
+ 
+ extern Result lcd_st7735_get_resolution(St7735Context *ctx, size_t *height, size_t *width);
+ 
+-Result lcd_st7735_close(St7735Context *ctx) { return (Result){.code = 0}; }
+\ No newline at end of file
++Result lcd_st7735_close(St7735Context *ctx) { return (Result){.code = 0}; }
