@@ -10,8 +10,7 @@ sudo docker build . -t ibex -f container/Dockerfile
 
 ## Using the Container
 
-To run the container,
-use the following command in the root of the repository.
+To run the container, use the following command in the root of the repository.
 
 ```sh
 sudo docker run -it --rm \

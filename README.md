@@ -2,9 +2,8 @@
 
 ![Ibex demo system block diagram](doc/IbexDemoSystemBlockDiagram.png "Ibex demo system block diagram with in the center an Ibex processor connected by a memory bus to the RAM, GPIO, SPI, UART and debug module. Switches, buttons and LEDs are connected to the GPIO. The LCD is driven by SPI. The UART is used for a serial console. Finally, the debug module is used to drive the JTAG.")
 
-This an example RISC-V SoC originally targeting the Arty-A7 FPGA board. It comprises the
-[lowRISC Ibex core](https://www.github.com/lowrisc/ibex) along with the
-following features:
+This an example RISC-V SoC originally targeting the Arty-A7 FPGA board.
+It comprises the [lowRISC Ibex core](https://www.github.com/lowrisc/ibex) along with the following features:
 
 * RISC-V debug support (using the [PULP RISC-V Debug Module](https://github.com/pulp-platform/riscv-dbg))
 * UART
@@ -15,14 +14,15 @@ following features:
 * A basic peripheral to write ASCII output to a file and halt simulation from software
 
 Support has been added for several additional FPGA development boards:
+
 * Arty S7-25 and S7-50
 * Nexys A7-100T
 * Sonata
 * RealDigital Blackboard
 * RealDigital Boolean
 
-Debug can be used via a USB connection to the board. No external JTAG
-probe is required.
+Debug can be used via a USB connection to the board.
+No external JTAG probe is required.
 
 ![Arty A7 FPGA showing the Mandelbrot set](doc/ArtyA7WithMandelbrot.png "Arty A7 FPGA with a Mandelbrot fractal on the LCD screen.")
 
@@ -43,10 +43,11 @@ probe is required.
 There is a prebuilt container of tools available you may want to use to get started quickly.
 There are instructions for building the container for either Docker/Podman located in ./container/README.md.
 
-**Linux/MacOS**
+### Linux/MacOS
 
 A container image may be provided to you in the form of a tarball.
 You can load the containerfile by running:
+
 ```bash
 sudo docker load < ibex_demo_image.tar
 # OR
@@ -54,6 +55,7 @@ podman load < ibex_demo_image.tar
 ```
 
 If you already have a container file, you can start the container by running:
+
 ```bash
 sudo docker run -it --rm \
   -p 6080:6080 \
@@ -61,7 +63,9 @@ sudo docker run -it --rm \
   -v $(pwd):/home/dev/demo:Z \
   ibex
 ```
+
 OR
+
 ```bash
 podman unshare chown 1000:1000 -R .
 podman run -it --rm \
@@ -74,16 +78,19 @@ podman unshare chown 0:0 -R .
 To access the container once running, go to [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html).
 
 If you want to program the FPGA from the container, let's find out which bus and device the Arty is on:
+
 ```bash
 $ lsusb
 ...
 Bus 00X Device 00Y: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
 ...
 ```
+
 Where X and Y are numbers.
 Please note down what X and Y is for you (this will change if you unplug and replug your FPGA).
 
 Then run Docker with the following parameters:
+
 ```bash
 sudo docker run -it --rm \
   -p 6080:6080 \
@@ -95,31 +102,35 @@ sudo docker run -it --rm \
   ibex
 ```
 
-**Windows**
+### Windows
 
 Run a command prompt in administrator mode and type:
+
 ```powershell
 cd "C:\Program Files\Docker\Docker"
 .\DockerCli.exe -SwitchLinuxEngine
 ```
 
 In case you have a tarball of the docker image, run:
+
 ```powershell
 docker load -i ibex_demo_image.tar
 ```
 
 Go to the folder where you have decompressed the demo system repository:
+
 ```powershell
 docker run -it --rm -p 6080:6080 -p 3333:3333 -v %cd%:/home/dev/demo:Z ibex
 ```
 
 ## Add udev rules for our device
+
 For both the container and the native setups you will need to add user device permissions for our FPGA board.
 The following instructions are for Linux-based systems and are needed for the programmer to access the development board.
 
 Arty-A7
-```bash
 
+```bash
 sudo su
 cat <<EOF > /etc/udev/rules.d/90-arty-a7.rules
 # Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
@@ -134,8 +145,8 @@ exit
 ```
 
 RealDigital Boolean and Blackboard
-```bash
 
+```bash
 sudo su
 cat <<EOF > /etc/udev/rules.d/90-realdigital.rules
 # Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
@@ -147,6 +158,7 @@ exit
 ```
 
 openFPGAloader
+
 ```bash
 sudo su
 cat <<EOF > /etc/udev/rules.d/99-openfpgaloader.rules
@@ -210,7 +222,6 @@ LABEL="openfpgaloader_rules_end"
 EOF
 
 exit
-
 ```
 
 Run the following to reload the rules:
@@ -221,6 +232,7 @@ sudo udevadm trigger
 ```
 
 Add user to plugdev group:
+
 ```bash
 sudo usermod -a $USER -G plugdev
 ```
@@ -230,15 +242,14 @@ sudo usermod -a $USER -G plugdev
 
 ## Nix Environment Setup
 
-An alternative system for installing all of the project dependencies is
-provided using the Nix package manager. Once installed and the dependencies
-are fetched from the internet, you can enter a shell with all of the software
-required for building by running the command `nix develop` in the root
-directory of the project. To leave this environment, simply run `exit`.
+An alternative system for installing all of the project dependencies is provided using the Nix package manager.
+Once installed and the dependencies are fetched from the internet, you can enter a shell with all of the software required for building by running the command `nix develop` in the root directory of the project.
+To leave this environment, simply run `exit`.
 
 ### Installing
 
 #### Installing Nix
+
 ```bash
 # Run the recommended nix multi-user installation
 # https://nixos.org/download.html
@@ -270,6 +281,7 @@ nix --version
 ```
 
 #### Installing Vivado using Nix
+
 ```bash
 # Go to the Xilinx.com website
 # https://www.xilinx.com/support/download.html
@@ -344,7 +356,9 @@ popd
 ```
 
 #### Install dependencies and activate our environment
+
 We can use the nix flake.nix recipe to build our environment.
+
 ```bash
 git clone git@github.com:lowRISC/ibex-demo-system.git
 cd ibex-demo-system
@@ -377,6 +391,7 @@ nix run nixpkgs#nix-tree -- .#devShells.x86_64-linux.default --derivation
 ```
 
 Vivado-specific change (only needed if enabled in flake.nix):
+
 ```bash
 # Run this before the `nix flake update` above.
 
@@ -391,10 +406,7 @@ sed -i -- "s|sha256\s=\s\".*\";|sha256 = \"$VIVADO_BUNDLED_HASH\";|g" dependenci
 
 (NOT NEEDED IN THE CONTAINER ENVIRONMENT)
 
-To install python dependencies use pip, you may wish to do this inside a virtual
-environment to avoid disturbing you current python setup (note it uses a lowRISC
-fork of edalize and FuseSoC so if you already use these a virtual environment is
-recommended):
+To install python dependencies use pip, you may wish to do this inside a virtual environment to avoid disturbing you current python setup (note it uses a lowRISC fork of edalize and FuseSoC so if you already use these a virtual environment is recommended):
 
 ```bash
 # Setup python venv
@@ -408,16 +420,14 @@ pip3 install -r python-requirements.txt
 You may need to run the last command twice if you get the following error:
 `ERROR: Failed building wheel for fusesoc`
 
-
 ## Building Software
 
 ### C stack
 
 First the software must be built.
-This can be loaded into an FPGA to run on a synthesized Ibex processor, or passed
-to a verilator simulation model to be simulated on a PC.
+This can be loaded into an FPGA to run on a synthesized Ibex processor, or passed to a Verilator simulation model to be simulated on a PC.
 
-```
+```bash
 mkdir sw/c/build
 pushd sw/c/build
 cmake ..
@@ -432,6 +442,7 @@ pushd sw/rust
 cargo build --bin led
 popd
 ```
+
 For more details, please refer to [Ibex Rust stack](sw/rust/README.md).
 
 Note the FPGA build relies on a fixed path to the initial binary (blank.vmem) so
@@ -440,8 +451,8 @@ in `ibex_demo_system.core`
 
 ## Building Simulation
 
-The Demo System simulator binary can be built via FuseSoC. From the Ibex
-repository root run:
+The Demo System simulator binary can be built via FuseSoC.
+From the Ibex repository root run:
 
 ```sh
 fusesoc --cores-root=. run --target=sim --tool=verilator --setup --build lowrisc:ibex:demo_system
@@ -450,11 +461,11 @@ fusesoc --cores-root=. run --target=sim --tool=verilator --setup --build lowrisc
 ## Running the Simulator
 
 Having built the simulator and software, to simulate using Verilator we can use the following commands.
-`<sw_elf_file>` should be a path to an ELF file  (or alternatively a vmem file)
-built as described above. Use `./sw/c/build/demo/hello_world/demo` to run the `demo`
-binary.
+`<sw_elf_file>` should be a path to an ELF file  (or alternatively a vmem file) built as described above.
+Use `./sw/c/build/demo/hello_world/demo` to run the `demo` binary.
 
 Run from the repository root run:
+
 ```sh
 # For example :
 ./build/lowrisc_ibex_demo_system_0/sim-verilator/Vtop_verilator \
@@ -493,30 +504,30 @@ Divide Wait:                0
 
 ## Building FPGA bitstream
 
-FuseSoC handles the FPGA build. Vivado tools must be setup beforehand. From the
-repository root:
+FuseSoC handles the FPGA build. Vivado tools must be setup beforehand.
+From the repository root:
 
-```
+```bash
 fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:demo_system
 ```
 
 The default board is the Arty A7, but you can also use different synthesis targets for supported boards.
 Currently supported targets:
 
-| Board | Target |
-| -------- | ------- |
-| Arty S7-25 | `synth_artys7-25` |
-| Arty S7-50 | `synth_artys7-50` |
-| Nexys A7-100T | `synth_nexysa7` |
-| Sonata | `synth_sonata` |
-| Blackboard | `synth_blackboard` |
-| Boolean | `synth_boolean` |
+| Board         | Target              |
+| ------------- | ------------------- |
+| Arty S7-25    | `synth_artys7-25`   |
+| Arty S7-50    | `synth_artys7-50`   |
+| Nexys A7-100T | `synth_nexysa7`     |
+| Sonata        | `synth_sonata`      |
+| Blackboard    | `synth_blackboard`  |
+| Boolean       | `synth_boolean`     |
 
 ## Programming FPGA
 
 To program the FPGA, either use FuseSoC again
 
-```
+```bash
 fusesoc --cores-root=. run --target=synth --run lowrisc:ibex:demo_system
 
 # If the above does not work, try executing the programming operation manually with:
@@ -526,7 +537,8 @@ make -C ./build/lowrisc_ibex_demo_system_0/synth-vivado/ pgm
 Replace `synth` in the fuseoc or make invocation with the appropriate target if you are use an alternative board.
 
 You can also use [OpenFPGALoader](https://github.com/trabucayre/openFPGALoader), here are some example commands:
-```
+
+```bash
 # Programming the Arty A7
 ./openFPGALoader -b arty_a7_35t build/lowrisc_ibex_demo_system_0/synth-vivado/lowrisc_ibex_demo_system_0.bit
 
@@ -580,7 +592,7 @@ You will need to confirm the exit by pressing `y`.
 
 Either load an application and halt (see above) or start a new OpenOCD instance:
 
-```
+```bash
 openocd -f util/arty-a7-openocd-cfg.tcl
 ```
 
