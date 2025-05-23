@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ibex:demo_system_core"
-description: "Ibex Demo System for Arty A7 boards (both, -35 and -100)"
+description: "Ibex Demo System core files always used regardless of target"
 filesets:
   files_rtl_demo_system:
     depend:
