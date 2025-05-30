@@ -115,6 +115,36 @@ void set_global_interrupt_enable(uint32_t enable) {
   }
 }
 
+void verify_core_interrupt_enable(void) {
+  uint32_t mstatus, mie;
+
+  // Read mstatus and mie CSRs
+  asm volatile("csrr %0, mstatus" : "=r"(mstatus));
+  asm volatile("csrr %0, mie"     : "=r"(mie));
+
+  puts("MSTATUS: ");
+  puthex(mstatus);
+  putchar('\n');
+
+    // Check global interrupt enable (MIE bit in mstatus, bit 3)
+  if (mstatus & (1 << 3)) {
+      puts("Global interrupts enabled.\n");
+  } else {
+      puts("Global interrupts NOT enabled.\n");
+  }
+
+  puts("MIE: ");
+  puthex(mie);
+  putchar('\n');
+
+  // Check that external interrupts are enabled
+  if (mie & (1 << 11)) {
+      puts("External interrupt (source 11) enabled in MIE.\n");
+  } else {
+      puts("External interrupt (source 11) NOT enabled in MIE.\n");
+  }
+}
+
 void simple_exc_handler(void) {
   puts("EXCEPTION!!!\n");
   puts("============\n");
