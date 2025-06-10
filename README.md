@@ -598,7 +598,7 @@ You can choose to immediately run it or begin halted, allowing you to attach a d
 ./util/load_demo_system.sh run ./sw/c/build/demo/hello_world/demo ./util/sonata-openocd-cfg.tcl
 
 # Run demo on the Blackboard board
-./util/load_demo_system.sh run ./sw/c/build/demo/hello_world/demo ./util/boolean-openocd-cfg.tcl
+./util/load_demo_system.sh run ./sw/c/build/demo/hello_world/demo ./util/blackboard-openocd-cfg.tcl
 
 # Run demo on the Boolean board
 ./util/load_demo_system.sh run ./sw/c/build/demo/hello_world/demo ./util/boolean-openocd-cfg.tcl
