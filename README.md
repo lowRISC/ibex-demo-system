@@ -67,7 +67,7 @@ There are instructions for building the container for either Docker/Podman locat
 ### Linux/MacOS
 
 A container image may be provided to you in the form of a tarball.
-You can load the containerfile by running:
+You can load the container file by running:
 
 ```bash
 sudo docker load < ibex_demo_image.tar
@@ -337,7 +337,7 @@ popd
      1. Select 'Next >'
   2. Page 'Select Install Type'
      1. Enter email/password for 'User Authentication' (register on Xilinx.com)
-     2. Select the radio-box 'Download Image (Install Seperately)'
+     2. Select the radio-box 'Download Image (Install Separately)'
      3. Select the download directory as '/tmp/xilinx/bundled' (the value from $INSTALLER_BUNDLED, See above)
      4. Under 'Download fields to create full image for selected platform(s)', select 'Linux' only.
      5. Under 'Image Contents', select 'Selected Product Only'
