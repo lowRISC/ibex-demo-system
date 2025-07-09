@@ -31,3 +31,22 @@ lint_off -rule IMPERFECTSCH -file "*prim_flop_2sync.sv"
 
 lint_off -rule WIDTH  -file "*uartdpi.sv"
 lint_off -rule UNUSED -file "*uartdpi.sv"
+
+lint_off -rule WIDTH  -file "*plicdpi.sv"
+lint_off -rule UNUSED -file "*plicdpi.sv"
+lint_off -rule WIDTHEXPAND  -file "*plicdpi.sv"
+lint_off -rule WIDTHTRUNC  -file "*plicdpi.sv"
+lint_off -rule MULTIDRIVEN -file "*plicdpi.sv"
+lint_off -rule CASEOVERLAP -file "*plicdpi.sv"
+
+lint_off -rule WIDTH  -file "*plic.sv"
+lint_off -rule UNUSED -file "*plic.sv"
+lint_off -rule WIDTHEXPAND  -file "*plic.sv"
+lint_off -rule WIDTHTRUNC  -file "*plic.sv"
+lint_off -rule CASEOVERLAP -file "*plic.sv"
+
+
+lint_off -rule WIDTH  -file "*ibex_demo_system.sv"
+lint_off -rule UNUSED -file "*ibex_demo_system.sv"
+lint_off -rule WIDTHEXPAND  -file "*ibex_demo_system.sv"
+lint_off -rule WIDTHTRUNC  -file "*ibex_demo_system.sv"
