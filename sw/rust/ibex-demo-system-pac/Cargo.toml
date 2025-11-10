@@ -20,4 +20,4 @@ rt = ["riscv-rt"]
 default = ["critical-section"]
 
 [build-dependencies]
-svd2rust = "0.29.0"
+svd2rust = "0.33.5"
