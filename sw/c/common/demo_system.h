@@ -11,7 +11,9 @@
 #include "gpio.h"
 #include "uart.h"
 
-#define UART_IRQ_NUM 16
+// Changed UART_IRQ_NUM from 16 (fast interrupt) to 11 (external interrupt)
+// External interrupt is bit 11 in the mie register
+#define UART_IRQ_NUM 11
 #define UART_IRQ (1 << UART_IRQ_NUM)
 #define DEFAULT_UART UART_FROM_BASE_ADDR(UART0_BASE)
 
@@ -112,5 +114,7 @@ unsigned int get_mcause();
 unsigned int get_mtval();
 uint32_t get_mcycle(void);
 void reset_mcycle(void);
+
+void verify_core_interrupt_enable(void);
 
 #endif
