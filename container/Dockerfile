@@ -11,7 +11,7 @@ ARG VERIBLE_VERSION=v0.0-2135-gb534c1fe
 ARG RISCV_TOOLCHAIN_RELEASE_TAG=20220210-1
 
 # Main container image.
-FROM ubuntu:20.04 AS ibex
+FROM ubuntu:26.04 AS ibex
 ARG VERILATOR_VERSION
 ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_RELEASE_TAG
@@ -30,8 +30,8 @@ COPY container/apt-requirements.txt /tmp/apt-requirements.txt
 RUN sed -i -e '/^$/d' -e '/^#/D' -e 's/#.*//' /tmp/apt-requirements.txt \
     && apt-get update \
     && xargs apt-get install -y < /tmp/apt-requirements.txt \
-    && apt-get clean; \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 # RISC-V device toolchain
 COPY container/get-toolchain.py /tmp/get-toolchain.py
@@ -59,9 +59,9 @@ RUN tar -C / -xf openfpgaloader.tar.gz --strip-components=1
 # Build OpenOCD
 RUN git clone https://github.com/openocd-org/openocd.git \
     && cd openocd \
-    && git checkout v0.11.0 \
+    && git checkout v0.12.0 \
     && ./bootstrap \
-    && ./configure \
+    && ./configure --disable-werror \
     && make \
     && mkdir -p /tools/openocd \
     && cp -r src /tools/openocd \
@@ -90,7 +90,8 @@ USER dev:dev
 # Install Python Packages.
 ENV PATH "/home/dev/.local/bin:${PATH}"
 COPY --chown=dev:dev python-requirements.txt /tmp/python-requirements.txt
-RUN python3 -m pip install --user -U pip setuptools==58.2.0 testresources \
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+RUN python3 -m pip install --user -U pip setuptools testresources \
     && python3 -m pip install --user -r /tmp/python-requirements.txt \
         --no-warn-script-location \
     && rm -f /tmp/python-requirements.txt

@@ -25,7 +25,7 @@ libelf1
 libelf-dev
 
 # A requirement of the prebuilt clang toolchain.
-libncursesw5
+libncursesw6
 libssl-dev
 libudev-dev
 libusb-1.0-0
