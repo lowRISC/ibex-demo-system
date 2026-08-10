@@ -8,6 +8,8 @@
 #include "gpio.h"
 #include "pwm.h"
 #include "timer.h"
+#include "plic.h"
+#include "demo_system.h"
 
 #define USE_GPIO_SHIFT_REG 0
 
@@ -24,8 +26,16 @@ void test_uart_irq_handler(void) {
 }
 
 int main(void) {
+  // Install UART interrupt handler using the updated UART_IRQ_NUM (external interrupt)
   install_exception_handler(UART_IRQ_NUM, &test_uart_irq_handler);
   uart_enable_rx_int();
+
+  // Set UART interrupt priority and enable it in the PLIC
+  plic_set_priority(11, 1);
+  plic_enable_interrupt(11);
+
+  // Enable global interrupts
+  set_global_interrupt_enable(1);
 
   // This indicates how often the timer gets updated.
   timer_init();
@@ -54,6 +64,7 @@ int main(void) {
       set_global_interrupt_enable(0);
 
       // Print this to UART (use the screen command to see it).
+
       puts("Hello World! ");
       puthex(last_elapsed_time);
       puts("   Input Value: ");

@@ -8,6 +8,7 @@
 #include "dev_access.h"
 
 void uart_enable_rx_int(void) {
+  // Enable the UART interrupt (now connected to external interrupt)
   enable_interrupts(UART_IRQ);
   set_global_interrupt_enable(1);
 }
