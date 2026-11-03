@@ -196,7 +196,7 @@
     </peripheral>
     <peripheral derivedFrom="PWM0">
       <name>PWM1</name>
-      <baseAddress>0x8000A008</baseAddress>
+      <baseAddress>0x80003008</baseAddress>
       <interrupt>
         <name>PWM1_IRQ_WRAP</name>
         <value>22</value>
